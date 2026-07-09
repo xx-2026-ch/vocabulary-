@@ -2,661 +2,814 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>背单词小游戏 — 沉浸式单词闯关</title>
-    <meta name="description" content="免费的背单词小游戏，四选一单词挑战，内置四级/六级词库，支持自定词表导入。">
-    <meta name="keywords" content="背单词, 单词游戏, 英语, 四六级, 单词闯关">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📖</text></svg>">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>词汇地牢 — 背单词闯关</title>
+    <meta name="description" content="背单词与地牢闯关结合的游戏。答对单词击败怪物，不断深入地下城！">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚔️</text></svg>">
     <style>
-        :root {
-            --bg: #f0f4f8; --card: #fff; --text: #1a202c; --text2: #4a5568;
-            --border: #e2e8f0; --primary: #6c5ce7; --primary-hover: #5a4bd1;
-            --primary-light: #f0eeff; --success: #10b981; --wrong: #ef4444;
-            --shadow: 0 4px 24px rgba(0,0,0,.06); --radius: 16px; --radius-sm: 10px;
-        }
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --bg: #0f172a; --card: #1e293b; --text: #f1f5f9; --text2: #94a3b8;
-                --border: #334155; --primary-light: #1e1b4b;
-                --shadow: 0 4px 24px rgba(0,0,0,.3);
-            }
-        }
-        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-        body {
-            font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,'Noto Sans SC',sans-serif;
-            background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;
-            transition:background .3s,color .3s;
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{
+            background:#0a0a12;color:#e0dcd0;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+            min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;
+            overflow:hidden;user-select:none
         }
 
-        header {
-            background:var(--card);border-bottom:1px solid var(--border);padding:16px 24px;
-            display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;
+        /* ===== GAME CONTAINER ===== */
+        #game{
+            width:100%;max-width:520px;height:100vh;max-height:780px;
+            background:linear-gradient(180deg,#141420 0%,#1a1a2e 40%,#0f0f1a 100%);
+            border-radius:0;overflow:hidden;position:relative;
+            display:flex;flex-direction:column;
+            box-shadow:0 0 60px rgba(108,92,231,.08);
         }
-        .logo{display:flex;align-items:center;gap:10px;font-size:20px;font-weight:700;color:inherit;text-decoration:none}
-        .logo-icon{width:36px;height:36px;background:linear-gradient(135deg,#6c5ce7,#a29bfe);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px}
-        .logo span{background:linear-gradient(135deg,#6c5ce7,#a29bfe);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-        header nav{display:flex;gap:8px}
-        header nav a{color:var(--text2);text-decoration:none;padding:6px 14px;border-radius:8px;font-size:14px;transition:background .2s,color .2s}
-        header nav a:hover{background:var(--primary-light);color:var(--primary)}
+        @media(min-width:560px){#game{border-radius:20px;height:92vh;margin:4vh auto}}
 
-        .container{max-width:640px;margin:0 auto;padding:40px 20px;flex:1;width:100%}
-
-        /* ===== Start Screen ===== */
-        .screen{display:none}
-        .screen.active{display:block}
-
-        .start-card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:40px 32px;text-align:center}
-        .start-card .big-icon{font-size:64px;margin-bottom:12px}
-        .start-card h1{font-size:28px;font-weight:800;margin-bottom:6px}
-        .start-card h1 span{background:linear-gradient(135deg,#6c5ce7,#a29bfe);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-        .start-card p{color:var(--text2);font-size:15px;margin-bottom:24px;line-height:1.6}
-        .start-card .sub{font-size:13px;color:var(--text2);margin-bottom:20px}
-
-        .word-count-select{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:20px}
-        .word-count-select button{
-            padding:8px 20px;border:2px solid var(--border);background:transparent;color:var(--text2);
-            border-radius:8px;cursor:pointer;font-size:14px;transition:all .2s
+        /* ===== TOP HUD ===== */
+        .hud{
+            padding:12px 16px 8px;display:flex;justify-content:space-between;align-items:center;
+            background:rgba(0,0,0,.4);border-bottom:1px solid rgba(255,255,255,.06);flex-shrink:0
         }
-        .word-count-select button:hover{border-color:var(--primary);color:var(--primary)}
-        .word-count-select button.active{border-color:var(--primary);background:var(--primary);color:#fff}
+        .hud-floor{font-size:14px;font-weight:700;color:#a29bfe}
+        .hud-floor span{color:#e0dcd0}
+        .hud-hearts{display:flex;gap:2px;font-size:18px}
+        .hud-hearts .lost{opacity:.25}
+        .hud-timer{display:flex;align-items:center;gap:4px;font-size:14px;font-weight:700}
+        .hud-timer.danger{color:#ef4444;animation:blink .6s infinite}
+        .hud-score{font-size:13px;color:#fbbf24;font-weight:600}
 
-        .difficulty-select{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:24px}
-        .difficulty-select button{
-            padding:8px 20px;border:2px solid var(--border);background:transparent;color:var(--text2);
-            border-radius:8px;cursor:pointer;font-size:14px;transition:all .2s
+        @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+        /* ===== ARENA ===== */
+        .arena{
+            flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+            padding:10px 16px 8px;position:relative;overflow:hidden;min-height:0
         }
-        .difficulty-select button:hover{border-color:var(--primary);color:var(--primary)}
-        .difficulty-select button.active{border-color:var(--primary);background:var(--primary);color:#fff}
 
-        .start-btn{
-            padding:14px 48px;background:linear-gradient(135deg,#6c5ce7,#a29bfe);color:#fff;
-            border:none;border-radius:var(--radius-sm);font-size:18px;font-weight:600;cursor:pointer;transition:opacity .2s,transform .1s
+        /* Background decorations */
+        .arena::before{
+            content:'';position:absolute;bottom:0;left:0;right:0;height:40%;
+            background:repeating-linear-gradient(90deg,transparent,transparent 24px,rgba(255,255,255,.02) 24px,rgba(255,255,255,.02) 25px);
+            pointer-events:none
         }
-        .start-btn:hover{opacity:.9}
-        .start-btn:active{transform:scale(.98)}
-
-        .custom-section{margin-top:20px;padding-top:20px;border-top:1px solid var(--border)}
-        .custom-section .hint{font-size:13px;color:var(--text2);margin-bottom:8px}
-        .custom-upload-btn{
-            padding:6px 16px;border:1px solid var(--border);border-radius:6px;background:var(--card);
-            color:var(--text2);font-size:13px;cursor:pointer;display:inline-block;transition:all .2s
+        .arena::after{
+            content:'';position:absolute;top:10%;left:10%;right:10%;height:2px;
+            background:radial-gradient(ellipse, rgba(162,155,254,.12) 0%,transparent 70%);
+            pointer-events:none
         }
-        .custom-upload-btn:hover{border-color:var(--primary);color:var(--primary)}
-        .custom-badge{display:none;padding:4px 12px;background:var(--primary-light);border-radius:20px;font-size:12px;color:var(--primary);margin-left:8px}
-        .custom-badge.visible{display:inline-block}
-        #custom-input{display:none}
 
-        /* ===== Game Screen ===== */
-        .game-header{
-            display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;gap:12px
+        /* ===== BATTLE ZONE ===== */
+        .battle-zone{
+            display:flex;align-items:center;justify-content:space-around;
+            width:100%;max-width:380px;flex-shrink:0;margin-bottom:6px
         }
-        .game-header .stat{font-size:14px;font-weight:600}
-        .game-header .stat span{color:var(--primary)}
-        .progress-wrap{width:100%;height:6px;background:var(--border);border-radius:3px;margin-bottom:24px}
-        .progress-fill{height:100%;background:linear-gradient(90deg,#6c5ce7,#a29bfe);border-radius:3px;transition:width .3s}
+        .fighter{font-size:64px;transition:transform .15s;position:relative;line-height:1}
+        .fighter.player{filter:drop-shadow(0 0 12px rgba(108,92,231,.4))}
+        .fighter.enemy{filter:drop-shadow(0 0 12px rgba(239,68,68,.3))}
+        .fighter.attack-left{animation:swing .35s ease}
+        .fighter.hit-right{animation:takeHit .35s ease}
+        .fighter.dodge{animation:dodge .4s ease}
+        .fighter.dead{opacity:0;transform:scale(0);transition:all .4s}
 
+        @keyframes swing{0%{transform:rotate(-5deg)}50%{transform:rotate(15deg)translateX(12px)}100%{transform:rotate(0deg)}}
+        @keyframes takeHit{0%{transform:translateX(0)}20%{transform:translateX(-10px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}100%{transform:translateX(0)}}
+        @keyframes dodge{0%{transform:translateY(0)}30%{transform:translateY(-20px)}60%{transform:translateY(-20px)}100%{transform:translateY(0)}}
+
+        .enemy-hp-bar{
+            position:absolute;bottom:-16px;left:50%;transform:translateX(-50%);
+            width:48px;height:4px;background:rgba(255,255,255,.15);border-radius:2px;overflow:hidden
+        }
+        .enemy-hp-fill{height:100%;background:#ef4444;border-radius:2px;transition:width .3s}
+
+        .battle-label{
+            font-size:11px;text-align:center;margin-top:2px;color:var(--tc2,#7a7a8a)
+        }
+
+        /* ===== DAMAGE NUMBER ===== */
+        .dmg-num{
+            position:absolute;font-size:28px;font-weight:900;pointer-events:none;z-index:10;animation:dmgFloat 1s forwards
+        }
+        .dmg-num.damage{color:#ef4444}
+        .dmg-num.heal{color:#10b981}
+        .dmg-num.bonus{color:#fbbf24}
+        @keyframes dmgFloat{0%{opacity:1;transform:translateY(0)scale(1)}100%{opacity:0;transform:translateY(-50px)scale(1.4)}}
+
+        /* ===== WORD CARD ===== */
         .word-card{
-            background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);
-            padding:48px 32px;text-align:center;margin-bottom:24px
+            width:100%;max-width:380px;background:rgba(255,255,255,.04);
+            border:1px solid rgba(255,255,255,.08);border-radius:14px;
+            padding:12px 16px 14px;text-align:center;flex-shrink:0;margin-bottom:6px
         }
-        .word-card .en{font-size:36px;font-weight:800;margin-bottom:8px;letter-spacing:-.5px}
-        .word-card .ipa{font-size:15px;color:var(--text2);font-style:italic;margin-bottom:4px}
-        .word-card .streak{font-size:14px;color:var(--primary);font-weight:600}
-        .word-card .streak .fire{font-size:18px}
+        .word-card .en{font-size:20px;font-weight:800;letter-spacing:-.3px;color:#fff}
+        .word-card .ipa{font-size:12px;color:#7a7a8a;margin-top:2px}
 
-        .options{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-        @media(max-width:480px){.options{grid-template-columns:1fr}}
-
-        .option-btn{
-            padding:16px 20px;border:2px solid var(--border);background:var(--card);color:var(--text);
-            border-radius:var(--radius-sm);font-size:16px;cursor:pointer;transition:all .15s;
-            text-align:center;font-weight:500
+        /* ===== OPTIONS ===== */
+        .options{
+            display:grid;grid-template-columns:1fr 1fr;gap:8px;
+            width:100%;max-width:380px;flex-shrink:0;margin-bottom:6px
         }
-        .option-btn:hover{border-color:var(--primary);background:var(--primary-light);transform:translateY(-1px)}
-        .option-btn:active{transform:scale(.97)}
-        .option-btn.correct{background:var(--success);border-color:var(--success);color:#fff;animation:pulse .3s}
-        .option-btn.wrong{background:var(--wrong);border-color:var(--wrong);color:#fff;animation:shake .3s}
-        .option-btn.disabled{pointer-events:none;opacity:.7}
-
-        @keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.03)}100%{transform:scale(1)}}
-        @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
-        @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-
-        .result-card{animation:fadeIn .3s}
-
-        /* ===== Result Screen ===== */
-        .result-card{
-            background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);
-            padding:40px 32px;text-align:center
+        .opt-btn{
+            padding:12px 8px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);
+            color:#e0dcd0;border-radius:10px;font-size:15px;cursor:pointer;
+            transition:all .12s;font-weight:500;text-align:center;font-family:inherit
         }
-        .result-card .big{font-size:56px;margin-bottom:8px}
-        .result-card h2{font-size:24px;margin-bottom:4px}
-        .result-card .score{font-size:48px;font-weight:800;color:var(--primary);margin:12px 0}
-        .result-card .detail{color:var(--text2);font-size:15px;margin-bottom:4px;line-height:1.8}
-        .result-card .detail strong{color:var(--text)}
+        .opt-btn:hover{background:rgba(108,92,231,.15);border-color:#6c5ce7;transform:translateY(-1px)}
+        .opt-btn:active{transform:scale(.96)}
+        .opt-btn.disabled{pointer-events:none;opacity:.5}
+        .opt-btn.correct{background:rgba(16,185,129,.2);border-color:#10b981;color:#10b981;animation:pop .25s}
+        .opt-btn.wrong{background:rgba(239,68,68,.2);border-color:#ef4444;color:#ef4444;animation:shake .25s}
+        @keyframes pop{0%{transform:scale(1)}50%{transform:scale(1.04)}100%{transform:scale(1)}}
+        @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-5px)}40%{transform:translateX(5px)}60%{transform:translateX(-3px)}80%{transform:translateX(3px)}}
 
-        .wrong-list{margin-top:24px;text-align:left}
-        .wrong-list h3{font-size:16px;margin-bottom:12px;color:var(--wrong)}
-        .wrong-item{
-            display:flex;justify-content:space-between;align-items:center;
-            padding:10px 14px;background:var(--bg);border-radius:8px;margin-bottom:6px;
-            font-size:14px;gap:10px
+        /* ===== ITEMS BAR ===== */
+        .items-bar{
+            display:flex;gap:8px;padding:6px 16px;flex-shrink:0;justify-content:center;
+            background:rgba(0,0,0,.2);border-top:1px solid rgba(255,255,255,.05);flex-wrap:wrap
         }
-        .wrong-item .en{font-weight:600}
-        .wrong-item .cn{color:var(--text2)}
+        .item-slot{
+            width:44px;height:44px;border:1px solid rgba(255,255,255,.08);border-radius:10px;
+            display:flex;align-items:center;justify-content:center;font-size:20px;
+            background:rgba(255,255,255,.03);cursor:pointer;transition:all .15s;position:relative
+        }
+        .item-slot:hover{border-color:#6c5ce7;background:rgba(108,92,231,.1);transform:translateY(-2px)}
+        .item-slot:active{transform:scale(.92)}
+        .item-slot.empty{opacity:.2;cursor:default;pointer-events:none}
+        .item-slot .badge{
+            position:absolute;top:-5px;right:-5px;background:#6c5ce7;color:#fff;
+            border-radius:10px;font-size:10px;font-weight:700;padding:1px 5px;line-height:1.3
+        }
+        .item-slot .tooltip{
+            position:absolute;bottom:50px;left:50%;transform:translateX(-50%);
+            background:#1a1a2e;border:1px solid rgba(255,255,255,.1);border-radius:6px;
+            padding:4px 10px;font-size:11px;white-space:nowrap;color:#e0dcd0;
+            display:none;pointer-events:none;z-index:20
+        }
+        .item-slot:hover .tooltip{display:block}
+        .items-label{font-size:11px;color:#7a7a8a;display:flex;align-items:center;gap:4px}
 
-        .result-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:24px}
-        .result-actions button{
-            padding:12px 28px;border-radius:var(--radius-sm);font-size:15px;font-weight:600;cursor:pointer;transition:opacity .2s
+        /* ===== OVERLAY ===== */
+        .overlay{
+            position:absolute;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(6px);
+            display:none;flex-direction:column;align-items:center;justify-content:center;
+            z-index:50;padding:24px;
         }
-        .btn-primary{background:linear-gradient(135deg,#6c5ce7,#a29bfe);color:#fff;border:none}
-        .btn-primary:hover{opacity:.9}
-        .btn-secondary{background:transparent;color:var(--primary);border:2px solid var(--primary)}
-        .btn-secondary:hover{background:var(--primary-light)}
+        .overlay.active{display:flex}
+        .overlay .title{font-size:32px;font-weight:800;margin-bottom:4px}
+        .overlay .sub{font-size:15px;color:#7a7a8a;margin-bottom:16px;text-align:center;line-height:1.5}
+        .overlay .big-emoji{font-size:72px;margin-bottom:12px}
+        .overlay .stat-row{display:flex;gap:24px;margin-bottom:20px;flex-wrap:wrap;justify-content:center}
+        .overlay .stat-item{text-align:center}
+        .overlay .stat-item .num{font-size:28px;font-weight:800;color:#a29bfe}
+        .overlay .stat-item .lbl{font-size:12px;color:#7a7a8a}
+        .overlay .btn{
+            padding:14px 40px;border:none;border-radius:12px;font-size:16px;font-weight:700;
+            cursor:pointer;transition:opacity .2s;font-family:inherit
+        }
+        .overlay .btn:hover{opacity:.85}
+        .overlay .btn-primary{background:linear-gradient(135deg,#6c5ce7,#a29bfe);color:#fff}
+        .overlay .btn-secondary{background:rgba(255,255,255,.08);color:#e0dcd0;border:1px solid rgba(255,255,255,.1)}
 
-        footer{
-            text-align:center;padding:20px;color:var(--text2);font-size:13px;
-            border-top:1px solid var(--border);background:var(--card);margin-top:20px
+        /* ===== ITEM DROP ANIMATION ===== */
+        .item-drop{
+            position:absolute;font-size:36px;pointer-events:none;z-index:15;animation:dropAnim 1.2s forwards
+        }
+        @keyframes dropAnim{
+            0%{opacity:1;transform:translateY(0)scale(.5)}
+            40%{opacity:1;transform:translateY(-30px)scale(1.2)}
+            100%{opacity:0;transform:translateY(-80px)scale(.6)}
         }
 
-        .toast{
-            position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);
-            background:var(--text);color:var(--bg);padding:12px 24px;border-radius:var(--radius-sm);
-            font-size:14px;opacity:0;transition:all .3s;pointer-events:none;z-index:999
+        /* ===== TIMER BAR ===== */
+        .timer-bar-wrap{
+            width:100%;max-width:380px;height:4px;background:rgba(255,255,255,.06);border-radius:2px;
+            margin-bottom:6px;flex-shrink:0;overflow:hidden
         }
-        .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+        .timer-bar-fill{
+            height:100%;border-radius:2px;transition:width .3s linear;
+            background:linear-gradient(90deg,#6c5ce7,#a29bfe)
+        }
+        .timer-bar-fill.danger{background:linear-gradient(90deg,#ef4444,#f97316)}
+        .timer-bar-fill.safe{background:linear-gradient(90deg,#10b981,#34d399)}
+
+        /* ===== FLOOR BANNER ===== */
+        .floor-banner{
+            position:absolute;inset:0;display:none;flex-direction:column;
+            align-items:center;justify-content:center;z-index:40;pointer-events:none
+        }
+        .floor-banner.active{display:flex}
+        .floor-banner .txt{
+            font-size:48px;font-weight:900;background:linear-gradient(180deg,#a29bfe,#6c5ce7);
+            -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+            animation:bannerIn .6s forwards
+        }
+        .floor-banner .sub{
+            font-size:16px;color:#7a7a8a;margin-top:4px;animation:bannerIn .6s .2s forwards;opacity:0
+        }
+        @keyframes bannerIn{0%{opacity:0;transform:scale(.6)translateY(20px)}100%{opacity:1;transform:scale(1)translateY(0)}}
+
+        /* ===== MOBILE ===== */
+        @media(max-height:640px){
+            .fighter{font-size:48px}
+            .word-card .en{font-size:17px}
+            .word-card{padding:8px 12px 10px}
+            .opt-btn{padding:10px 6px;font-size:14px}
+            .hud{padding:8px 12px 6px}
+            .hud-hearts{font-size:15px}
+        }
+        @media(max-height:560px){
+            .fighter{font-size:36px}
+            .word-card .en{font-size:15px}
+            .word-card .ipa{font-size:10px}
+            .opt-btn{padding:7px 4px;font-size:13px}
+            .arena{padding:4px 12px 4px}
+            .word-card{padding:5px 10px 6px}
+        }
+        @media(max-width:400px){
+            .fighter{font-size:52px}
+            #game{max-width:100%}
+        }
     </style>
 </head>
 <body>
-
-<header>
-    <div class="logo"><div class="logo-icon">📖</div><span>单词闯关</span></div>
-    <nav>
-        <a href="#howto" id="howto-link">玩法</a>
-    </nav>
-</header>
-
-<div class="container">
-    <!-- ===== Start Screen ===== -->
-    <div class="screen active" id="start-screen">
-        <div class="start-card">
-            <div class="big-icon">📖</div>
-            <h1>单词 <span>闯关</span></h1>
-            <p>看英文选中文，四选一挑战你的词汇量</p>
-            <div class="sub">📚 内置四级/六级/考研词汇</div>
-
-            <div style="font-size:14px;font-weight:600;color:var(--text2);margin-bottom:8px">题数</div>
-            <div class="word-count-select" id="word-count">
-                <button data-count="10">10</button>
-                <button data-count="20" class="active">20</button>
-                <button data-count="30">30</button>
-                <button data-count="50">50</button>
-            </div>
-
-            <div style="font-size:14px;font-weight:600;color:var(--text2);margin-bottom:8px">难度</div>
-            <div class="difficulty-select" id="difficulty">
-                <button data-level="easy">🌱 简单</button>
-                <button data-level="medium" class="active">🔥 中等</button>
-                <button data-level="hard">💀 困难</button>
-            </div>
-
-            <button class="start-btn" id="start-btn">🚀 开始挑战</button>
-
-            <div class="custom-section">
-                <div class="hint">📂 有自己的词表？上传 CSV/TXT（每行：单词,释义）</div>
-                <label class="custom-upload-btn" id="custom-label">📄 上传词表</label>
-                <span class="custom-badge" id="custom-badge">✅ 已加载</span>
-                <input type="file" id="custom-input" accept=".csv,.txt">
-            </div>
-        </div>
+<div id="game">
+    <!-- HUD -->
+    <div class="hud">
+        <div class="hud-floor">🏰 <span id="floor-num">1</span>层</div>
+        <div class="hud-hearts" id="hearts"></div>
+        <div class="hud-score" id="score-display">💰 0</div>
+        <div class="hud-timer" id="timer-display">⏱ <span id="timer-num">15</span>s</div>
     </div>
 
-    <!-- ===== Game Screen ===== -->
-    <div class="screen" id="game-screen">
-        <div class="game-header">
-            <div class="stat"><span id="current-num">1</span>/<span id="total-num">20</span></div>
-            <div class="stat">✅ <span id="correct-num">0</span> · ❌ <span id="wrong-num">0</span></div>
-            <div class="stat">🔥 <span id="streak-num">0</span></div>
+    <!-- ARENA -->
+    <div class="arena" id="arena">
+        <div class="battle-zone">
+            <div class="fighter player" id="player">⚔️</div>
+            <div class="fighter enemy" id="enemy" style="position:relative">
+                👹
+                <div class="enemy-hp-bar"><div class="enemy-hp-fill" id="enemy-hp" style="width:100%"></div></div>
+            </div>
         </div>
-        <div class="progress-wrap"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
 
+        <!-- Timer bar -->
+        <div class="timer-bar-wrap"><div class="timer-bar-fill" id="timer-bar"></div></div>
+
+        <!-- Word card -->
         <div class="word-card">
             <div class="en" id="word-en">abandon</div>
             <div class="ipa" id="word-ipa">/əˈbændən/</div>
-            <div class="streak" id="streak-display"></div>
         </div>
 
+        <!-- Options -->
         <div class="options" id="options"></div>
     </div>
 
-    <!-- ===== Result Screen ===== -->
-    <div class="screen" id="result-screen">
-        <div class="result-card">
-            <div class="big" id="result-emoji">🎉</div>
-            <h2 id="result-title">挑战完成！</h2>
-            <div class="score" id="result-score">18/20</div>
-            <div class="detail">正确率：<strong id="result-rate">90%</strong></div>
-            <div class="detail">最长连击：<strong id="result-streak">🔥 5</strong></div>
-            <div class="detail" id="result-grade" style="margin-top:8px;font-size:18px"></div>
+    <!-- Items bar -->
+    <div class="items-bar" id="items-bar">
+        <span class="items-label">🎒</span>
+        <div class="item-slot empty" id="item-1"><div class="tooltip"></div></div>
+        <div class="item-slot empty" id="item-2"><div class="tooltip"></div></div>
+        <div class="item-slot empty" id="item-3"><div class="tooltip"></div></div>
+    </div>
 
-            <div class="wrong-list" id="wrong-list" style="display:none">
-                <h3>📝 需要复习的单词</h3>
-                <div id="wrong-items"></div>
-            </div>
+    <!-- Floor banner -->
+    <div class="floor-banner" id="floor-banner">
+        <div class="txt" id="banner-txt">第 1 层</div>
+        <div class="sub" id="banner-sub">⚔️ 前进！</div>
+    </div>
 
-            <div class="result-actions">
-                <button class="btn-primary" id="retry-btn">🔄 再来一次</button>
-                <button class="btn-secondary" id="home-btn">🏠 返回首页</button>
-            </div>
+    <!-- Game Over overlay -->
+    <div class="overlay" id="overlay-gameover">
+        <div class="big-emoji">💀</div>
+        <div class="title" style="color:#ef4444">你倒下了</div>
+        <div class="sub">深入地下城 <strong id="go-floor">5</strong> 层 · 答对 <strong id="go-correct">0</strong> 题</div>
+        <div class="stat-row">
+            <div class="stat-item"><div class="num" id="go-score">0</div><div class="lbl">得分</div></div>
+            <div class="stat-item"><div class="num" id="go-accuracy">0%</div><div class="lbl">正确率</div></div>
+            <div class="stat-item"><div class="num" id="go-streak">🔥0</div><div class="lbl">最高连击</div></div>
         </div>
+        <button class="btn btn-primary" onclick="restartGame()">🔄 重新挑战</button>
+    </div>
+
+    <!-- Victory overlay -->
+    <div class="overlay" id="overlay-victory">
+        <div class="big-emoji">🏆</div>
+        <div class="title" style="color:#fbbf24">通关成功！</div>
+        <div class="sub">你征服了地下城！</div>
+        <div class="stat-row">
+            <div class="stat-item"><div class="num" id="v-score">0</div><div class="lbl">最终得分</div></div>
+            <div class="stat-item"><div class="num" id="v-accuracy">0%</div><div class="lbl">正确率</div></div>
+            <div class="stat-item"><div class="num" id="v-streak">🔥0</div><div class="lbl">最高连击</div></div>
+        </div>
+        <button class="btn btn-primary" onclick="restartGame()">🔄 再来一次</button>
     </div>
 </div>
 
-<footer>
-    <p>📖 单词闯关 · 免费背单词小游戏 · 纯本地运行</p>
-</footer>
-
-<div class="toast" id="toast"></div>
-
 <script>
-(function(){
-    'use strict';
+// ============================================================
+//  WORD BANK
+// ============================================================
+const WORDS = [
+    {en:"abandon",ipa:"/əˈbændən/",cn:"放弃",diff:1},{en:"ability",ipa:"/əˈbɪləti/",cn:"能力",diff:1},
+    {en:"absorb",ipa:"/əbˈzɔːrb/",cn:"吸收",diff:1},{en:"accept",ipa:"/əkˈsept/",cn:"接受",diff:1},
+    {en:"achieve",ipa:"/əˈtʃiːv/",cn:"实现",diff:1},{en:"acquire",ipa:"/əˈkwaɪər/",cn:"获得",diff:1},
+    {en:"adapt",ipa:"/əˈdæpt/",cn:"适应",diff:1},{en:"admit",ipa:"/ədˈmɪt/",cn:"承认",diff:1},
+    {en:"adopt",ipa:"/əˈdɒpt/",cn:"采纳",diff:1},{en:"advance",ipa:"/ədˈvæns/",cn:"前进",diff:1},
+    {en:"advise",ipa:"/ədˈvaɪz/",cn:"建议",diff:1},{en:"afford",ipa:"/əˈfɔːrd/",cn:"负担得起",diff:1},
+    {en:"agree",ipa:"/əˈɡriː/",cn:"同意",diff:1},{en:"amaze",ipa:"/əˈmeɪz/",cn:"使惊奇",diff:1},
+    {en:"annual",ipa:"/ˈænjuəl/",cn:"每年的",diff:1},{en:"anxious",ipa:"/ˈæŋkʃəs/",cn:"焦虑的",diff:1},
+    {en:"apply",ipa:"/əˈplaɪ/",cn:"申请",diff:1},{en:"approach",ipa:"/əˈproʊtʃ/",cn:"接近",diff:1},
+    {en:"attempt",ipa:"/əˈtempt/",cn:"尝试",diff:1},{en:"attract",ipa:"/əˈtrækt/",cn:"吸引",diff:1},
+    {en:"balance",ipa:"/ˈbæləns/",cn:"平衡",diff:1},{en:"benefit",ipa:"/ˈbenɪfɪt/",cn:"受益",diff:1},
+    {en:"blame",ipa:"/bleɪm/",cn:"责备",diff:1},{en:"bother",ipa:"/ˈbɒðər/",cn:"打扰",diff:1},
+    {en:"bound",ipa:"/baʊnd/",cn:"界限",diff:1},{en:"brief",ipa:"/briːf/",cn:"简要的",diff:1},
+    {en:"burden",ipa:"/ˈbɜːrdn/",cn:"负担",diff:1},{en:"calm",ipa:"/kɑːm/",cn:"平静的",diff:1},
+    {en:"capable",ipa:"/ˈkeɪpəbl/",cn:"有能力的",diff:1},{en:"capture",ipa:"/ˈkæptʃər/",cn:"捕获",diff:1},
+    {en:"career",ipa:"/kəˈrɪr/",cn:"职业",diff:1},{en:"challenge",ipa:"/ˈtʃælɪndʒ/",cn:"挑战",diff:1},
+    {en:"claim",ipa:"/kleɪm/",cn:"声称",diff:2},{en:"clarify",ipa:"/ˈklærəfaɪ/",cn:"澄清",diff:2},
+    {en:"collapse",ipa:"/kəˈlæps/",cn:"崩溃",diff:2},{en:"command",ipa:"/kəˈmænd/",cn:"命令",diff:2},
+    {en:"commit",ipa:"/kəˈmɪt/",cn:"承诺",diff:2},{en:"compare",ipa:"/kəmˈper/",cn:"比较",diff:1},
+    {en:"compete",ipa:"/kəmˈpiːt/",cn:"竞争",diff:2},{en:"confess",ipa:"/kənˈfes/",cn:"承认",diff:2},
+    {en:"confident",ipa:"/ˈkɒnfɪdənt/",cn:"自信的",diff:1},{en:"confirm",ipa:"/kənˈfɜːrm/",cn:"确认",diff:1},
+    {en:"confuse",ipa:"/kənˈfjuːz/",cn:"使困惑",diff:1},{en:"connect",ipa:"/kəˈnekt/",cn:"连接",diff:1},
+    {en:"contribute",ipa:"/kənˈtrɪbjuːt/",cn:"贡献",diff:3},{en:"convince",ipa:"/kənˈvɪns/",cn:"说服",diff:2},
+    {en:"courage",ipa:"/ˈkɜːrɪdʒ/",cn:"勇气",diff:1},{en:"debate",ipa:"/dɪˈbeɪt/",cn:"辩论",diff:2},
+    {en:"declare",ipa:"/dɪˈkler/",cn:"宣布",diff:2},{en:"defeat",ipa:"/dɪˈfiːt/",cn:"击败",diff:2},
+    {en:"defend",ipa:"/dɪˈfend/",cn:"防御",diff:2},{en:"define",ipa:"/dɪˈfaɪn/",cn:"定义",diff:2},
+    {en:"demand",ipa:"/dɪˈmænd/",cn:"需求",diff:2},{en:"deserve",ipa:"/dɪˈzɜːrv/",cn:"值得",diff:2},
+    {en:"destroy",ipa:"/dɪˈstrɔɪ/",cn:"破坏",diff:1},{en:"determine",ipa:"/dɪˈtɜːrmɪn/",cn:"决定",diff:2},
+    {en:"develop",ipa:"/dɪˈveləp/",cn:"发展",diff:1},{en:"devote",ipa:"/dɪˈvoʊt/",cn:"奉献",diff:2},
+    {en:"discover",ipa:"/dɪˈskʌvər/",cn:"发现",diff:1},{en:"display",ipa:"/dɪˈspleɪ/",cn:"展示",diff:1},
+    {en:"distinct",ipa:"/dɪˈstɪŋkt/",cn:"不同的",diff:2},{en:"domestic",ipa:"/dəˈmestɪk/",cn:"国内的",diff:2},
+    {en:"dramatic",ipa:"/drəˈmætɪk/",cn:"戏剧性的",diff:2},{en:"eliminate",ipa:"/ɪˈlɪmɪneɪt/",cn:"消除",diff:3},
+    {en:"embrace",ipa:"/ɪmˈbreɪs/",cn:"拥抱",diff:2},{en:"emerge",ipa:"/ɪˈmɜːrdʒ/",cn:"出现",diff:2},
+    {en:"emotion",ipa:"/ɪˈmoʊʃn/",cn:"情感",diff:1},{en:"enable",ipa:"/ɪˈneɪbl/",cn:"使能够",diff:2},
+    {en:"encounter",ipa:"/ɪnˈkaʊntər/",cn:"遭遇",diff:3},{en:"enormous",ipa:"/ɪˈnɔːrməs/",cn:"巨大的",diff:2},
+    {en:"essential",ipa:"/ɪˈsenʃl/",cn:"必要的",diff:2},{en:"establish",ipa:"/ɪˈstæblɪʃ/",cn:"建立",diff:3},
+    {en:"evaluate",ipa:"/ɪˈvæljueɪt/",cn:"评估",diff:3},{en:"evolve",ipa:"/ɪˈvɒlv/",cn:"进化",diff:2},
+    {en:"examine",ipa:"/ɪɡˈzæmɪn/",cn:"检查",diff:2},{en:"exclude",ipa:"/ɪkˈskluːd/",cn:"排除",diff:2},
+    {en:"expand",ipa:"/ɪkˈspænd/",cn:"扩大",diff:2},{en:"explore",ipa:"/ɪkˈsplɔːr/",cn:"探索",diff:2},
+    {en:"expose",ipa:"/ɪkˈspoʊz/",cn:"暴露",diff:2},{en:"extend",ipa:"/ɪkˈstend/",cn:"扩展",diff:2},
+    {en:"extreme",ipa:"/ɪkˈstriːm/",cn:"极端的",diff:1},{en:"flexible",ipa:"/ˈfleksəbl/",cn:"灵活的",diff:2},
+    {en:"forecast",ipa:"/ˈfɔːrkæst/",cn:"预测",diff:2},{en:"forgive",ipa:"/fərˈɡɪv/",cn:"原谅",diff:1},
+    {en:"fortune",ipa:"/ˈfɔːrtʃən/",cn:"财富",diff:2},{en:"generate",ipa:"/ˈdʒenəreɪt/",cn:"产生",diff:2},
+    {en:"generous",ipa:"/ˈdʒenərəs/",cn:"慷慨的",diff:2},{en:"genuine",ipa:"/ˈdʒenjuɪn/",cn:"真正的",diff:2},
+    {en:"grasp",ipa:"/ɡræsp/",cn:"抓住",diff:2},{en:"guarantee",ipa:"/ˌɡærənˈtiː/",cn:"保证",diff:2},
+    {en:"hesitate",ipa:"/ˈhezɪteɪt/",cn:"犹豫",diff:2},{en:"horizon",ipa:"/həˈraɪzn/",cn:"地平线",diff:2},
+    {en:"identify",ipa:"/aɪˈdentɪfaɪ/",cn:"识别",diff:2},{en:"ignore",ipa:"/ɪɡˈnɔːr/",cn:"忽视",diff:1},
+    {en:"illustrate",ipa:"/ˈɪləstreɪt/",cn:"说明",diff:3},{en:"imagine",ipa:"/ɪˈmædʒɪn/",cn:"想象",diff:1},
+    {en:"immense",ipa:"/ɪˈmens/",cn:"巨大的",diff:2},{en:"imply",ipa:"/ɪmˈplaɪ/",cn:"暗示",diff:2},
+    {en:"impose",ipa:"/ɪmˈpoʊz/",cn:"强加",diff:3},{en:"impress",ipa:"/ɪmˈpres/",cn:"使印象深刻",diff:2},
+    {en:"indicate",ipa:"/ˈɪndɪkeɪt/",cn:"表明",diff:2},{en:"influence",ipa:"/ˈɪnfluəns/",cn:"影响",diff:2},
+    {en:"inform",ipa:"/ɪnˈfɔːrm/",cn:"通知",diff:1},{en:"innocent",ipa:"/ˈɪnəsnt/",cn:"无辜的",diff:2},
+    {en:"inspire",ipa:"/ɪnˈspaɪər/",cn:"鼓舞",diff:2},{en:"instant",ipa:"/ˈɪnstənt/",cn:"立即的",diff:2},
+    {en:"sufficient",ipa:"/səˈfɪʃnt/",cn:"充足的",diff:2},{en:"superior",ipa:"/suːˈpɪriər/",cn:"优越的",diff:2},
+    {en:"survive",ipa:"/sərˈvaɪv/",cn:"幸存",diff:2},{en:"suspect",ipa:"/səˈspekt/",cn:"怀疑",diff:2},
+    {en:"suspend",ipa:"/səˈspend/",cn:"暂停",diff:2},{en:"sustain",ipa:"/səˈsteɪn/",cn:"维持",diff:3},
+    {en:"symbol",ipa:"/ˈsɪmbl/",cn:"象征",diff:1},{en:"tendency",ipa:"/ˈtendənsi/",cn:"趋势",diff:2},
+    {en:"transfer",ipa:"/trænsˈfɜːr/",cn:"转移",diff:2},{en:"transform",ipa:"/trænsˈfɔːrm/",cn:"转变",diff:2},
+    {en:"tremble",ipa:"/ˈtrembl/",cn:"颤抖",diff:2},{en:"triumph",ipa:"/ˈtraɪəmf/",cn:"胜利",diff:2},
+    {en:"universal",ipa:"/ˌjuːnɪˈvɜːrsl/",cn:"普遍的",diff:2},{en:"urge",ipa:"/ɜːrdʒ/",cn:"催促",diff:2},
+    {en:"vanish",ipa:"/ˈvænɪʃ/",cn:"消失",diff:2},{en:"venture",ipa:"/ˈventʃər/",cn:"冒险",diff:2},
+    {en:"verify",ipa:"/ˈverɪfaɪ/",cn:"验证",diff:2},{en:"version",ipa:"/ˈvɜːrʒn/",cn:"版本",diff:1},
+    {en:"victim",ipa:"/ˈvɪktɪm/",cn:"受害者",diff:2},{en:"visible",ipa:"/ˈvɪzəbl/",cn:"可见的",diff:1},
+    {en:"vital",ipa:"/ˈvaɪtl/",cn:"至关重要的",diff:2},{en:"vivid",ipa:"/ˈvɪvɪd/",cn:"生动的",diff:2},
+    {en:"vulnerable",ipa:"/ˈvʌlnərəbl/",cn:"脆弱的",diff:3},{en:"welfare",ipa:"/ˈwelfer/",cn:"福利",diff:2},
+    {en:"withdraw",ipa:"/wɪðˈdrɔː/",cn:"撤回",diff:3},{en:"witness",ipa:"/ˈwɪtnəs/",cn:"目击者",diff:2},
+    {en:"yield",ipa:"/jiːld/",cn:"产出",diff:2},{en:"accelerate",ipa:"/əkˈseləreɪt/",cn:"加速",diff:3},
+    {en:"accumulate",ipa:"/əˈkjuːmjəleɪt/",cn:"积累",diff:3},{en:"acknowledge",ipa:"/əkˈnɒlɪdʒ/",cn:"承认",diff:3},
+    {en:"anticipate",ipa:"/ænˈtɪsɪpeɪt/",cn:"预期",diff:3},{en:"appreciate",ipa:"/əˈpriːʃieɪt/",cn:"欣赏",diff:2},
+    {en:"artificial",ipa:"/ˌɑːrtɪˈfɪʃl/",cn:"人工的",diff:2},{en:"controversy",ipa:"/kənˈtrɒvəːsi/",cn:"争议",diff:3},
+    {en:"depression",ipa:"/dɪˈpreʃn/",cn:"抑郁",diff:3},{en:"discrimination",ipa:"/dɪˌskrɪmɪˈneɪʃn/",cn:"歧视",diff:3},
+    {en:"distinguish",ipa:"/dɪˈstɪŋɡwɪʃ/",cn:"区分",diff:3},{en:"dominate",ipa:"/ˈdɒmɪneɪt/",cn:"主导",diff:2},
+    {en:"elaborate",ipa:"/ɪˈlæbərət/",cn:"详尽的",diff:3},{en:"enterprise",ipa:"/ˈentərpraɪz/",cn:"企业",diff:2},
+    {en:"equivalent",ipa:"/ɪˈkwɪvələnt/",cn:"等价的",diff:3},{en:"exaggerate",ipa:"/ɪɡˈzædʒəreɪt/",cn:"夸张",diff:3},
+    {en:"extraordinary",ipa:"/ɪkˈstrɔːrdɪneri/",cn:"非凡的",diff:3},{en:"fundamental",ipa:"/ˌfʌndəˈmentl/",cn:"基本的",diff:2},
+    {en:"harmony",ipa:"/ˈhɑːrməni/",cn:"和谐",diff:2},{en:"implement",ipa:"/ˈɪmplɪment/",cn:"实施",diff:3},
+    {en:"inevitable",ipa:"/ɪnˈevɪtəbl/",cn:"不可避免的",diff:3},{en:"interpret",ipa:"/ɪnˈtɜːrprɪt/",cn:"解释",diff:2},
+    {en:"investigate",ipa:"/ɪnˈvestɪɡeɪt/",cn:"调查",diff:2},{en:"maintain",ipa:"/meɪnˈteɪn/",cn:"维持",diff:2},
+    {en:"manipulate",ipa:"/məˈnɪpjuleɪt/",cn:"操纵",diff:3},{en:"negotiate",ipa:"/nɪˈɡoʊʃieɪt/",cn:"谈判",diff:3},
+    {en:"phenomenon",ipa:"/fəˈnɒmɪnən/",cn:"现象",diff:2},{en:"privilege",ipa:"/ˈprɪvəlɪdʒ/",cn:"特权",diff:2},
+    {en:"promote",ipa:"/prəˈmoʊt/",cn:"促进",diff:2},{en:"proportion",ipa:"/prəˈpɔːrʃn/",cn:"比例",diff:2},
+    {en:"recommend",ipa:"/ˌrekəˈmend/",cn:"推荐",diff:2},{en:"relevant",ipa:"/ˈreləvənt/",cn:"相关的",diff:2},
+    {en:"represent",ipa:"/ˌreprɪˈzent/",cn:"代表",diff:2},{en:"reputation",ipa:"/ˌrepjuˈteɪʃn/",cn:"声誉",diff:2},
+    {en:"resolve",ipa:"/rɪˈzɒlv/",cn:"解决",diff:2},{en:"restrict",ipa:"/rɪˈstrɪkt/",cn:"限制",diff:2},
+    {en:"reveal",ipa:"/rɪˈviːl/",cn:"揭示",diff:2},{en:"revenue",ipa:"/ˈrevənuː/",cn:"收入",diff:2},
+    {en:"sacrifice",ipa:"/ˈsækrɪfaɪs/",cn:"牺牲",diff:2},{en:"significant",ipa:"/sɪɡˈnɪfɪkənt/",cn:"重要的",diff:2},
+    {en:"sophisticated",ipa:"/səˈfɪstɪkeɪtɪd/",cn:"复杂的",diff:3},{en:"stimulate",ipa:"/ˈstɪmjuleɪt/",cn:"刺激",diff:2},
+    {en:"strategy",ipa:"/ˈstrætədʒi/",cn:"策略",diff:2},
+];
 
-    // ============================================================
-    //  WORD BANK — CET-4 / CET-6 / 考研 核心词汇
-    // ============================================================
-    const WORD_BANK = [
-        // ---- easy ----
-        {en:"abandon",ipa:"/əˈbændən/",cn:"放弃"}, {en:"ability",ipa:"/əˈbɪləti/",cn:"能力"},
-        {en:"absent",ipa:"/ˈæbsənt/",cn:"缺席的"}, {en:"absorb",ipa:"/əbˈzɔːrb/",cn:"吸收"},
-        {en:"accept",ipa:"/əkˈsept/",cn:"接受"}, {en:"achieve",ipa:"/əˈtʃiːv/",cn:"实现；达到"},
-        {en:"acquire",ipa:"/əˈkwaɪər/",cn:"获得"}, {en:"adapt",ipa:"/əˈdæpt/",cn:"适应"},
-        {en:"admit",ipa:"/ədˈmɪt/",cn:"承认"}, {en:"adopt",ipa:"/əˈdɒpt/",cn:"采纳；收养"},
-        {en:"advance",ipa:"/ədˈvæns/",cn:"前进；提前"}, {en:"advantage",ipa:"/ədˈvæntɪdʒ/",cn:"优势"},
-        {en:"advise",ipa:"/ədˈvaɪz/",cn:"建议"}, {en:"afford",ipa:"/əˈfɔːrd/",cn:"负担得起"},
-        {en:"agree",ipa:"/əˈɡriː/",cn:"同意"}, {en:"allow",ipa:"/əˈlaʊ/",cn:"允许"},
-        {en:"amaze",ipa:"/əˈmeɪz/",cn:"使惊奇"}, {en:"amount",ipa:"/əˈmaʊnt/",cn:"数量；总计"},
-        {en:"annual",ipa:"/ˈænjuəl/",cn:"每年的"}, {en:"anxious",ipa:"/ˈæŋkʃəs/",cn:"焦虑的"},
-        {en:"appear",ipa:"/əˈpɪr/",cn:"出现；似乎"}, {en:"apply",ipa:"/əˈplaɪ/",cn:"申请；应用"},
-        {en:"approach",ipa:"/əˈproʊtʃ/",cn:"接近；方法"}, {en:"argue",ipa:"/ˈɑːrɡjuː/",cn:"争论"},
-        {en:"arrange",ipa:"/əˈreɪndʒ/",cn:"安排"}, {en:"arrive",ipa:"/əˈraɪv/",cn:"到达"},
-        {en:"attempt",ipa:"/əˈtempt/",cn:"尝试"}, {en:"attend",ipa:"/əˈtend/",cn:"参加；照顾"},
-        {en:"attract",ipa:"/əˈtrækt/",cn:"吸引"}, {en:"avoid",ipa:"/əˈvɔɪd/",cn:"避免"},
-        {en:"balance",ipa:"/ˈbæləns/",cn:"平衡"}, {en:"bargain",ipa:"/ˈbɑːrɡɪn/",cn:"讨价还价；便宜货"},
-        {en:"beneath",ipa:"/bɪˈniːθ/",cn:"在…之下"}, {en:"benefit",ipa:"/ˈbenɪfɪt/",cn:"利益；受益"},
-        {en:"blame",ipa:"/bleɪm/",cn:"责备"}, {en:"border",ipa:"/ˈbɔːrdər/",cn:"边界"},
-        {en:"bother",ipa:"/ˈbɒðər/",cn:"打扰"}, {en:"bound",ipa:"/baʊnd/",cn:"界限；必然的"},
-        {en:"brief",ipa:"/briːf/",cn:"简要的"}, {en:"broad",ipa:"/brɔːd/",cn:"宽阔的"},
-        {en:"burden",ipa:"/ˈbɜːrdn/",cn:"负担"}, {en:"calm",ipa:"/kɑːm/",cn:"平静的；使平静"},
-        {en:"capable",ipa:"/ˈkeɪpəbl/",cn:"有能力的"}, {en:"capture",ipa:"/ˈkæptʃər/",cn:"捕获；夺取"},
-        {en:"career",ipa:"/kəˈrɪr/",cn:"职业"}, {en:"caution",ipa:"/ˈkɔːʃn/",cn:"小心；警告"},
-        {en:"celebrate",ipa:"/ˈselɪbreɪt/",cn:"庆祝"}, {en:"challenge",ipa:"/ˈtʃælɪndʒ/",cn:"挑战"},
-        {en:"charm",ipa:"/tʃɑːrm/",cn:"魅力；吸引"}, {en:"claim",ipa:"/kleɪm/",cn:"声称；要求"},
-        {en:"clarify",ipa:"/ˈklærəfaɪ/",cn:"澄清"}, {en:"classic",ipa:"/ˈklæsɪk/",cn:"经典的"},
-        {en:"climate",ipa:"/ˈklaɪmət/",cn:"气候"}, {en:"collapse",ipa:"/kəˈlæps/",cn:"崩溃；倒塌"},
-        {en:"command",ipa:"/kəˈmænd/",cn:"命令；掌握"}, {en:"commit",ipa:"/kəˈmɪt/",cn:"犯（罪）；承诺"},
-        {en:"compare",ipa:"/kəmˈper/",cn:"比较"}, {en:"compete",ipa:"/kəmˈpiːt/",cn:"竞争；比赛"},
-        {en:"complex",ipa:"/kəmˈpleks/",cn:"复杂的"}, {en:"concentrate",ipa:"/ˈkɒnsəntreɪt/",cn:"集中；专注"},
-        {en:"confess",ipa:"/kənˈfes/",cn:"承认；忏悔"}, {en:"confident",ipa:"/ˈkɒnfɪdənt/",cn:"自信的"},
-        {en:"confirm",ipa:"/kənˈfɜːrm/",cn:"确认"}, {en:"confuse",ipa:"/kənˈfjuːz/",cn:"使困惑"},
-        {en:"connect",ipa:"/kəˈnekt/",cn:"连接"}, {en:"consist",ipa:"/kənˈsɪst/",cn:"由…组成"},
-        {en:"contribute",ipa:"/kənˈtrɪbjuːt/",cn:"贡献；捐赠"}, {en:"convince",ipa:"/kənˈvɪns/",cn:"说服"},
-        {en:"courage",ipa:"/ˈkɜːrɪdʒ/",cn:"勇气"}, {en:"create",ipa:"/kriˈeɪt/",cn:"创造"},
-        {en:"custom",ipa:"/ˈkʌstəm/",cn:"习惯；风俗"}, {en:"damage",ipa:"/ˈdæmɪdʒ/",cn:"损害"},
-        {en:"debate",ipa:"/dɪˈbeɪt/",cn:"辩论"}, {en:"declare",ipa:"/dɪˈkler/",cn:"宣布；声明"},
+// ============================================================
+//  GAME STATE
+// ============================================================
+const ENEMIES = ['👹','🐉','👾','🧟','🐺','🕷️','👻','🐍','🤖','🧛','🦅','🧌'];
+const ITEMS = [
+    {id:'heal',name:'❤️ 治疗',desc:'回复 1 点生命',icon:'❤️',effect:healEffect},
+    {id:'time',name:'⏰ 延时',desc:'增加 8 秒',icon:'⏰',effect:timeEffect},
+    {id:'fifty',name:'💡 明灯',desc:'去除两个错误答案',icon:'💡',effect:fiftyEffect},
+    {id:'skip',name:'⚡ 跳过',desc:'直接跳到下一题',icon:'⚡',effect:skipEffect},
+];
+const MAX_HP = 5;
+const TOTAL_FLOORS = 20;
+const BASE_TIME = 15;
+const ITEM_DROP_CHANCE = 0.25;
 
-        // ---- medium ----
-        {en:"decorate",ipa:"/ˈdekəreɪt/",cn:"装饰"}, {en:"defeat",ipa:"/dɪˈfiːt/",cn:"击败"},
-        {en:"defend",ipa:"/dɪˈfend/",cn:"防御；辩护"}, {en:"define",ipa:"/dɪˈfaɪn/",cn:"定义"},
-        {en:"delight",ipa:"/dɪˈlaɪt/",cn:"快乐；使高兴"}, {en:"demand",ipa:"/dɪˈmænd/",cn:"需求；要求"},
-        {en:"deserve",ipa:"/dɪˈzɜːrv/",cn:"值得"}, {en:"desire",ipa:"/dɪˈzaɪər/",cn:"渴望"},
-        {en:"destroy",ipa:"/dɪˈstrɔɪ/",cn:"破坏"}, {en:"determine",ipa:"/dɪˈtɜːrmɪn/",cn:"决定"},
-        {en:"develop",ipa:"/dɪˈveləp/",cn:"发展"}, {en:"devote",ipa:"/dɪˈvoʊt/",cn:"奉献"},
-        {en:"discover",ipa:"/dɪˈskʌvər/",cn:"发现"}, {en:"display",ipa:"/dɪˈspleɪ/",cn:"展示；陈列"},
-        {en:"distinct",ipa:"/dɪˈstɪŋkt/",cn:"不同的；清楚的"}, {en:"distribute",ipa:"/dɪˈstrɪbjuːt/",cn:"分配；分发"},
-        {en:"domestic",ipa:"/dəˈmestɪk/",cn:"国内的；家庭的"}, {en:"dramatic",ipa:"/drəˈmætɪk/",cn:"戏剧性的；巨大的"},
-        {en:"elegant",ipa:"/ˈelɪɡənt/",cn:"优雅的"}, {en:"eliminate",ipa:"/ɪˈlɪmɪneɪt/",cn:"消除；淘汰"},
-        {en:"embrace",ipa:"/ɪmˈbreɪs/",cn:"拥抱；包含"}, {en:"emerge",ipa:"/ɪˈmɜːrdʒ/",cn:"出现；浮现"},
-        {en:"emotion",ipa:"/ɪˈmoʊʃn/",cn:"情感"}, {en:"employ",ipa:"/ɪmˈplɔɪ/",cn:"雇用；使用"},
-        {en:"enable",ipa:"/ɪˈneɪbl/",cn:"使能够"}, {en:"encounter",ipa:"/ɪnˈkaʊntər/",cn:"遭遇；邂逅"},
-        {en:"endure",ipa:"/ɪnˈdʊr/",cn:"忍受；持久"}, {en:"engage",ipa:"/ɪnˈɡeɪdʒ/",cn:"从事；吸引"},
-        {en:"enormous",ipa:"/ɪˈnɔːrməs/",cn:"巨大的"}, {en:"entire",ipa:"/ɪnˈtaɪər/",cn:"全部的"},
-        {en:"essential",ipa:"/ɪˈsenʃl/",cn:"必要的；本质的"}, {en:"establish",ipa:"/ɪˈstæblɪʃ/",cn:"建立；确立"},
-        {en:"evaluate",ipa:"/ɪˈvæljueɪt/",cn:"评估"}, {en:"evident",ipa:"/ˈevɪdənt/",cn:"明显的"},
-        {en:"evolve",ipa:"/ɪˈvɒlv/",cn:"进化；发展"}, {en:"examine",ipa:"/ɪɡˈzæmɪn/",cn:"检查；考试"},
-        {en:"excellent",ipa:"/ˈeksələnt/",cn:"优秀的"}, {en:"exchange",ipa:"/ɪksˈtʃeɪndʒ/",cn:"交换；兑换"},
-        {en:"exclude",ipa:"/ɪkˈskluːd/",cn:"排除"}, {en:"execute",ipa:"/ˈeksɪkjuːt/",cn:"执行；处决"},
-        {en:"exhaust",ipa:"/ɪɡˈzɔːst/",cn:"耗尽；使筋疲力尽"}, {en:"exhibit",ipa:"/ɪɡˈzɪbɪt/",cn:"展览；展示"},
-        {en:"expand",ipa:"/ɪkˈspænd/",cn:"扩大；膨胀"}, {en:"explore",ipa:"/ɪkˈsplɔːr/",cn:"探索；探险"},
-        {en:"expose",ipa:"/ɪkˈspoʊz/",cn:"暴露；揭露"}, {en:"extend",ipa:"/ɪkˈstend/",cn:"扩展；延长"},
-        {en:"extreme",ipa:"/ɪkˈstriːm/",cn:"极端的"}, {en:"fabric",ipa:"/ˈfæbrɪk/",cn:"织物；结构"},
-        {en:"faculty",ipa:"/ˈfæklti/",cn:"才能；全体教员"}, {en:"fashion",ipa:"/ˈfæʃn/",cn:"时尚；方式"},
-        {en:"fierce",ipa:"/fɪrs/",cn:"凶猛的；激烈的"}, {en:"flexible",ipa:"/ˈfleksəbl/",cn:"灵活的"},
-        {en:"forecast",ipa:"/ˈfɔːrkæst/",cn:"预测；预报"}, {en:"forgive",ipa:"/fərˈɡɪv/",cn:"原谅"},
-        {en:"formula",ipa:"/ˈfɔːrmjələ/",cn:"公式；方案"}, {en:"fortune",ipa:"/ˈfɔːrtʃən/",cn:"财富；运气"},
-        {en:"frequent",ipa:"/ˈfriːkwənt/",cn:"频繁的"}, {en:"frustrate",ipa:"/ˈfrʌstreɪt/",cn:"使沮丧；阻挠"},
-        {en:"generate",ipa:"/ˈdʒenəreɪt/",cn:"产生；生成"}, {en:"generous",ipa:"/ˈdʒenərəs/",cn:"慷慨的"},
-        {en:"genuine",ipa:"/ˈdʒenjuɪn/",cn:"真正的；真诚的"}, {en:"glimpse",ipa:"/ɡlɪmps/",cn:"一瞥；瞥见"},
-        {en:"gradual",ipa:"/ˈɡrædʒuəl/",cn:"逐渐的"}, {en:"grasp",ipa:"/ɡræsp/",cn:"抓住；理解"},
-        {en:"guarantee",ipa:"/ˌɡærənˈtiː/",cn:"保证"}, {en:"hesitate",ipa:"/ˈhezɪteɪt/",cn:"犹豫"},
-        {en:"horizon",ipa:"/həˈraɪzn/",cn:"地平线；眼界"}, {en:"humble",ipa:"/ˈhʌmbl/",cn:"谦虚的；卑微的"},
-        {en:"identity",ipa:"/aɪˈdentəti/",cn:"身份；一致"}, {en:"ignore",ipa:"/ɪɡˈnɔːr/",cn:"忽视；不理会"},
-        {en:"illustrate",ipa:"/ˈɪləstreɪt/",cn:"说明；阐明"}, {en:"imagine",ipa:"/ɪˈmædʒɪn/",cn:"想象"},
-        {en:"imitate",ipa:"/ˈɪmɪteɪt/",cn:"模仿"}, {en:"immense",ipa:"/ɪˈmens/",cn:"巨大的；无边的"},
-        {en:"imply",ipa:"/ɪmˈplaɪ/",cn:"暗示"}, {en:"impose",ipa:"/ɪmˈpoʊz/",cn:"强加；征税"},
-        {en:"impress",ipa:"/ɪmˈpres/",cn:"给…深刻印象"}, {en:"incline",ipa:"/ɪnˈklaɪn/",cn:"倾斜；倾向于"},
-        {en:"indicate",ipa:"/ˈɪndɪkeɪt/",cn:"表明；指示"}, {en:"individual",ipa:"/ˌɪndɪˈvɪdʒuəl/",cn:"个人；个人的"},
-        {en:"influence",ipa:"/ˈɪnfluəns/",cn:"影响"}, {en:"inform",ipa:"/ɪnˈfɔːrm/",cn:"通知；告知"},
-        {en:"injury",ipa:"/ˈɪndʒəri/",cn:"伤害；损伤"}, {en:"innocent",ipa:"/ˈɪnəsnt/",cn:"无辜的；天真的"},
-        {en:"inspire",ipa:"/ɪnˈspaɪər/",cn:"激发；鼓舞"}, {en:"instant",ipa:"/ˈɪnstənt/",cn:"立即的；瞬间"},
+let state = {};
+let timerInterval = null;
 
-        // ---- hard ----
-        {en:"sufficient",ipa:"/səˈfɪʃnt/",cn:"充足的；足够的"}, {en:"splendid",ipa:"/ˈsplendɪd/",cn:"壮丽的；极好的"},
-        {en:"substitute",ipa:"/ˈsʌbstɪtuːt/",cn:"替代品；代替"}, {en:"superior",ipa:"/suːˈpɪriər/",cn:"上级的；优越的"},
-        {en:"surplus",ipa:"/ˈsɜːrpləs/",cn:"剩余；过剩的"}, {en:"surrender",ipa:"/səˈrendər/",cn:"投降；放弃"},
-        {en:"survive",ipa:"/sərˈvaɪv/",cn:"幸存"}, {en:"suspect",ipa:"/səˈspekt/",cn:"怀疑；嫌疑人"},
-        {en:"suspend",ipa:"/səˈspend/",cn:"暂停；悬挂"}, {en:"sustain",ipa:"/səˈsteɪn/",cn:"维持；支撑"},
-        {en:"symbol",ipa:"/ˈsɪmbl/",cn:"象征；符号"}, {en:"sympathy",ipa:"/ˈsɪmpəθi/",cn:"同情；赞同"},
-        {en:"tendency",ipa:"/ˈtendənsi/",cn:"趋势；倾向"}, {en:"terminal",ipa:"/ˈtɜːrmɪnl/",cn:"终端的；终点站"},
-        {en:"territory",ipa:"/ˈterɪtɔːri/",cn:"领土；领域"}, {en:"torture",ipa:"/ˈtɔːrtʃər/",cn:"折磨；拷问"},
-        {en:"tragedy",ipa:"/ˈtrædʒədi/",cn:"悲剧"}, {en:"transfer",ipa:"/trænsˈfɜːr/",cn:"转移；调动"},
-        {en:"transform",ipa:"/trænsˈfɔːrm/",cn:"转变；改造"}, {en:"tremble",ipa:"/ˈtrembl/",cn:"颤抖；发抖"},
-        {en:"tremendous",ipa:"/trəˈmendəs/",cn:"巨大的；惊人的"}, {en:"triumph",ipa:"/ˈtraɪəmf/",cn:"胜利；凯旋"},
-        {en:"universal",ipa:"/ˌjuːnɪˈvɜːrsl/",cn:"普遍的；全体的"}, {en:"urban",ipa:"/ˈɜːrbən/",cn:"城市的"},
-        {en:"urge",ipa:"/ɜːrdʒ/",cn:"催促；强烈欲望"}, {en:"utilize",ipa:"/ˈjuːtəlaɪz/",cn:"利用；使用"},
-        {en:"vanish",ipa:"/ˈvænɪʃ/",cn:"消失；消散"}, {en:"venture",ipa:"/ˈventʃər/",cn:"冒险；投机"},
-        {en:"verify",ipa:"/ˈverɪfaɪ/",cn:"验证；核实"}, {en:"version",ipa:"/ˈvɜːrʒn/",cn:"版本；说法"},
-        {en:"veteran",ipa:"/ˈvetərən/",cn:"老兵；老手"}, {en:"victim",ipa:"/ˈvɪktɪm/",cn:"受害者"},
-        {en:"vigorous",ipa:"/ˈvɪɡərəs/",cn:"充满活力的"}, {en:"violate",ipa:"/ˈvaɪəleɪt/",cn:"违反；侵犯"},
-        {en:"virtue",ipa:"/ˈvɜːrtʃuː/",cn:"美德；优点"}, {en:"visible",ipa:"/ˈvɪzəbl/",cn:"可见的"},
-        {en:"vision",ipa:"/ˈvɪʒn/",cn:"视力；愿景"}, {en:"vital",ipa:"/ˈvaɪtl/",cn:"至关重要的"},
-        {en:"vivid",ipa:"/ˈvɪvɪd/",cn:"生动的；鲜明的"}, {en:"vulnerable",ipa:"/ˈvʌlnərəbl/",cn:"脆弱的；易受伤的"},
-        {en:"welfare",ipa:"/ˈwelfer/",cn:"福利；幸福"}, {en:"widespread",ipa:"/ˈwaɪdspred/",cn:"广泛的；普遍的"},
-        {en:"withdraw",ipa:"/wɪðˈdrɔː/",cn:"撤回；退出"}, {en:"witness",ipa:"/ˈwɪtnəs/",cn:"目击者；证人"},
-        {en:"worthwhile",ipa:"/ˌwɜːrθˈwaɪl/",cn:"值得的"}, {en:"yield",ipa:"/jiːld/",cn:"产出；屈服"},
-        {en:"accelerate",ipa:"/əkˈseləreɪt/",cn:"加速；促进"}, {en:"accommodate",ipa:"/əˈkɒmədeɪt/",cn:"容纳；适应"},
-        {en:"accumulate",ipa:"/əˈkjuːmjəleɪt/",cn:"积累；积聚"}, {en:"acknowledge",ipa:"/əkˈnɒlɪdʒ/",cn:"承认；感谢"},
-        {en:"acquaint",ipa:"/əˈkweɪnt/",cn:"使熟悉；告知"}, {en:"anticipate",ipa:"/ænˈtɪsɪpeɪt/",cn:"预期；期望"},
-        {en:"appreciate",ipa:"/əˈpriːʃieɪt/",cn:"欣赏；感激"}, {en:"artificial",ipa:"/ˌɑːrtɪˈfɪʃl/",cn:"人工的；造作的"},
-        {en:"authentic",ipa:"/ɔːˈθentɪk/",cn:"真正的；可靠的"}, {en:"bureaucracy",ipa:"/bjʊˈrɒkrəsi/",cn:"官僚机构；官僚主义"},
-        {en:"catastrophe",ipa:"/kəˈtæstrəfi/",cn:"灾难；大祸"}, {en:"compromise",ipa:"/ˈkɒmprəmaɪz/",cn:"妥协；折中"},
-        {en:"conscience",ipa:"/ˈkɒnʃəns/",cn:"良心；良知"}, {en:"controversy",ipa:"/kənˈtrɒvəːsi/",cn:"争议；争论"},
-        {en:"correspond",ipa:"/ˌkɒrɪˈspɒnd/",cn:"对应；通信"}, {en:"depression",ipa:"/dɪˈpreʃn/",cn:"抑郁；萧条"},
-        {en:"deteriorate",ipa:"/dɪˈtɪriəreɪt/",cn:"恶化；退化"}, {en:"discrimination",ipa:"/dɪˌskrɪmɪˈneɪʃn/",cn:"歧视；辨别"},
-        {en:"dismiss",ipa:"/dɪsˈmɪs/",cn:"解雇；驳回"}, {en:"distinguish",ipa:"/dɪˈstɪŋɡwɪʃ/",cn:"区分；辨别"},
-        {en:"dominate",ipa:"/ˈdɒmɪneɪt/",cn:"主导；支配"}, {en:"elaborate",ipa:"/ɪˈlæbərət/",cn:"详尽的；精心制作"},
-        {en:"encourage",ipa:"/ɪnˈkɜːrɪdʒ/",cn:"鼓励"}, {en:"enterprise",ipa:"/ˈentərpraɪz/",cn:"企业；事业"},
-        {en:"enthusiasm",ipa:"/ɪnˈθuːziæzəm/",cn:"热情；热忱"}, {en:"equivalent",ipa:"/ɪˈkwɪvələnt/",cn:"等价的；相当的"},
-        {en:"exaggerate",ipa:"/ɪɡˈzædʒəreɪt/",cn:"夸张；夸大"}, {en:"extraordinary",ipa:"/ɪkˈstrɔːrdɪneri/",cn:"非凡的；卓越的"},
-        {en:"fascinate",ipa:"/ˈfæsɪneɪt/",cn:"使着迷"}, {en:"fundamental",ipa:"/ˌfʌndəˈmentl/",cn:"基本的；根本的"},
-        {en:"guarantee",ipa:"/ˌɡærənˈtiː/",cn:"保证；担保"}, {en:"harmony",ipa:"/ˈhɑːrməni/",cn:"和谐；融洽"},
-        {en:"hierarchy",ipa:"/ˈhaɪərɑːrki/",cn:"等级制度；层级"}, {en:"hypothesis",ipa:"/haɪˈpɒθəsɪs/",cn:"假设；假说"},
-        {en:"implement",ipa:"/ˈɪmplɪment/",cn:"实施；执行"}, {en:"implication",ipa:"/ˌɪmplɪˈkeɪʃn/",cn:"含义；暗示"},
-        {en:"inevitable",ipa:"/ɪnˈevɪtəbl/",cn:"不可避免的"}, {en:"interpret",ipa:"/ɪnˈtɜːrprɪt/",cn:"解释；口译"},
-        {en:"investigate",ipa:"/ɪnˈvestɪɡeɪt/",cn:"调查；研究"}, {en:"legislation",ipa:"/ˌledʒɪsˈleɪʃn/",cn:"立法；法规"},
-        {en:"legitimate",ipa:"/lɪˈdʒɪtɪmət/",cn:"合法的；正当的"}, {en:"maintain",ipa:"/meɪnˈteɪn/",cn:"维持；保养"},
-        {en:"manipulate",ipa:"/məˈnɪpjuleɪt/",cn:"操纵；控制"}, {en:"mechanism",ipa:"/ˈmekənɪzəm/",cn:"机制；机理"},
-        {en:"negotiate",ipa:"/nɪˈɡoʊʃieɪt/",cn:"谈判；协商"}, {en:"nevertheless",ipa:"/ˌnevərðəˈles/",cn:"然而；不过"},
-        {en:"phenomenon",ipa:"/fəˈnɒmɪnən/",cn:"现象"}, {en:"philosophy",ipa:"/fəˈlɒsəfi/",cn:"哲学；人生观"},
-        {en:"possession",ipa:"/pəˈzeʃn/",cn:"财产；拥有"}, {en:"poverty",ipa:"/ˈpɒvərti/",cn:"贫困；贫穷"},
-        {en:"privilege",ipa:"/ˈprɪvəlɪdʒ/",cn:"特权；优待"}, {en:"profession",ipa:"/prəˈfeʃn/",cn:"职业；专业"},
-        {en:"promote",ipa:"/prəˈmoʊt/",cn:"促进；提升"}, {en:"proportion",ipa:"/prəˈpɔːrʃn/",cn:"比例；部分"},
-        {en:"prosperity",ipa:"/prɒˈsperəti/",cn:"繁荣；兴旺"}, {en:"psychological",ipa:"/ˌsaɪkəˈlɒdʒɪkl/",cn:"心理的；心理学的"},
-        {en:"recommend",ipa:"/ˌrekəˈmend/",cn:"推荐；建议"}, {en:"recover",ipa:"/rɪˈkʌvər/",cn:"恢复；康复"},
-        {en:"relevant",ipa:"/ˈreləvənt/",cn:"相关的；切题的"}, {en:"religious",ipa:"/rɪˈlɪdʒəs/",cn:"宗教的；虔诚的"},
-        {en:"represent",ipa:"/ˌreprɪˈzent/",cn:"代表；表示"}, {en:"reputation",ipa:"/ˌrepjuˈteɪʃn/",cn:"名声；声誉"},
-        {en:"resolve",ipa:"/rɪˈzɒlv/",cn:"解决；决心"}, {en:"restrict",ipa:"/rɪˈstrɪkt/",cn:"限制；约束"},
-        {en:"reveal",ipa:"/rɪˈviːl/",cn:"揭示；透露"}, {en:"revenue",ipa:"/ˈrevənuː/",cn:"收入；税收"},
-        {en:"revolution",ipa:"/ˌrevəˈluːʃn/",cn:"革命；变革"}, {en:"sacrifice",ipa:"/ˈsækrɪfaɪs/",cn:"牺牲；献祭"},
-        {en:"scatter",ipa:"/ˈskætər/",cn:"分散；散开"}, {en:"schedule",ipa:"/ˈskedʒuːl/",cn:"时间表；安排"},
-        {en:"scrutiny",ipa:"/ˈskruːtəni/",cn:"仔细审查；监督"}, {en:"segment",ipa:"/ˈseɡmənt/",cn:"部分；片段"},
-        {en:"severe",ipa:"/sɪˈvɪr/",cn:"严重的；严厉的"}, {en:"significant",ipa:"/sɪɡˈnɪfɪkənt/",cn:"重要的；显著的"},
-        {en:"simulate",ipa:"/ˈsɪmjuleɪt/",cn:"模拟；模仿"}, {en:"simultaneous",ipa:"/ˌsaɪmlˈteɪniəs/",cn:"同时的"},
-        {en:"sophisticated",ipa:"/səˈfɪstɪkeɪtɪd/",cn:"复杂的；精密的；老练的"},
-        {en:"spontaneous",ipa:"/spɒnˈteɪniəs/",cn:"自发的；自然的"},
-        {en:"stability",ipa:"/stəˈbɪləti/",cn:"稳定；稳定性"}, {en:"stimulate",ipa:"/ˈstɪmjuleɪt/",cn:"刺激；激发"},
-        {en:"strategy",ipa:"/ˈstrætədʒi/",cn:"策略；战略"}, {en:"subsequent",ipa:"/ˈsʌbsɪkwənt/",cn:"随后的；后来的"},
-    ];
+// ===== DOM =====
+const $ = id => document.getElementById(id);
+const heartsEl = $('hearts');
+const floorNum = $('floor-num');
+const scoreDisplay = $('score-display');
+const timerNum = $('timer-num');
+const timerBar = $('timer-bar');
+const wordEn = $('word-en');
+const wordIpa = $('word-ipa');
+const optionsEl = $('options');
+const playerEl = $('player');
+const enemyEl = $('enemy');
+const enemyHp = $('enemy-hp');
+const arena = $('arena');
+const itemsBar = $('items-bar');
 
-    // ============================================================
-    //  GAME LOGIC
-    // ============================================================
-    const startScreen = document.getElementById('start-screen');
-    const gameScreen = document.getElementById('game-screen');
-    const resultScreen = document.getElementById('result-screen');
-    const wordCountBtns = document.querySelectorAll('#word-count button');
-    const difficultyBtns = document.querySelectorAll('#difficulty button');
-    const startBtn = document.getElementById('start-btn');
-    const retryBtn = document.getElementById('retry-btn');
-    const homeBtn = document.getElementById('home-btn');
-    const toast = document.getElementById('toast');
+// ===== START =====
+function restartGame(){
+    state = {
+        floor:0, hp:MAX_HP, maxHp:MAX_HP, score:0,
+        correct:0, wrong:0, streak:0, maxStreak:0,
+        items:[], frozen:false, usedWords:[],
+        isGameOver:false, enemyHp:1, totalAnswered:0
+    };
+    document.getElementById('overlay-gameover').classList.remove('active');
+    document.getElementById('overlay-victory').classList.remove('active');
+    clearItems();
+    updateHUD();
+    nextFloor();
+}
 
-    const wordEn = document.getElementById('word-en');
-    const wordIpa = document.getElementById('word-ipa');
-    const optionsContainer = document.getElementById('options');
-    const currentNum = document.getElementById('current-num');
-    const totalNum = document.getElementById('total-num');
-    const correctNum = document.getElementById('correct-num');
-    const wrongNum = document.getElementById('wrong-num');
-    const streakNum = document.getElementById('streak-num');
-    const streakDisplay = document.getElementById('streak-display');
-    const progressFill = document.getElementById('progress-fill');
+function clearItems(){
+    state.items = [];
+    for(let i=1;i<=3;i++){
+        const slot = document.getElementById('item-'+i);
+        slot.className='item-slot empty'; slot.innerHTML='<div class="tooltip"></div>';
+    }
+}
 
-    let selectedCount = 20;
-    let selectedLevel = 'medium';
-    let customWords = [];
+function updateHUD(){
+    // Hearts
+    let h='';
+    for(let i=0;i<state.maxHp;i++) h+= i<state.hp ? '❤️' : '<span class="lost">🖤</span>';
+    heartsEl.innerHTML = h;
 
-    // Word count select
-    wordCountBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            wordCountBtns.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            selectedCount = parseInt(btn.dataset.count);
-        });
-    });
+    floorNum.textContent = state.floor;
+    scoreDisplay.textContent = '💰 '+state.score;
+}
 
-    // Difficulty select
-    difficultyBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            difficultyBtns.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            selectedLevel = btn.dataset.level;
-        });
-    });
+// ===== FLOOR =====
+function nextFloor(){
+    state.floor++;
+    updateHUD();
 
-    // Custom word list upload
-    const customInput = document.getElementById('custom-input');
-    const customBadge = document.getElementById('custom-badge');
-    document.getElementById('custom-label').addEventListener('click', () => customInput.click());
-    customInput.addEventListener('change', () => {
-        if (!customInput.files.length) return;
-        const file = customInput.files[0];
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const text = e.target.result;
-            const lines = text.trim().split('\n');
-            customWords = [];
-            for (const line of lines) {
-                const parts = line.trim().split(',');
-                if (parts.length >= 2) {
-                    const en = parts[0].trim();
-                    const cn = parts.slice(1).join(',').trim();
-                    if (en && cn) customWords.push({ en, ipa: '', cn });
-                }
-            }
-            if (customWords.length > 0) {
-                customBadge.classList.add('visible');
-                showToast('✅ 已加载 ' + customWords.length + ' 个自定义单词');
-            } else {
-                showToast('⚠️ 格式有误，请使用：单词,释义');
-            }
-        };
-        reader.readAsText(file, 'UTF-8');
-    });
-
-    // ===== Start Game =====
-    startBtn.addEventListener('click', startGame);
-
-    function getWordBank() {
-        if (customWords.length > 0) return customWords;
-        const levelMap = { easy: 0, medium: 1, hard: 2 };
-        const idx = levelMap[selectedLevel] || 1;
-        // Divide the word bank into 3 tiers
-        const total = WORD_BANK.length;
-        const tierSize = Math.floor(total / 3);
-        if (idx === 0) return WORD_BANK.slice(0, tierSize);
-        if (idx === 1) return WORD_BANK.slice(tierSize, tierSize * 2);
-        return WORD_BANK.slice(tierSize * 2);
+    // Check victory
+    if(state.floor > TOTAL_FLOORS){
+        victory();
+        return;
     }
 
-    function shuffle(arr) {
-        const a = [...arr];
-        for (let i = a.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [a[i], a[j]] = [a[j], a[i]];
+    // Show floor banner
+    const banner = document.getElementById('floor-banner');
+    document.getElementById('banner-txt').textContent = '第 '+state.floor+' 层';
+    const flavor = ['⚔️ 前进！','💀 危险逼近…','🔥 越来越深了','🌑 黑暗笼罩','💪 坚持住！','🌀 地牢深处…'];
+    document.getElementById('banner-sub').textContent = flavor[(state.floor-1)%flavor.length];
+    banner.classList.add('active');
+    setTimeout(()=>banner.classList.remove('active'), 1200);
+
+    // Reset enemy visual
+    enemyEl.className = 'fighter enemy';
+    enemyEl.textContent = ENEMIES[(state.floor-1) % ENEMIES.length];
+    enemyHp.style.width = '100%';
+    playerEl.className = 'fighter player';
+
+    // Question bank: get words not used recently
+    let bank = WORDS.filter(w => !state.usedWords.includes(w.en));
+    if(bank.length < 10) state.usedWords = [];
+    bank = WORDS.filter(w => !state.usedWords.includes(w.en));
+    const word = bank[Math.floor(Math.random()*bank.length)];
+    state.usedWords.push(word.en);
+    state.currentWord = word;
+
+    wordEn.textContent = word.en;
+    wordIpa.textContent = word.ipa;
+
+    // Generate options
+    let distractors = WORDS
+        .filter(w => w.cn !== word.cn)
+        .sort(()=>Math.random()-.5)
+        .slice(0,3)
+        .map(w=>w.cn);
+    while(distractors.length<3) distractors.push('未知释义');
+    const opts = [word.cn, ...distractors].sort(()=>Math.random()-.5);
+    state.correctAnswer = word.cn;
+    state.currentOptions = opts;
+    state.fiftyUsed = false;
+
+    optionsEl.innerHTML = '';
+    opts.forEach(opt=>{
+        const btn = document.createElement('button');
+        btn.className = 'opt-btn';
+        btn.textContent = opt;
+        btn.addEventListener('click',()=>answer(btn,opt));
+        optionsEl.appendChild(btn);
+    });
+
+    // Start timer
+    startTimer(BASE_TIME);
+}
+
+// ===== TIMER =====
+function startTimer(secs){
+    clearInterval(timerInterval);
+    state.timeLeft = secs;
+    timerNum.textContent = state.timeLeft;
+    timerBar.style.width = '100%';
+    timerBar.className = 'timer-bar-fill safe';
+    updateTimerColor();
+
+    timerInterval = setInterval(()=>{
+        if(state.isGameOver) return;
+        if(state.frozen) return;
+        state.timeLeft--;
+        timerNum.textContent = state.timeLeft;
+        const pct = (state.timeLeft / secs) * 100;
+        timerBar.style.width = Math.max(0,pct)+'%';
+        updateTimerColor();
+        if(state.timeLeft <= 0){
+            // Time's up = wrong answer
+            clearInterval(timerInterval);
+            handleWrong(null);
         }
-        return a;
+    },1000);
+}
+
+function updateTimerColor(){
+    timerBar.className = 'timer-bar-fill';
+    if(state.timeLeft <= 4) timerBar.classList.add('danger');
+    else if(state.timeLeft <= 8) timerBar.classList.add('safe');
+    else timerBar.classList.add('safe');
+    if(state.timeLeft <= 4){
+        document.querySelector('.hud-timer').classList.add('danger');
+    } else {
+        document.querySelector('.hud-timer').classList.remove('danger');
+    }
+}
+
+// ===== ANSWER =====
+function answer(btn, chosen){
+    if(state.isGameOver) return;
+    const btns = optionsEl.querySelectorAll('.opt-btn');
+    btns.forEach(b=>b.classList.add('disabled'));
+
+    if(chosen === state.correctAnswer){
+        btn.classList.add('correct');
+        handleCorrect();
+    } else {
+        btn.classList.add('wrong');
+        btns.forEach(b=>{if(b.textContent===state.correctAnswer)b.classList.add('correct')});
+        handleWrong(btn);
+    }
+}
+
+function handleCorrect(){
+    clearInterval(timerInterval);
+    state.correct++;
+    state.streak++;
+    state.totalAnswered++;
+    if(state.streak > state.maxStreak) state.maxStreak = state.streak;
+
+    // Score: base + time bonus + streak bonus
+    let pts = 10 + Math.floor(state.timeLeft * 1.5);
+    if(state.streak >= 3) pts += 5;
+    if(state.streak >= 5) pts += 10;
+    state.score += pts;
+
+    // Animation: player attacks, enemy hit
+    playerEl.className = 'fighter player attack-left';
+    enemyEl.className = 'fighter enemy hit-right';
+    showDmg('+'+pts+'💰', 'bonus', enemyEl);
+
+    updateHUD();
+
+    // Item drop chance
+    if(Math.random() < ITEM_DROP_CHANCE){
+        const item = ITEMS[Math.floor(Math.random()*ITEMS.length)];
+        addItem(item);
+        showItemDrop(item.icon);
     }
 
-    function startGame() {
-        const bank = getWordBank();
-        const count = Math.min(selectedCount, bank.length);
-        const selected = shuffle(bank).slice(0, count);
-        window.gameState = { words: selected, current: 0, correct: 0, wrong: 0, streak: 0, maxStreak: 0, wrongs: [] };
+    // Check if enemy defeated (always 1HP per floor)
+    setTimeout(()=>{
+        enemyEl.className = 'fighter enemy dead';
+        showDmg('💥', 'damage', enemyEl);
+        setTimeout(()=>{
+            enemyEl.className = 'fighter enemy';
+            nextFloor();
+        },500);
+    },600);
+}
 
-        startScreen.classList.remove('active');
-        resultScreen.classList.remove('active');
-        gameScreen.classList.add('active');
-        totalNum.textContent = selected.length;
-        showWord();
+function handleWrong(clickedBtn){
+    clearInterval(timerInterval);
+    state.wrong++;
+    state.streak = 0;
+    state.totalAnswered++;
+
+    // Player takes damage
+    state.hp--;
+    updateHUD();
+
+    // Animation: player hit
+    playerEl.className = 'fighter player hit-right';
+    enemyEl.className = 'fighter enemy';
+    showDmg('-1 ❤️', 'damage', playerEl);
+
+    // Check death
+    if(state.hp <= 0){
+        state.isGameOver = true;
+        setTimeout(gameOver, 800);
+        return;
     }
 
-    function showWord() {
-        const state = window.gameState;
-        if (state.current >= state.words.length) { showResult(); return; }
+    setTimeout(()=>{
+        playerEl.className = 'fighter player';
+        // Continue to next floor (already took damage)
+        enemyEl.className = 'fighter enemy dead';
+        setTimeout(()=>{
+            enemyEl.className = 'fighter enemy';
+            nextFloor();
+        },400);
+    },700);
+}
 
-        const word = state.words[state.current];
-        wordEn.textContent = word.en;
-        wordIpa.textContent = word.ipa;
+// ===== ITEMS =====
+function addItem(item){
+    // Find empty slot or replace worst item
+    for(let i=0;i<3;i++){
+        if(!state.items[i]){
+            state.items[i] = {...item, count: 1};
+            renderItems();
+            showToast('🎁 获得 '+item.name);
+            return;
+        }
+        if(state.items[i].id === item.id){
+            state.items[i].count++;
+            renderItems();
+            showToast('🎁 '+item.name+' +1');
+            return;
+        }
+    }
+    // All slots full, replace first
+    state.items[0] = {...item, count: 1};
+    renderItems();
+    showToast('🎁 获得 '+item.name);
+}
 
-        currentNum.textContent = state.current + 1;
-        correctNum.textContent = state.correct;
-        wrongNum.textContent = state.wrong;
-        streakNum.textContent = state.streak;
-        progressFill.style.width = ((state.current / state.words.length) * 100) + '%';
-
-        if (state.streak >= 3) {
-            const fire = state.streak >= 5 ? '🔥🔥' : state.streak >= 10 ? '🔥🔥🔥' : '🔥';
-            streakDisplay.innerHTML = `${fire} 连击 x${state.streak}`;
+function renderItems(){
+    for(let i=0;i<3;i++){
+        const slot = document.getElementById('item-'+(i+1));
+        if(state.items[i]){
+            slot.className = 'item-slot';
+            const badge = state.items[i].count > 1 ? `<span class="badge">${state.items[i].count}</span>` : '';
+            slot.innerHTML = `${state.items[i].icon}${badge}<div class="tooltip">${state.items[i].name}: ${state.items[i].desc}</div>`;
+            slot.onclick = ()=>useItem(i);
         } else {
-            streakDisplay.innerHTML = '';
-        }
-
-        // Generate options
-        const bank = getWordBank();
-        const correctCn = word.cn;
-        let distractors = shuffle(bank.filter(w => w.en !== word.en)).map(w => w.cn).slice(0, 3);
-        while (distractors.length < 3) {
-            distractors.push('未知');
-        }
-        const options = shuffle([correctCn, ...distractors]);
-
-        optionsContainer.innerHTML = '';
-        options.forEach(opt => {
-            const btn = document.createElement('button');
-            btn.className = 'option-btn';
-            btn.textContent = opt;
-            btn.addEventListener('click', () => selectAnswer(btn, opt, correctCn));
-            optionsContainer.appendChild(btn);
-        });
-    }
-
-    function selectAnswer(btn, selected, correct) {
-        const btns = optionsContainer.querySelectorAll('.option-btn');
-        btns.forEach(b => b.classList.add('disabled'));
-        const state = window.gameState;
-
-        if (selected === correct) {
-            btn.classList.add('correct');
-            state.correct++;
-            state.streak++;
-            if (state.streak > state.maxStreak) state.maxStreak = state.streak;
-        } else {
-            btn.classList.add('wrong');
-            state.wrong++;
-            state.streak = 0;
-            // Highlight correct
-            btns.forEach(b => { if (b.textContent === correct) b.classList.add('correct'); });
-            state.wrongs.push({ en: state.words[state.current].en, cn: correct });
-        }
-
-        correctNum.textContent = state.correct;
-        wrongNum.textContent = state.wrong;
-        streakNum.textContent = state.streak;
-
-        setTimeout(() => {
-            state.current++;
-            showWord();
-        }, 800);
-    }
-
-    function showResult() {
-        gameScreen.classList.remove('active');
-        resultScreen.classList.add('active');
-
-        const state = window.gameState;
-        const total = state.words.length;
-        const rate = Math.round((state.correct / total) * 100);
-
-        // Emoji & title
-        let emoji, title, grade;
-        if (rate === 100) { emoji = '🏆'; title = '满分大神！'; grade = '🌟 完美通关！词汇大师！'; }
-        else if (rate >= 90) { emoji = '🎉'; title = '太棒了！'; grade = '👏 非常优秀，再接再厉！'; }
-        else if (rate >= 70) { emoji = '👍'; title = '不错！'; grade = '💪 继续努力，还能更好！'; }
-        else if (rate >= 50) { emoji = '🤔'; title = '还需要加油'; grade = '📚 多复习几次吧！'; }
-        else { emoji = '😅'; title = '要多多练习哦'; grade = '📖 试试降低难度或使用自定义词表'; }
-
-        document.getElementById('result-emoji').textContent = emoji;
-        document.getElementById('result-title').textContent = title;
-        document.getElementById('result-score').textContent = `${state.correct}/${total}`;
-        document.getElementById('result-rate').textContent = rate + '%';
-        document.getElementById('result-streak').textContent = '🔥 ' + state.maxStreak;
-        document.getElementById('result-grade').textContent = grade;
-
-        // Wrong words
-        const wrongList = document.getElementById('wrong-list');
-        const wrongItems = document.getElementById('wrong-items');
-        wrongItems.innerHTML = '';
-        if (state.wrongs.length > 0) {
-            wrongList.style.display = 'block';
-            state.wrongs.forEach(w => {
-                const div = document.createElement('div');
-                div.className = 'wrong-item';
-                div.innerHTML = `<span class="en">${w.en}</span><span class="cn">${w.cn}</span>`;
-                wrongItems.appendChild(div);
-            });
-        } else {
-            wrongList.style.display = 'none';
+            slot.className = 'item-slot empty';
+            slot.innerHTML = '<div class="tooltip"></div>';
+            slot.onclick = null;
         }
     }
+}
 
-    retryBtn.addEventListener('click', () => {
-        resultScreen.classList.remove('active');
-        startGame();
+function useItem(idx){
+    if(!state.items[idx]) return;
+    state.items[idx].effect();
+    state.items[idx].count--;
+    if(state.items[idx].count <= 0) state.items[idx] = null;
+    renderItems();
+}
+
+function healEffect(){
+    if(state.hp < state.maxHp){
+        state.hp++;
+        showDmg('+1 ❤️', 'heal', playerEl);
+        updateHUD();
+        showToast('❤️ 回复 1 点生命');
+    } else {
+        showToast('❤️ 生命已满');
+    }
+}
+
+function timeEffect(){
+    state.timeLeft = Math.min(state.timeLeft + 8, 20);
+    timerNum.textContent = state.timeLeft;
+    updateTimerColor();
+    showToast('⏰ 时间 +8 秒');
+}
+
+function fiftyEffect(){
+    if(state.fiftyUsed) { showToast('💡 已经用过了'); return; }
+    state.fiftyUsed = true;
+    const btns = optionsEl.querySelectorAll('.opt-btn');
+    let wrongs = [];
+    btns.forEach(b=>{
+        if(b.textContent !== state.correctAnswer) wrongs.push(b);
     });
-
-    homeBtn.addEventListener('click', () => {
-        resultScreen.classList.remove('active');
-        startScreen.classList.add('active');
+    // Remove 2 wrong answers
+    const shuffled = wrongs.sort(()=>Math.random()-.5);
+    shuffled.slice(0,2).forEach(b=>{
+        b.style.visibility = 'hidden';
+        b.classList.add('disabled');
     });
+    showToast('💡 去除了两个错误答案');
+}
 
-    function showToast(msg) {
-        toast.textContent = msg;
-        toast.classList.add('show');
-        clearTimeout(toast._timer);
-        toast._timer = setTimeout(() => toast.classList.remove('show'), 2500);
+function skipEffect(){
+    clearInterval(timerInterval);
+    state.streak = 0;
+    // Don't count as wrong or right
+    showToast('⚡ 跳过此题');
+    enemyEl.className = 'fighter enemy dead';
+    setTimeout(()=>{
+        enemyEl.className = 'fighter enemy';
+        nextFloor();
+    },400);
+}
+
+// ===== VISUAL EFFECTS =====
+function showDmg(text, type, target){
+    const el = document.createElement('div');
+    el.className = 'dmg-num '+type;
+    el.textContent = text;
+    const rect = target.getBoundingClientRect();
+    const arenaRect = arena.getBoundingClientRect();
+    el.style.left = (rect.left - arenaRect.left + rect.width/2 - 20)+'px';
+    el.style.top = (rect.top - arenaRect.top + 20)+'px';
+    arena.appendChild(el);
+    setTimeout(()=>el.remove(), 1000);
+}
+
+function showItemDrop(icon){
+    const el = document.createElement('div');
+    el.className = 'item-drop';
+    el.textContent = icon;
+    el.style.left = (40 + Math.random()*60)+'%';
+    el.style.top = '40%';
+    arena.appendChild(el);
+    setTimeout(()=>el.remove(), 1200);
+}
+
+function showToast(msg){
+    const existing = document.querySelector('.game-toast');
+    if(existing) existing.remove();
+    const el = document.createElement('div');
+    el.className = 'game-toast';
+    el.style.cssText = `
+        position:absolute;bottom:60px;left:50%;transform:translateX(-50%);
+        background:rgba(0,0,0,.8);color:#e0dcd0;padding:8px 18px;border-radius:8px;
+        font-size:13px;z-index:30;animation:fadeToast 1.8s forwards;pointer-events:none;
+        border:1px solid rgba(255,255,255,.08);white-space:nowrap
+    `;
+    el.textContent = msg;
+    const style = document.createElement('style');
+    if(!document.getElementById('toast-style')){
+        style.id='toast-style';
+        style.textContent='@keyframes fadeToast{0%{opacity:0;transform:translateX(-50%)translateY(10px)}15%{opacity:1;transform:translateX(-50%)translateY(0)}85%{opacity:1}100%{opacity:0}}';
+        document.head.appendChild(style);
     }
-})();
+    arena.appendChild(el);
+    setTimeout(()=>el.remove(), 1900);
+}
+
+// ===== END =====
+function gameOver(){
+    document.getElementById('overlay-gameover').classList.add('active');
+    document.getElementById('go-floor').textContent = state.floor;
+    document.getElementById('go-correct').textContent = state.correct;
+    document.getElementById('go-score').textContent = state.score;
+    const rate = state.totalAnswered > 0 ? Math.round(state.correct/state.totalAnswered*100) : 0;
+    document.getElementById('go-accuracy').textContent = rate+'%';
+    document.getElementById('go-streak').textContent = '🔥'+state.maxStreak;
+}
+
+function victory(){
+    document.getElementById('overlay-victory').classList.add('active');
+    document.getElementById('v-score').textContent = state.score;
+    const rate = state.totalAnswered > 0 ? Math.round(state.correct/state.totalAnswered*100) : 0;
+    document.getElementById('v-accuracy').textContent = rate+'%';
+    document.getElementById('v-streak').textContent = '🔥'+state.maxStreak;
+}
+
+// ===== START =====
+restartGame();
 </script>
 </body>
 </html>
