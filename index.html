@@ -184,7 +184,8 @@ body{background:#07070e;color:#e0dcd0;font-family:'Segoe UI',system-ui,-apple-sy
         <button class="btn btn-s2" onclick="showScreen('s-wb')">📚</button>
         <button class="btn btn-s" onclick="showStats()">📊</button>
     </div>
-    <button class="audio-btn" onclick="toggleAudio()">🔇</button>
+    <span style="position:absolute;top:48px;right:10px;z-index:5;font-size:10px;color:#7a7a8a;text-align:center;cursor:pointer" id="bgm-label" onclick="cycleBGM()">白噪音</span>
+    <button class="audio-btn" onclick="toggleAudio()" id="audio-btn">🔇</button>
 </div>
 
 <!-- ===== SHOP ===== (placeholder - reuse logic) -->
@@ -194,6 +195,8 @@ body{background:#07070e;color:#e0dcd0;font-family:'Segoe UI',system-ui,-apple-sy
     <div id="shop-items"></div>
     <h4 style="font-size:13px;font-weight:700;color:#7a7a8a;margin:12px 0 6px">🎨 皮肤</h4>
     <div id="shop-skins"></div>
+    <h4 style="font-size:13px;font-weight:700;color:#7a7a8a;margin:12px 0 6px">🎵 背景音乐</h4>
+    <div id="shop-bgm"></div>
     <h4 style="font-size:13px;font-weight:700;color:#7a7a8a;margin:12px 0 6px">🖼️ 边框</h4>
     <div id="shop-borders"></div>
 </div>
@@ -295,28 +298,32 @@ let CUSTOM_WORDS=[];
 // ═══════════════════════════════════════════════════════════════
 //  AUDIO
 // ═══════════════════════════════════════════════════════════════
-let AC=null,AE=false,BGM_P=null;
+
+// ═══════════════════════════════════════════════════════════════
+//  BGM SYSTEM
+// ═══════════════════════════════════════════════════════════════
+const BGM_TRACKS={silence:{n:'静音',ic:'🔇',c:0},whitenoise:{n:'白噪音',ic:'🤍',c:0},rain:{n:'雨声',ic:'🌧️',c:30},ocean:{n:'海浪',ic:'🌊',c:30},forest:{n:'森林',ic:'🌲',c:50},fireplace:{n:'壁炉',ic:'🔥',c:50},night:{n:'深夜',ic:'🌙',c:80}};let BGM_TYPE='silence',BGM_NODES=[];function stopBGM(){try{BGM_NODES.forEach(n=>{try{n.stop()}catch(e){}})}catch(e){}BGM_NODES=[];if(BGM_P){BGM_P.gain.linearRampToValueAtTime(0,AC.currentTime+.3)}BGM_P=null;BGM_TYPE='silence'}function startBGM(type){if(!AC||!AE)return;stopBGM();BGM_TYPE=type;BGM_P=AC.createGain();BGM_P.gain.value=.035;BGM_P.connect(AC.destination);const bufferSize=AC.sampleRate*2;const buffer=AC.createBuffer(1,bufferSize,AC.sampleRate);const data=buffer.getChannelData(0);for(let i=0;i<bufferSize;i++)data[i]=Math.random()*2-1;const noise=AC.createBufferSource();noise.buffer=buffer;noise.loop=true;const gn=AC.createGain();gn.gain.value=.3;const flt=AC.createBiquadFilter();flt.type='lowpass';noise.connect(flt);flt.connect(gn);gn.connect(BGM_P);noise.start();BGM_NODES.push(noise);if(type==='whitenoise'){flt.frequency.value=4000;gn.gain.value=.25}else if(type==='rain'){flt.frequency.value=3000;gn.gain.value=.35;const lfo=AC.createOscillator();lfo.frequency.value=.3;const lfoG=AC.createGain();lfoG.gain.value=1000;lfo.connect(lfoG);lfoG.connect(flt.frequency);lfo.start();BGM_NODES.push(lfo);function drop(){if(!AC||BGM_TYPE!=='rain'||!AE)return;const o=AC.createOscillator();o.type='sine';o.frequency.value=800+Math.random()*600;const g=AC.createGain();g.gain.setValueAtTime(.04,AC.currentTime);g.gain.exponentialRampToValueAtTime(.001,AC.currentTime+.05);o.connect(g);g.connect(BGM_P);o.start();o.stop(AC.currentTime+.05);setTimeout(drop,100+Math.random()*400)};drop()}else if(type==='ocean'){flt.frequency.value=800;gn.gain.value=.4;const lfo=AC.createOscillator();lfo.type='sine';lfo.frequency.value=.08;const lfoG=AC.createGain();lfoG.gain.value=.35;lfo.connect(lfoG);lfoG.connect(gn.gain);lfo.start();BGM_NODES.push(lfo);const lfo2=AC.createOscillator();lfo2.type='sine';lfo2.frequency.value=.15;const lfoG2=AC.createGain();lfoG2.gain.value=400;lfo2.connect(lfoG2);lfoG2.connect(flt.frequency);lfo2.start();BGM_NODES.push(lfo2)}else if(type==='forest'){flt.frequency.value=2000;gn.gain.value=.2;function chirp(){if(!AC||BGM_TYPE!=='forest'||!AE)return;const o=AC.createOscillator();o.type='sine';const f=1000+Math.random()*2000;o.frequency.setValueAtTime(f,AC.currentTime);o.frequency.exponentialRampToValueAtTime(f*1.5,AC.currentTime+.04);o.frequency.exponentialRampToValueAtTime(f,AC.currentTime+.08);const g=AC.createGain();g.gain.setValueAtTime(.02,AC.currentTime);g.gain.exponentialRampToValueAtTime(.001,AC.currentTime+.1);o.connect(g);g.connect(BGM_P);o.start();o.stop(AC.currentTime+.1);setTimeout(chirp,2000+Math.random()*5000)};chirp()}else if(type==='fireplace'){flt.frequency.value=600;gn.gain.value=.3;function crackle(){if(!AC||BGM_TYPE!=='fireplace'||!AE)return;const o=AC.createOscillator();o.type='sawtooth';o.frequency.value=100+Math.random()*200;const g=AC.createGain();g.gain.setValueAtTime(.015,AC.currentTime);g.gain.exponentialRampToValueAtTime(.001,AC.currentTime+.08);const f=AC.createBiquadFilter();f.type='lowpass';f.frequency.value=1500;o.connect(f);f.connect(g);g.connect(BGM_P);o.start();o.stop(AC.currentTime+.08);setTimeout(crackle,200+Math.random()*600)};crackle()}else if(type==='night'){flt.frequency.value=1500;gn.gain.value=.12;function cricket(){if(!AC||BGM_TYPE!=='night'||!AE)return;const o=AC.createOscillator();o.type='sine';o.frequency.value=4000+Math.random()*1000;const g=AC.createGain();g.gain.setValueAtTime(.008,AC.currentTime);g.gain.exponentialRampToValueAtTime(.001,AC.currentTime+.15);o.connect(g);g.connect(BGM_P);o.start();o.stop(AC.currentTime+.15);setTimeout(cricket,800+Math.random()*3000)};cricket()}}let AC=null,AE=false,BGM_P=null;
 function initAudio(){
     if(AC)return;
-    try{AC=new(window.AudioContext||window.webkitAudioContext)();AE=true;document.querySelector('.audio-btn').textContent='🔊';startBGM()}catch(e){}
+    try{AC=new(window.AudioContext||window.webkitAudioContext)();AE=true;document.querySelector('.audio-btn').textContent='🔊';startBGM(U.bgm||'whitenoise');updateBGMLabel()}catch(e){}
 }
 function toggleAudio(){
     if(!AC){initAudio();return}AE=!AE;
     document.querySelector('.audio-btn').textContent=AE?'🔊':'🔇';
-    if(AE)startBGM(); else if(BGM_P){BGM_P.gain.linearRampToValueAtTime(0,AC.currentTime+.5);setTimeout(()=>{BGM_P=null},500)}
+    if(AE){startBGM(U.bgm||'whitenoise')}else{stopBGM()}
+    updateBGMLabel();
 }
-function startBGM(){
-    if(!AC||!AE||BGM_P)return;
-    BGM_P=AC.createGain();BGM_P.gain.value=.025;BGM_P.connect(AC.destination);
-    const chords=[[130.81,164.81,196],[164.81,196,220],[146.83,185,220],[174.61,220,261.63]];
-    let ci=0;
-    function pc(){
-        if(!AE||!BGM_P)return;const c=chords[ci%chords.length];ci++;
-        c.forEach(f=>{const o=AC.createOscillator();o.type='sine';o.frequency.value=f;const g=AC.createGain();g.gain.setValueAtTime(.02,AC.currentTime);g.gain.exponentialRampToValueAtTime(.001,AC.currentTime+3.5);o.connect(g);g.connect(BGM_P);o.start();o.stop(AC.currentTime+3.6)});
-        setTimeout(pc,3500);
-    }
-    const d=AC.createOscillator();d.type='sine';d.frequency.value=65.41;const dg=AC.createGain();dg.gain.value=.012;d.connect(dg);dg.connect(BGM_P);d.start();
-    pc();
+function cycleBGM(){
+    if(!AC)initAudio();
+    const keys=Object.keys(BGM_TRACKS).filter(k=>U.bgmUnlock.includes(k));
+    if(keys.length===0){U.bgmUnlock=['whitenoise'];keys=['whitenoise']}
+    const cur=keys.indexOf(U.bgm);const next=keys[(cur+1)%keys.length];
+    U.bgm=next;startBGM(next);saveUser();updateBGMLabel();
+    showToast('🎵 '+BGM_TRACKS[next].n);
+}
+function updateBGMLabel(){
+    const el=document.getElementById('bgm-label');
+    if(el && BGM_TRACKS[U.bgm])el.textContent=BGM_TRACKS[U.bgm].n;
 }
 function sfx(t){
     if(!AC||!AE)return;const c=AC.currentTime;
@@ -333,7 +340,7 @@ function sfx(t){
 const EBBINGHAUS_INTERVALS = [0, 1, 24, 72, 168, 336, 720]; // hours: new,1h,1d,3d,7d,14d,30d
 const SLOT_COUNT = 3;
 
-let U = {coins:3,activeBank:'cet4',skins:{player:'⚔️'},borders:{active:'none'},items:{potion:0,sand:0,shield:0,skip:0},shop:{},unlocks:{skins:['⚔️'],borders:['none']},mastery:{},achievements:[],slot:1};
+let U = {coins:3,activeBank:'cet4',skins:{player:'⚔️'},borders:{active:'none'},items:{potion:0,sand:0,shield:0,skip:0},shop:{},unlocks:{skins:['⚔️'],borders:['none']},mastery:{},achievements:[],slot:1,bgm:'whitenoise',bgmUnlock:['whitenoise']};
 let SAVE = {stats:{total:0,correct:0,streak:0,reviews:0,history:[]},words:{}}; // per-slot data: word progress + stats
 
 function getSaveKey(slot){
@@ -356,11 +363,12 @@ function loadUser(){
     }catch(e){}
     if(!U.unlocks)U.unlocks={skins:['⚔️'],borders:['none']};if(!U.mastery)U.mastery={};if(!U.achievements)U.achievements=[];
     if(!U.items)U.items={potion:0,sand:0,shield:0,skip:0};if(!U.shop)U.shop={};
+    if(!U.bgm)U.bgm='whitenoise';if(!U.bgmUnlock)U.bgmUnlock=['whitenoise'];
     Object.assign(U.unlocks,{skins:['⚔️','🎓','📗','📘','🌍'],borders:['none']});
     loadSlot(U.slot);
 }
 function saveUser(){
-    try{localStorage.setItem('vd_user',JSON.stringify({coins:U.coins,activeBank:U.activeBank,skins:U.skins,borders:U.borders,items:U.items,shop:U.shop,unlocks:U.unlocks,mastery:U.mastery,achievements:U.achievements,slot:U.slot}))}catch(e){}
+    try{localStorage.setItem('vd_user',JSON.stringify({coins:U.coins,activeBank:U.activeBank,skins:U.skins,borders:U.borders,items:U.items,shop:U.shop,unlocks:U.unlocks,mastery:U.mastery,achievements:U.achievements,slot:U.slot,bgm:U.bgm,bgmUnlock:U.bgmUnlock}))}catch(e){}
     saveSlot();
 }
 
@@ -640,6 +648,21 @@ function renderShop(){
             else if(!isAchievement&&!owned&&U.coins>=price){U.coins-=price;U.unlocks.skins.push(s);U.skins.player=s;saveUser();renderShop();updateHub();sfx('buy')}
         };
         sg2.appendChild(d);
+    });
+    // BGM shop
+    const bgm2=$('shop-bgm');bgm2.innerHTML='';
+    Object.keys(BGM_TRACKS).forEach(k=>{
+        const t=BGM_TRACKS[k];const owned=U.bgmUnlock.includes(k);const eq=U.bgm===k;
+        const d=document.createElement('div');d.style.cssText='display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:10px 12px';
+        d.innerHTML=`<div style="font-size:20px">${t.ic}</div><div style="flex:1"><div style="font-size:13px;font-weight:700">${t.n}${eq?' ▶️':''}</div></div>
+            <button style="padding:6px 14px;border-radius:6px;font-size:12px;font-weight:700;border:none;cursor:pointer;font-family:inherit;flex-shrink:0;background:${owned?(eq?'rgba(16,185,129,.15)':'rgba(255,255,255,.08)'):(U.coins>=t.c?'linear-gradient(135deg,#fbbf24,#f59e0b)':'rgba(255,255,255,.08)')};color:${owned?(eq?'#10b981':'#e0dcd0'):(U.coins>=t.c?'#1a1a2e':'#7a7a8a')}">${eq?'▶️播放':owned?'切换':t.c===0?'免费':t.c+'💰'}</button>`;
+        const btn=d.querySelector('button');
+        btn.onclick=()=>{
+            if(owned&&!eq){U.bgm=k;startBGM(k);saveUser();renderShop();updateHub();sfx('click')}
+            else if(!owned&&t.c>0&&U.coins>=t.c){U.coins-=t.c;U.bgmUnlock.push(k);U.bgm=k;startBGM(k);saveUser();renderShop();updateHub();sfx('buy')}
+            else if(t.c===0&&!owned){U.bgmUnlock.push(k);U.bgm=k;startBGM(k);saveUser();renderShop();updateHub();sfx('click')}
+        };
+        bgm2.appendChild(d);
     });
 }
    function checkMastery(){
