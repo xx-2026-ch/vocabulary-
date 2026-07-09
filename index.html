@@ -342,75 +342,71 @@ function sfx(t){
 // ═══════════════════════════════════════════════════════════════
 //  SAVE SYSTEM — per-slot, per-word progress with Ebbinghaus
 // ═══════════════════════════════════════════════════════════════
-const EBBINGHAUS_INTERVALS = [0, 1, 24, 72, 168, 336, 720]; // hours: new,1h,1d,3d,7d,14d,30d
+// ═══════════════════════════════════════════════════════════════
+//  SM-2 SPACED REPETITION
+// ═══════════════════════════════════════════════════════════════
 const SLOT_COUNT = 3;
 
 let U = {coins:3,activeBank:'cet4',skins:{player:'⚔️'},borders:{active:'none'},items:{potion:0,sand:0,shield:0,skip:0},shop:{},unlocks:{skins:['⚔️'],borders:['none']},mastery:{},achievements:[],slot:1,bgm:'whitenoise',bgmUnlock:['whitenoise']};
-let SAVE = {stats:{total:0,correct:0,streak:0,reviews:0,history:[]},words:{}}; // per-slot data: word progress + stats
+let SAVE = {stats:{total:0,correct:0,streak:0,reviews:0,history:[]},words:{}};
 
-function getSaveKey(slot){
-    return 'vd_slot_'+slot;
-}
+function getSaveKey(slot){return 'vd_slot_'+slot}
 function loadSlot(slot){
-    try{
-        const d=localStorage.getItem(getSaveKey(slot));
-        if(d){const p=JSON.parse(d);SAVE=p}else{SAVE={stats:{total:0,correct:0,streak:0,reviews:0,history:[]},words:{}}}
-    }catch(e){SAVE={stats:{total:0,correct:0,streak:0,reviews:0,history:[]},words:{}}}
+    try{const d=localStorage.getItem(getSaveKey(slot));if(d){SAVE=JSON.parse(d)}else{SAVE={stats:{total:0,correct:0,streak:0,reviews:0,history:[]},words:{}}}}catch(e){SAVE={stats:{total:0,correct:0,streak:0,reviews:0,history:[]},words:{}}}
     if(!SAVE.words)SAVE.words={};if(!SAVE.stats)SAVE.stats={total:0,correct:0,streak:0,reviews:0,history:[]};
 }
-function saveSlot(){
-    try{localStorage.setItem(getSaveKey(U.slot),JSON.stringify(SAVE))}catch(e){}
-}
+function saveSlot(){try{localStorage.setItem(getSaveKey(U.slot),JSON.stringify(SAVE))}catch(e){}}
 function loadUser(){
-    try{
-        const d=localStorage.getItem('vd_user');
-        if(d){Object.assign(U,JSON.parse(d))}
-    }catch(e){}
+    try{const d=localStorage.getItem('vd_user');if(d)Object.assign(U,JSON.parse(d))}catch(e){}
     if(!U.unlocks)U.unlocks={skins:['⚔️'],borders:['none']};if(!U.mastery)U.mastery={};if(!U.achievements)U.achievements=[];
     if(!U.items)U.items={potion:0,sand:0,shield:0,skip:0};if(!U.shop)U.shop={};
     if(!U.bgm)U.bgm='whitenoise';if(!U.bgmUnlock)U.bgmUnlock=['whitenoise'];
-    Object.assign(U.unlocks,{skins:['⚔️','🎓','📗','📘','🌍'],borders:['none']});
-    loadSlot(U.slot);
+    Object.assign(U.unlocks,{skins:['⚔️','🎓','📗','📘','🌍'],borders:['none']});loadSlot(U.slot);
 }
 function saveUser(){
     try{localStorage.setItem('vd_user',JSON.stringify({coins:U.coins,activeBank:U.activeBank,skins:U.skins,borders:U.borders,items:U.items,shop:U.shop,unlocks:U.unlocks,mastery:U.mastery,achievements:U.achievements,slot:U.slot,bgm:U.bgm,bgmUnlock:U.bgmUnlock}))}catch(e){}
     saveSlot();
 }
 
-// Word progress helpers
-function getWordKey(word,bank){return bank+'_'+word}
-function getWordProgress(word,bank){
-    const k=getWordKey(word,bank);
-    if(!SAVE.words[k])SAVE.words[k]={l:0,n:null,i:1,c:0,lr:null};
+// SM‑2 spaced repetition
+function getWordKey(w,b){return b+'_'+w}
+function getWordProgress(w,b){
+    const k=getWordKey(w,b);
+    if(!SAVE.words[k])SAVE.words[k]={ef:2.5,iv:0,rp:0,nx:0,lr:0,ct:0};
     return SAVE.words[k];
 }
-function markCorrect(word,bank){
-    const p=getWordProgress(word,bank);p.c++;p.lr=Date.now();
-    const nextLevel=Math.min(6,p.l+1);p.l=nextLevel;
-    p.i=EBBINGHAUS_INTERVALS[p.l]||720;p.n=Date.now()+p.i*3600000;
-    SAVE.stats.correct=(SAVE.stats.correct||0)+1;
-    saveSlot();
-}
-function markWrong(word,bank){
-    const p=getWordProgress(word,bank);p.c=0;p.lr=Date.now();
-    p.l=Math.max(0,p.l-2);p.i=EBBINGHAUS_INTERVALS[p.l]||1;p.n=Date.now()+p.i*3600000;
+function rateWord(word,bank,rating){
+    // rating: 0=忘了 1=模糊 2=想起 3=记得
+    const p=getWordProgress(word,bank);
+    const q=rating*5/3; // map 0..3 → 0..5
+    p.ef=p.ef+(0.1-(5-q)*(0.08+(5-q)*0.02));if(p.ef<1.3)p.ef=1.3;
+    p.lr=Date.now();
+    if(rating>=2){
+        if(p.rp===0)p.iv=1;else if(p.rp===1)p.iv=6;else p.iv=Math.round(p.iv*p.ef);
+        p.rp++;p.ct++;
+    }else{
+        p.rp=0;p.iv=rating===0?0.16:1;
+    }
+    p.nx=Date.now()+p.iv*86400000;
+    SAVE.stats.correct=(SAVE.stats.correct||0)+(rating>=2?1:0);
     saveSlot();
 }
 function getDueWords(bank){
-    const now=Date.now();const due=[];
-    const wordBank = getBank();
-    if(!wordBank)return due;
-    for(const w of wordBank){
-        const p=getWordProgress(w.e,bank);
-        if(p.l===0||(p.n&&p.n<=now))due.push(w);
-    }
+    const now=Date.now(),due=[],wb=getBank();
+    if(!wb)return due;
+    for(const w of wb){const p=getWordProgress(w.e,bank);if(p.rp===0||p.nx<=now)due.push(w)}
     return due;
 }
-function getMasteryCount(bank){
-    const wordBank=getBank();if(!wordBank)return 0;
-    let c=0;
-    for(const w of wordBank){const p=getWordProgress(w.e,bank);if(p.l>=4)c++}
+function getMastered(bank){
+    const wb=getBank();if(!wb)return 0;let c=0;
+    for(const w of wb){const p=getWordProgress(w.e,bank);if(p.iv>=180)c++}
     return c;
+}
+function getDueCounts(bank){
+    const now=Date.now(),wb=getBank(),r={today:0,week:0,month:0};
+    if(!wb)return r;
+    for(const w of wb){const p=getWordProgress(w.e,bank);if(p.rp===0||p.nx<=now){r.today++}else if(p.nx<=now+864e6){r.week++}else if(p.nx<=now+2592e6){r.month++}}
+    return r;
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -455,8 +451,9 @@ function updateHub(){
     const bi=BANK_INFO[U.activeBank];$('hub-bank').textContent=bi?bi.n:'自定义';
     $('hub-skin').textContent=U.skins.player||'⚔️';
     $('hub-hero').textContent=U.skins.player||'⚔️';
-    const due=getDueWords(U.activeBank);
-    $('hub-due').textContent=due.length;
+    const due=getDueWords(U.activeBank).length;
+    const counts=getDueCounts(U.activeBank);
+    $('hub-due').textContent=due;
     renderSlots();
     saveUser();
 }
@@ -518,7 +515,7 @@ function showStats(){
     const bank=getBank();
     const total=bank?bank.length:0;
     const due=getDueWords(U.activeBank).length;
-    const mastered=getMasteryCount(U.activeBank);
+    const mastered=getMastered(U.activeBank);
     const stats=SAVE.stats||{total:0,correct:0,streak:0,reviews:0};
     const acc=stats.total>0?Math.round(stats.correct/stats.total*100):0;
 
@@ -574,20 +571,25 @@ function showReviewWord(){
 function reviewReveal(){
     const w=REVIEW.words[REVIEW.idx];
     $('rev-answer').style.display='block';
+    const p=getWordProgress(w.e,U.activeBank);
     $('review-area').querySelector('.rb').innerHTML=
         `<button class="h" onclick="reviewRate(0)">😰 忘了</button>
-         <button class="e" onclick="reviewRate(1)">💡 想起来</button>
-         <button class="g" onclick="reviewRate(2)">✅ 记住了</button>`;
+         <button class="a" onclick="reviewRate(1)">🤔 模糊</button>
+         <button class="e" onclick="reviewRate(2)">💡 想起</button>
+         <button class="g" onclick="reviewRate(3)">✅ 记得</button>`;
     REVIEW.revealed=true;
 }
 function reviewRate(score){
     const w=REVIEW.words[REVIEW.idx];
-    if(score>=1){markCorrect(w.e,U.activeBank);sfx('corr')}
-    else{markWrong(w.e,U.activeBank);sfx('wrong')}
+    rateWord(w.e,U.activeBank,score);
+    sfx(score>=2?'corr':'wrong');
     SAVE.stats.reviews=(SAVE.stats.reviews||0)+1;
     SAVE.stats.total=(SAVE.stats.total||0)+1;
-    saveSlot();
-    REVIEW.idx++;
+    const p=getWordProgress(w.e,U.activeBank);
+    let ivText='30天';const i=p.iv;
+    if(i<1)ivText='10分钟';else if(i<2)ivText='1天';else if(i<7)ivText='6天';else if(i<30)ivText=i+'天';else if(i<180)ivText=Math.round(i/30)+'个月';else ivText='半年+';
+    showToast(score>=2?'✅ '+ivText:'❌ 下次复习：'+ivText);
+    saveSlot();REVIEW.idx++;
     setTimeout(showReviewWord,300);
 }
 function exitReview(){
@@ -741,7 +743,7 @@ function dAns(btn,chosen){
     if(D.gameOver)return;$('d-ops').querySelectorAll('.op').forEach(b=>b.classList.add('disabled'));clearInterval(D_TIMER);
     if(chosen===D.corrAns){
         btn.classList.add('correct');D.streak++;D.corr++;D.total++;if(D.streak>D.maxStreak)D.maxStreak=D.streak;
-        markCorrect(D.word.e,U.activeBank);
+        rateWord(D.word.e,U.activeBank,2);
         const fast=D.timeLeft>=10;let coins=1+(fast?1:0);D.coins+=coins;const p=$('d-player'),e=$('d-enemy');
         p.className='fig p atk';e.className='fig e hit';dDmg('-1','damage',e);dDmg('+'+coins+'💰','coin',p);
         D.monsterHp--;dUpd();dCombo();
@@ -756,7 +758,7 @@ function dAnsWrong(btn){
     clearInterval(D_TIMER);D.gameOver=true;
     if(btn){btn.classList.add('wrong');$('d-ops').querySelectorAll('.op').forEach(b=>{if(b.textContent===D.corrAns)b.classList.add('correct')})}
     if(D.shield>0){D.shield--;showToast('🛡️');D.gameOver=false;setTimeout(()=>{$('d-ops').querySelectorAll('.op').forEach(b=>b.classList.remove('disabled','wrong','correct'));dNext()},500);return}
-    markWrong(D.word.e,U.activeBank);D.streak=0;D.total++;D.wrong++;D.hp--;
+    rateWord(D.word.e,U.activeBank,0);D.streak=0;D.total++;D.wrong++;D.hp--;
     const p=$('d-player'),e=$('d-enemy');e.className='fig e atk';p.className='fig p hit';dDmg('-1❤️','damage',p);
     $('arena').classList.remove('shk');void $('arena').offsetWidth;$('arena').classList.add('shk');setTimeout(()=>$('arena').classList.remove('shk'),300);
     dUpd();dCombo();
@@ -808,13 +810,13 @@ function pSubmit(){
     if(!P.word)return;const v=$('p-inp').value.trim().toLowerCase();if(!v){showToast('输入单词');return}
     if(v===P.word.e.toLowerCase()){
         P.total++;P.corr++;P.streak++;if(P.streak>P.maxStreak)P.maxStreak=P.streak;const c=2;P.coins+=c;sfx('corr');
-        markCorrect(P.word.e,U.activeBank);
+        rateWord(P.word.e,U.activeBank,2);
         P.blanks.forEach(i=>{const c=P.cells[i];if(c){c.textContent=P.word.e[i];c.className='cl filled'}});const pd=$('pp-'+P.lvlIdx);if(pd)pd.className='pd done';
-        P.lvlIdx++;U.coins=P.coins;pUpd();saveUser();setTimeout(pWord,500);
+        P.lvlIdx++;U.coins=P.coins;saveUser();setTimeout(pWord,500);
     }else{
         P.total++;P.wrong++;P.streak=0;
         if(P.shield>0){P.shield--;showToast('🛡️');$('p-inp').value='';return}
-        markWrong(P.word.e,U.activeBank);P.hp--;sfx('wrong');$('p-inp').value='';$('p-inp').style.borderColor='#ef4444';setTimeout(()=>$('p-inp').style.borderColor='',400);pUpd();if(P.hp<=0){pOver();return}showToast('❌');
+        rateWord(P.word.e,U.activeBank,0);P.hp--;sfx('wrong');$('p-inp').value='';$('p-inp').style.borderColor='#ef4444';setTimeout(()=>$('p-inp').style.borderColor='',400);pUpd();if(P.hp<=0){pOver();return}showToast('❌');
     }
 }
 function pGiveHint(){showToast('💡 提示功能');}
