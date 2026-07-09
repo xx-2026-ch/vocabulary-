@@ -424,6 +424,8 @@ function showScreen(id){
     document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
     $(id).classList.add('active');
     if(id==='s-hub')updateHub();
+    if(id==='s-shop')renderShop();
+    if(id==='s-wb')renderWB();
 }
 function backHub(){
     showScreen('s-hub');
