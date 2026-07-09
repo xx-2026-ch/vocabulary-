@@ -623,8 +623,23 @@ function renderShop(){
         btn.onclick=()=>{if(owned){U.borders.active=b.id;applyBorder();saveUser();renderShop();updateHub();sfx('click')}else if(U.coins>=b.c){U.coins-=b.c;U.unlocks.borders.push(b.id);U.borders.active=b.id;applyBorder();saveUser();renderShop();updateHub();sfx('buy')}};
         bg.appendChild(d);
     });
+    // Skins
+    const sg2=$('shop-skins');sg2.innerHTML='';
+    SKINS.forEach(s=>{
+        const owned=U.unlocks.skins.includes(s);const eq=U.skins.player===s;const price=SKIN_PRICES[s];
+        const isAchievement=price===-1;const n=SKIN_NAMES[s]||'未知';
+        const d=document.createElement('div');d.style.cssText='display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:10px 12px';
+        d.innerHTML=`<div style="font-size:22px">${s}</div><div style="flex:1"><div style="font-size:13px;font-weight:700">${n}${eq?' ✓':''}</div><div style="font-size:10px;color:#7a7a8a">${isAchievement?'🏆通关奖励':''}</div></div>
+            <button style="padding:6px 14px;border-radius:6px;font-size:12px;font-weight:700;border:none;cursor:pointer;font-family:inherit;flex-shrink:0;background:${owned?(eq?'rgba(16,185,129,.15)':'rgba(255,255,255,.08)'):(isAchievement?'rgba(255,255,255,.08)':U.coins>=price?'linear-gradient(135deg,#fbbf24,#f59e0b)':'rgba(255,255,255,.08)')};color:${owned?(eq?'#10b981':'#e0dcd0'):(isAchievement?'#7a7a8a':U.coins>=price?'#1a1a2e':'#7a7a8a')}">${eq?'✓使用中':owned?'装备':isAchievement?'已锁定':price+'💰'}</button>`;
+        const btn=d.querySelector('button');
+        btn.onclick=()=>{
+            if(owned&&!eq){U.skins.player=s;saveUser();renderShop();updateHub();sfx('click')}
+            else if(!isAchievement&&!owned&&U.coins>=price){U.coins-=price;U.unlocks.skins.push(s);U.skins.player=s;saveUser();renderShop();updateHub();sfx('buy')}
+        };
+        sg2.appendChild(d);
+    });
 }
-function checkMastery(){
+   function checkMastery(){
     const key=U.activeBank;if(key==='custom')return;
     if(!U.mastery[key]){U.mastery[key]=true;
         const skin=ACHIEVEMENT_SKINS[key];
