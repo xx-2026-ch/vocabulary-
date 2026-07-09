@@ -270,7 +270,7 @@ function initBGM(){
         if(AC.state==='suspended')AC.resume();
         AE=true;if(!ABTN)ABTN=document.getElementById('audio-btn');if(ABTN)ABTN.textContent='🔊';
         // Test beep first
-        try{const o=AC.createOscillator();o.type='sine';o.frequency.value=440;const g=AC.createGain();g.gain.setValueAtTime(.05,AC.currentTime);g.gain.exponentialRampToValueAtTime(.001,AC.currentTime+.15);o.connect(g);g.connect(AC.destination);o.start();o.stop(AC.currentTime+.15)}catch(e){}
+        try{const o=AC.createOscillator();o.type='sine';o.frequency.value=440;const g=AC.createGain();g.gain.setValueAtTime(.15,AC.currentTime);g.gain.exponentialRampToValueAtTime(.001,AC.currentTime+.15);o.connect(g);g.connect(AC.destination);o.start();o.stop(AC.currentTime+.15)}catch(e){}
         setTimeout(playBGM,200);
     }catch(e){console.error('Audio init failed:',e)}
 }
@@ -284,17 +284,17 @@ function toggleBGM(){
 function playBGM(){
     if(!AC||!AE)return;
     if(!AC||!AE)return;
-    const mG=AC.createGain();mG.gain.value=0.04;mG.connect(AC.destination);
+    const mG=AC.createGain();mG.gain.value=0.12;mG.connect(AC.destination);
     // Epic drone
     const drone=AC.createOscillator();drone.type='sine';drone.frequency.value=65.41;
-    const dG=AC.createGain();dG.gain.value=0.025;drone.connect(dG);dG.connect(mG);drone.start();
+    const dG=AC.createGain();dG.gain.value=0.08;drone.connect(dG);dG.connect(mG);drone.start();
     // Adventure arpeggio sequence
     const notes=[261.63,329.63,392,523.25,659.25,783.99,1046.5];
     function seq(){
         if(!AE)return;
         notes.forEach((f,i)=>{
             const o=AC.createOscillator();o.type='triangle';o.frequency.value=f;
-            const g=AC.createGain();g.gain.setValueAtTime(0.03,AC.currentTime+i*0.12);
+            const g=AC.createGain();g.gain.setValueAtTime(0.08,AC.currentTime+i*0.12);
             g.gain.exponentialRampToValueAtTime(0.001,AC.currentTime+i*0.12+0.6);
             o.connect(g);g.connect(mG);o.start(AC.currentTime+i*0.12);o.stop(AC.currentTime+i*0.12+0.6);
         });
@@ -304,7 +304,7 @@ function playBGM(){
     // Low pulse
     function pulse(){
         if(!AE)return;const o=AC.createOscillator();o.type='sine';o.frequency.value=55;
-        const g=AC.createGain();g.gain.setValueAtTime(0.035,AC.currentTime);
+        const g=AC.createGain();g.gain.setValueAtTime(0.08,AC.currentTime);
         g.gain.exponentialRampToValueAtTime(0.001,AC.currentTime+1.2);
         o.connect(g);g.connect(mG);o.start();o.stop(AC.currentTime+1.2);
         setTimeout(pulse,2800);
