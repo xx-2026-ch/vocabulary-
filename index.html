@@ -1,815 +1,718 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>词汇地牢 — 背单词闯关</title>
-    <meta name="description" content="背单词与地牢闯关结合的游戏。答对单词击败怪物，不断深入地下城！">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚔️</text></svg>">
-    <style>
-        *{margin:0;padding:0;box-sizing:border-box}
-        body{
-            background:#0a0a12;color:#e0dcd0;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
-            min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;
-            overflow:hidden;user-select:none
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>词汇地牢 — 背单词闯关</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#07070e;color:#e0dcd0;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden}
+#game{width:100%;max-width:480px;height:100vh;max-height:820px;background:linear-gradient(180deg,#12121f,#0a0a16);position:relative;display:flex;flex-direction:column;overflow:hidden}
+@media(min-width:500px){#game{border-radius:16px;height:94vh;margin:3vh auto;box-shadow:0 0 80px rgba(108,92,231,.08)}}
 
-        /* ===== GAME CONTAINER ===== */
-        #game{
-            width:100%;max-width:520px;height:100vh;max-height:780px;
-            background:linear-gradient(180deg,#141420 0%,#1a1a2e 40%,#0f0f1a 100%);
-            border-radius:0;overflow:hidden;position:relative;
-            display:flex;flex-direction:column;
-            box-shadow:0 0 60px rgba(108,92,231,.08);
-        }
-        @media(min-width:560px){#game{border-radius:20px;height:92vh;margin:4vh auto}}
+/* ===== SCREENS ===== */
+.screen{display:none;flex-direction:column;height:100%;width:100%;position:absolute;inset:0}
+.screen.active{display:flex}
 
-        /* ===== TOP HUD ===== */
-        .hud{
-            padding:12px 16px 8px;display:flex;justify-content:space-between;align-items:center;
-            background:rgba(0,0,0,.4);border-bottom:1px solid rgba(255,255,255,.06);flex-shrink:0
-        }
-        .hud-floor{font-size:14px;font-weight:700;color:#a29bfe}
-        .hud-floor span{color:#e0dcd0}
-        .hud-hearts{display:flex;gap:2px;font-size:18px}
-        .hud-hearts .lost{opacity:.25}
-        .hud-timer{display:flex;align-items:center;gap:4px;font-size:14px;font-weight:700}
-        .hud-timer.danger{color:#ef4444;animation:blink .6s infinite}
-        .hud-score{font-size:13px;color:#fbbf24;font-weight:600}
+/* ===== START SCREEN ===== */
+.start-screen{align-items:center;justify-content:center;padding:32px 24px;text-align:center;background:radial-gradient(ellipse at 50% 0%,rgba(108,92,231,.08),transparent 70%)}
+.start-screen .title{font-size:44px;font-weight:900;background:linear-gradient(180deg,#a29bfe,#6c5ce7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:2px;letter-spacing:-1px}
+.start-screen .sub{font-size:15px;color:#7a7a8a;margin-bottom:20px}
+.start-screen .hero-art{font-size:96px;margin:10px 0 16px;filter:drop-shadow(0 8px 32px rgba(108,92,231,.3));animation:float 3s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+.start-screen .details{display:flex;gap:24px;margin-bottom:28px;flex-wrap:wrap;justify-content:center}
+.start-screen .details .item{text-align:center}
+.start-screen .details .item .n{font-size:22px;font-weight:800;color:#a29bfe}
+.start-screen .details .item .l{font-size:12px;color:#7a7a8a;margin-top:1px}
+.btn{padding:14px 44px;border:none;border-radius:12px;font-size:17px;font-weight:700;cursor:pointer;transition:transform .1s,opacity .2s;font-family:inherit}
+.btn:active{transform:scale(.95)}
+.btn-primary{background:linear-gradient(135deg,#6c5ce7,#a29bfe);color:#fff}
+.btn-primary:hover{opacity:.9}
+.btn-secondary{background:rgba(255,255,255,.06);color:#e0dcd0;border:1px solid rgba(255,255,255,.1)}
+.btn-secondary:hover{background:rgba(255,255,255,.1)}
+.start-screen .btn-group{display:flex;flex-direction:column;gap:10px;width:100%;max-width:260px}
+.start-screen .btn-group .btn{padding:14px 0;width:100%}
 
-        @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+/* ===== SHOP SCREEN ===== */
+.shop-screen{padding:20px}
+.shop-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.shop-header h2{font-size:20px;font-weight:800}
+.shop-header .coins{font-size:16px;color:#fbbf24;font-weight:700}
+.shop-grid{display:grid;gap:12px;flex:1;align-content:start}
+.shop-item{display:flex;align-items:center;gap:14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:14px 16px;transition:all .15s}
+.shop-item:active{transform:scale(.98)}
+.shop-item .icon{font-size:32px;flex-shrink:0}
+.shop-item .info{flex:1}
+.shop-item .info .name{font-size:15px;font-weight:700}
+.shop-item .info .desc{font-size:12px;color:#7a7a8a;margin-top:1px}
+.shop-item .buy-btn{padding:8px 20px;border-radius:8px;font-size:14px;font-weight:700;border:none;cursor:pointer;transition:all .1s;font-family:inherit;flex-shrink:0}
+.shop-item .buy-btn:active{transform:scale(.93)}
+.shop-item .buy-btn.afford{background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#1a1a2e}
+.shop-item .buy-btn.afford:hover{opacity:.9}
+.shop-item .buy-btn.broke{background:rgba(255,255,255,.08);color:#7a7a8a;cursor:not-allowed}
+.shop-item .buy-btn.owned{background:rgba(16,185,129,.15);color:#10b981;cursor:default}
+.shop-back{display:inline-flex;align-items:center;gap:4px;padding:8px 16px;border:none;background:rgba(255,255,255,.05);color:#e0dcd0;border-radius:8px;cursor:pointer;font-size:13px;font-family:inherit;margin-top:12px;transition:background .15s}
+.shop-back:hover{background:rgba(255,255,255,.1)}
 
-        /* ===== ARENA ===== */
-        .arena{
-            flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
-            padding:10px 16px 8px;position:relative;overflow:hidden;min-height:0
-        }
+/* ===== HUD ===== */
+.hud{padding:10px 16px 6px;display:flex;justify-content:space-between;align-items:center;background:rgba(0,0,0,.35);border-bottom:1px solid rgba(255,255,255,.05);flex-shrink:0}
+.hud-floor{font-size:13px;font-weight:700;color:#a29bfe}
+.hud-floor span{color:#e0dcd0}
+.hud-hearts{display:flex;gap:2px;font-size:16px}
+.hud-hearts .lost{opacity:.2}
+.hud-coins{font-size:14px;color:#fbbf24;font-weight:700}
+.hud-timer{font-size:13px;display:flex;align-items:center;gap:4px;font-weight:700}
+.hud-timer.danger{color:#ef4444;animation:blink .5s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
 
-        /* Background decorations */
-        .arena::before{
-            content:'';position:absolute;bottom:0;left:0;right:0;height:40%;
-            background:repeating-linear-gradient(90deg,transparent,transparent 24px,rgba(255,255,255,.02) 24px,rgba(255,255,255,.02) 25px);
-            pointer-events:none
-        }
-        .arena::after{
-            content:'';position:absolute;top:10%;left:10%;right:10%;height:2px;
-            background:radial-gradient(ellipse, rgba(162,155,254,.12) 0%,transparent 70%);
-            pointer-events:none
-        }
+/* ===== ARENA ===== */
+.arena{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 16px;min-height:0;position:relative}
 
-        /* ===== BATTLE ZONE ===== */
-        .battle-zone{
-            display:flex;align-items:center;justify-content:space-around;
-            width:100%;max-width:380px;flex-shrink:0;margin-bottom:6px
-        }
-        .fighter{font-size:64px;transition:transform .15s;position:relative;line-height:1}
-        .fighter.player{filter:drop-shadow(0 0 12px rgba(108,92,231,.4))}
-        .fighter.enemy{filter:drop-shadow(0 0 12px rgba(239,68,68,.3))}
-        .fighter.attack-left{animation:swing .35s ease}
-        .fighter.hit-right{animation:takeHit .35s ease}
-        .fighter.dodge{animation:dodge .4s ease}
-        .fighter.dead{opacity:0;transform:scale(0);transition:all .4s}
+/* Monster HP */
+.monster-hp-wrap{display:flex;gap:4px;margin-bottom:4px;font-size:16px}
+.monster-hp-wrap .lost{opacity:.15}
 
-        @keyframes swing{0%{transform:rotate(-5deg)}50%{transform:rotate(15deg)translateX(12px)}100%{transform:rotate(0deg)}}
-        @keyframes takeHit{0%{transform:translateX(0)}20%{transform:translateX(-10px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}100%{transform:translateX(0)}}
-        @keyframes dodge{0%{transform:translateY(0)}30%{transform:translateY(-20px)}60%{transform:translateY(-20px)}100%{transform:translateY(0)}}
+.battle-zone{display:flex;align-items:center;justify-content:space-around;width:100%;max-width:340px;flex-shrink:0;margin-bottom:4px;position:relative}
+.fighter{font-size:56px;transition:transform .1s;position:relative;line-height:1.2}
+.fighter.player{filter:drop-shadow(0 0 16px rgba(108,92,231,.35))}
+.fighter.enemy{filter:drop-shadow(0 0 16px rgba(239,68,68,.25))}
+.fighter.attack{animation:swing .3s ease}
+.fighter.hit{animation:getHit .35s ease}
+.fighter.crit{animation:critSwing .35s ease}
+.fighter.dodge{animation:dodgeAnim .4s ease}
+@keyframes swing{0%{transform:rotate(-8deg)}40%{transform:rotate(20deg)translateX(16px)}100%{transform:rotate(0deg)}}
+@keyframes critSwing{0%{transform:rotate(-10deg)scale(1)}30%{transform:rotate(25deg)translateX(20px)scale(1.15)}100%{transform:rotate(0deg)scale(1)}}
+@keyframes getHit{0%{transform:translateX(0)}15%{transform:translateX(-12px)}30%{transform:translateX(6px)}50%{transform:translateX(-4px)}100%{transform:translateX(0)}}
+@keyframes dodgeAnim{0%{transform:translateY(0)}30%{transform:translateY(-24px)}60%{transform:translateY(-18px)}100%{transform:translateY(0)}}
 
-        .enemy-hp-bar{
-            position:absolute;bottom:-16px;left:50%;transform:translateX(-50%);
-            width:48px;height:4px;background:rgba(255,255,255,.15);border-radius:2px;overflow:hidden
-        }
-        .enemy-hp-fill{height:100%;background:#ef4444;border-radius:2px;transition:width .3s}
+.fighter.enemy.dead{opacity:0;transform:scale(0)rotate(20deg);transition:all .4s}
+.fighter.enemy.spawn{animation:spawn .3s ease}
+@keyframes spawn{0%{opacity:0;transform:scale(0)}100%{opacity:1;transform:scale(1)}}
 
-        .battle-label{
-            font-size:11px;text-align:center;margin-top:2px;color:var(--tc2,#7a7a8a)
-        }
+/* Damage number */
+.dmg-num{position:absolute;font-size:30px;font-weight:900;pointer-events:none;z-index:10;animation:dmgFloat 1s forwards;text-shadow:0 2px 8px rgba(0,0,0,.5)}
+.dmg-num.damage{color:#ef4444}
+.dmg-num.crit{color:#fbbf24;font-size:42px}
+.dmg-num.heal{color:#10b981}
+.dmg-num.coin{color:#fbbf24;font-size:22px}
+@keyframes dmgFloat{0%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(-60px)}}
 
-        /* ===== DAMAGE NUMBER ===== */
-        .dmg-num{
-            position:absolute;font-size:28px;font-weight:900;pointer-events:none;z-index:10;animation:dmgFloat 1s forwards
-        }
-        .dmg-num.damage{color:#ef4444}
-        .dmg-num.heal{color:#10b981}
-        .dmg-num.bonus{color:#fbbf24}
-        @keyframes dmgFloat{0%{opacity:1;transform:translateY(0)scale(1)}100%{opacity:0;transform:translateY(-50px)scale(1.4)}}
+/* Screen shake */
+.shake{animation:screenShake .3s}
+@keyframes screenShake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
 
-        /* ===== WORD CARD ===== */
-        .word-card{
-            width:100%;max-width:380px;background:rgba(255,255,255,.04);
-            border:1px solid rgba(255,255,255,.08);border-radius:14px;
-            padding:12px 16px 14px;text-align:center;flex-shrink:0;margin-bottom:6px
-        }
-        .word-card .en{font-size:20px;font-weight:800;letter-spacing:-.3px;color:#fff}
-        .word-card .ipa{font-size:12px;color:#7a7a8a;margin-top:2px}
+/* Timer bar */
+.timer-wrap{width:100%;max-width:360px;height:4px;background:rgba(255,255,255,.05);border-radius:2px;margin-bottom:6px;flex-shrink:0;overflow:hidden}
+.timer-fill{height:100%;border-radius:2px;transition:width .3s linear}
+.timer-fill.safe{background:linear-gradient(90deg,#10b981,#34d399)}
+.timer-fill.warn{background:linear-gradient(90deg,#f59e0b,#fbbf24)}
+.timer-fill.danger{background:linear-gradient(90deg,#ef4444,#f97316)}
 
-        /* ===== OPTIONS ===== */
-        .options{
-            display:grid;grid-template-columns:1fr 1fr;gap:8px;
-            width:100%;max-width:380px;flex-shrink:0;margin-bottom:6px
-        }
-        .opt-btn{
-            padding:12px 8px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);
-            color:#e0dcd0;border-radius:10px;font-size:15px;cursor:pointer;
-            transition:all .12s;font-weight:500;text-align:center;font-family:inherit
-        }
-        .opt-btn:hover{background:rgba(108,92,231,.15);border-color:#6c5ce7;transform:translateY(-1px)}
-        .opt-btn:active{transform:scale(.96)}
-        .opt-btn.disabled{pointer-events:none;opacity:.5}
-        .opt-btn.correct{background:rgba(16,185,129,.2);border-color:#10b981;color:#10b981;animation:pop .25s}
-        .opt-btn.wrong{background:rgba(239,68,68,.2);border-color:#ef4444;color:#ef4444;animation:shake .25s}
-        @keyframes pop{0%{transform:scale(1)}50%{transform:scale(1.04)}100%{transform:scale(1)}}
-        @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-5px)}40%{transform:translateX(5px)}60%{transform:translateX(-3px)}80%{transform:translateX(3px)}}
+/* ===== WORD CARD ===== */
+.word-card{width:100%;max-width:360px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:10px 14px 12px;text-align:center;flex-shrink:0;margin-bottom:6px}
+.word-card .en{font-size:19px;font-weight:800;color:#fff;letter-spacing:-.2px}
+.word-card .ipa{font-size:11px;color:#7a7a8a;margin-top:1px}
+.word-card .combo{font-size:12px;font-weight:700;margin-top:2px}
+.word-card .combo.fire{color:#f97316}
+.word-card .combo.super{color:#fbbf24}
 
-        /* ===== ITEMS BAR ===== */
-        .items-bar{
-            display:flex;gap:8px;padding:6px 16px;flex-shrink:0;justify-content:center;
-            background:rgba(0,0,0,.2);border-top:1px solid rgba(255,255,255,.05);flex-wrap:wrap
-        }
-        .item-slot{
-            width:44px;height:44px;border:1px solid rgba(255,255,255,.08);border-radius:10px;
-            display:flex;align-items:center;justify-content:center;font-size:20px;
-            background:rgba(255,255,255,.03);cursor:pointer;transition:all .15s;position:relative
-        }
-        .item-slot:hover{border-color:#6c5ce7;background:rgba(108,92,231,.1);transform:translateY(-2px)}
-        .item-slot:active{transform:scale(.92)}
-        .item-slot.empty{opacity:.2;cursor:default;pointer-events:none}
-        .item-slot .badge{
-            position:absolute;top:-5px;right:-5px;background:#6c5ce7;color:#fff;
-            border-radius:10px;font-size:10px;font-weight:700;padding:1px 5px;line-height:1.3
-        }
-        .item-slot .tooltip{
-            position:absolute;bottom:50px;left:50%;transform:translateX(-50%);
-            background:#1a1a2e;border:1px solid rgba(255,255,255,.1);border-radius:6px;
-            padding:4px 10px;font-size:11px;white-space:nowrap;color:#e0dcd0;
-            display:none;pointer-events:none;z-index:20
-        }
-        .item-slot:hover .tooltip{display:block}
-        .items-label{font-size:11px;color:#7a7a8a;display:flex;align-items:center;gap:4px}
+/* ===== OPTIONS ===== */
+.options{display:grid;grid-template-columns:1fr 1fr;gap:7px;width:100%;max-width:360px;flex-shrink:0;margin-bottom:4px}
+.opt-btn{padding:11px 6px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);color:#e0dcd0;border-radius:10px;font-size:15px;cursor:pointer;transition:all .1s;font-weight:500;font-family:inherit;text-align:center}
+.opt-btn:hover{background:rgba(108,92,231,.12);border-color:rgba(108,92,231,.3);transform:translateY(-1px)}
+.opt-btn:active{transform:scale(.95)}
+.opt-btn.disabled{pointer-events:none;opacity:.4}
+.opt-btn.correct{background:rgba(16,185,129,.2);border-color:#10b981;color:#10b981}
+.opt-btn.wrong{background:rgba(239,68,68,.2);border-color:#ef4444;color:#ef4444}
 
-        /* ===== OVERLAY ===== */
-        .overlay{
-            position:absolute;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(6px);
-            display:none;flex-direction:column;align-items:center;justify-content:center;
-            z-index:50;padding:24px;
-        }
-        .overlay.active{display:flex}
-        .overlay .title{font-size:32px;font-weight:800;margin-bottom:4px}
-        .overlay .sub{font-size:15px;color:#7a7a8a;margin-bottom:16px;text-align:center;line-height:1.5}
-        .overlay .big-emoji{font-size:72px;margin-bottom:12px}
-        .overlay .stat-row{display:flex;gap:24px;margin-bottom:20px;flex-wrap:wrap;justify-content:center}
-        .overlay .stat-item{text-align:center}
-        .overlay .stat-item .num{font-size:28px;font-weight:800;color:#a29bfe}
-        .overlay .stat-item .lbl{font-size:12px;color:#7a7a8a}
-        .overlay .btn{
-            padding:14px 40px;border:none;border-radius:12px;font-size:16px;font-weight:700;
-            cursor:pointer;transition:opacity .2s;font-family:inherit
-        }
-        .overlay .btn:hover{opacity:.85}
-        .overlay .btn-primary{background:linear-gradient(135deg,#6c5ce7,#a29bfe);color:#fff}
-        .overlay .btn-secondary{background:rgba(255,255,255,.08);color:#e0dcd0;border:1px solid rgba(255,255,255,.1)}
+/* ===== ITEMS BAR ===== */
+.items-bar{display:flex;gap:6px;padding:5px 14px;flex-shrink:0;background:rgba(0,0,0,.15);border-top:1px solid rgba(255,255,255,.04);flex-wrap:wrap;align-items:center}
+.items-bar .label{font-size:11px;color:#7a7a8a;margin-right:4px}
+.item-slot{width:40px;height:40px;border:1px solid rgba(255,255,255,.06);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;background:rgba(255,255,255,.02);cursor:pointer;transition:all .12s;position:relative}
+.item-slot:hover{background:rgba(108,92,231,.1);border-color:#6c5ce7;transform:translateY(-2px)}
+.item-slot:active{transform:scale(.9)}
+.item-slot.empty{opacity:.15;cursor:default}
+.item-slot.empty:hover{background:transparent;border-color:rgba(255,255,255,.06);transform:none}
+.item-slot .badge{position:absolute;top:-4px;right:-4px;background:#6c5ce7;color:#fff;border-radius:8px;font-size:9px;font-weight:700;padding:1px 5px;line-height:1.4}
+.item-slot .tip{position:absolute;bottom:44px;left:50%;transform:translateX(-50%);background:#12121f;border:1px solid rgba(255,255,255,.1);border-radius:6px;padding:3px 8px;font-size:10px;white-space:nowrap;color:#e0dcd0;display:none;pointer-events:none;z-index:20}
+.item-slot:hover .tip{display:block}
 
-        /* ===== ITEM DROP ANIMATION ===== */
-        .item-drop{
-            position:absolute;font-size:36px;pointer-events:none;z-index:15;animation:dropAnim 1.2s forwards
-        }
-        @keyframes dropAnim{
-            0%{opacity:1;transform:translateY(0)scale(.5)}
-            40%{opacity:1;transform:translateY(-30px)scale(1.2)}
-            100%{opacity:0;transform:translateY(-80px)scale(.6)}
-        }
+/* ===== FLOOR BANNER ===== */
+.floor-banner{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;z-index:30;pointer-events:none}
+.floor-banner.show{display:flex}
+.floor-banner .txt{font-size:52px;font-weight:900;background:linear-gradient(180deg,#a29bfe,#6c5ce7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:bannerIn .5s forwards}
+.floor-banner .sub{font-size:15px;color:#7a7a8a;margin-top:4px;animation:bannerIn .5s .15s forwards;opacity:0}
+@keyframes bannerIn{0%{opacity:0;transform:scale(.5)translateY(20px)}100%{opacity:1;transform:scale(1)translateY(0)}}
 
-        /* ===== TIMER BAR ===== */
-        .timer-bar-wrap{
-            width:100%;max-width:380px;height:4px;background:rgba(255,255,255,.06);border-radius:2px;
-            margin-bottom:6px;flex-shrink:0;overflow:hidden
-        }
-        .timer-bar-fill{
-            height:100%;border-radius:2px;transition:width .3s linear;
-            background:linear-gradient(90deg,#6c5ce7,#a29bfe)
-        }
-        .timer-bar-fill.danger{background:linear-gradient(90deg,#ef4444,#f97316)}
-        .timer-bar-fill.safe{background:linear-gradient(90deg,#10b981,#34d399)}
+/* ===== OVERLAY ===== */
+.overlay{position:absolute;inset:0;background:rgba(0,0,0,.8);backdrop-filter:blur(8px);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:50;padding:24px}
+.overlay.show{display:flex}
+.overlay .big-emoji{font-size:72px;margin-bottom:8px}
+.overlay .title{font-size:30px;font-weight:900;margin-bottom:2px}
+.overlay .sub{font-size:15px;color:#7a7a8a;margin-bottom:18px;text-align:center;line-height:1.5}
+.overlay .stats{display:flex;gap:20px;margin-bottom:22px;flex-wrap:wrap;justify-content:center}
+.overlay .stats .s{text-align:center}
+.overlay .stats .s .n{font-size:26px;font-weight:800;color:#a29bfe}
+.overlay .stats .s .l{font-size:11px;color:#7a7a8a;margin-top:1px}
+.overlay .actions{display:flex;flex-direction:column;gap:10px;width:100%;max-width:220px}
+.overlay .actions .btn{padding:12px 0;width:100%}
 
-        /* ===== FLOOR BANNER ===== */
-        .floor-banner{
-            position:absolute;inset:0;display:none;flex-direction:column;
-            align-items:center;justify-content:center;z-index:40;pointer-events:none
-        }
-        .floor-banner.active{display:flex}
-        .floor-banner .txt{
-            font-size:48px;font-weight:900;background:linear-gradient(180deg,#a29bfe,#6c5ce7);
-            -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-            animation:bannerIn .6s forwards
-        }
-        .floor-banner .sub{
-            font-size:16px;color:#7a7a8a;margin-top:4px;animation:bannerIn .6s .2s forwards;opacity:0
-        }
-        @keyframes bannerIn{0%{opacity:0;transform:scale(.6)translateY(20px)}100%{opacity:1;transform:scale(1)translateY(0)}}
+/* ===== TOAST ===== */
+.toast{position:absolute;bottom:56px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.85);color:#e0dcd0;padding:7px 16px;border-radius:8px;font-size:13px;z-index:60;pointer-events:none;border:1px solid rgba(255,255,255,.06);opacity:0;transition:all .3s;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%)translateY(-4px)}
 
-        /* ===== MOBILE ===== */
-        @media(max-height:640px){
-            .fighter{font-size:48px}
-            .word-card .en{font-size:17px}
-            .word-card{padding:8px 12px 10px}
-            .opt-btn{padding:10px 6px;font-size:14px}
-            .hud{padding:8px 12px 6px}
-            .hud-hearts{font-size:15px}
-        }
-        @media(max-height:560px){
-            .fighter{font-size:36px}
-            .word-card .en{font-size:15px}
-            .word-card .ipa{font-size:10px}
-            .opt-btn{padding:7px 4px;font-size:13px}
-            .arena{padding:4px 12px 4px}
-            .word-card{padding:5px 10px 6px}
-        }
-        @media(max-width:400px){
-            .fighter{font-size:52px}
-            #game{max-width:100%}
-        }
-    </style>
+/* ===== ITEM DROP ===== */
+.item-drop{position:absolute;font-size:34px;pointer-events:none;z-index:15;animation:dropAnim 1.2s forwards}
+@keyframes dropAnim{0%{opacity:1;transform:translateY(0)scale(.4)}30%{opacity:1;transform:translateY(-20px)scale(1.1)}100%{opacity:0;transform:translateY(-70px)scale(.6)}}
+
+/* ===== RESPONSIVE ===== */
+@media(max-height:640px){
+.fighter{font-size:44px}.word-card .en{font-size:17px}.word-card{padding:6px 10px 8px}.opt-btn{padding:9px 5px;font-size:14px}.hud{padding:6px 12px 4px}.monster-hp-wrap{font-size:13px;margin-bottom:2px}
+}
+@media(max-height:540px){
+.fighter{font-size:36px}.word-card .en{font-size:15px}.word-card .ipa{font-size:10px}.opt-btn{padding:6px 4px;font-size:12px;border-radius:8px}.battle-zone{margin-bottom:0}.arena{padding:4px 12px 2px}
+}
+</style>
 </head>
 <body>
 <div id="game">
-    <!-- HUD -->
+
+<!-- ========== START SCREEN ========== -->
+<div class="screen active start-screen" id="screen-start">
+    <div class="hero-art">⚔️</div>
+    <div class="title">词汇地牢</div>
+    <div class="sub">答对单词，击败怪物，不断深入</div>
+    <div class="details">
+        <div class="item"><div class="n" id="start-hp">❤️5</div><div class="l">生命</div></div>
+        <div class="item"><div class="n">⚔️3</div><div class="l">击倒怪物</div></div>
+        <div class="item"><div class="n">🏰20</div><div class="l">地下城层数</div></div>
+    </div>
+    <div class="btn-group">
+        <button class="btn btn-primary" onclick="goToScreen('screen-shop')">🏪 商店</button>
+        <button class="btn btn-secondary" onclick="startAdventure()">⚔️ 开始冒险</button>
+    </div>
+</div>
+
+<!-- ========== SHOP SCREEN ========== -->
+<div class="screen shop-screen" id="screen-shop">
+    <div class="shop-header">
+        <button class="shop-back" onclick="goToScreen('screen-start')">← 返回</button>
+        <div style="font-size:14px">💰 <span id="shop-coins">0</span></div>
+    </div>
+    <h2 style="font-size:18px;font-weight:800;margin-bottom:14px">🏪 道具商店</h2>
+    <div class="shop-grid" id="shop-grid"></div>
+    <div style="margin-top:auto;text-align:center;padding-top:10px;font-size:12px;color:#7a7a8a">💡 击败怪物获得金币，在商店购买道具</div>
+</div>
+
+<!-- ========== GAME SCREEN ========== -->
+<div class="screen" id="screen-game">
     <div class="hud">
-        <div class="hud-floor">🏰 <span id="floor-num">1</span>层</div>
-        <div class="hud-hearts" id="hearts"></div>
-        <div class="hud-score" id="score-display">💰 0</div>
-        <div class="hud-timer" id="timer-display">⏱ <span id="timer-num">15</span>s</div>
+        <div class="hud-floor">🏰 <span id="floor-num">1</span>/20</div>
+        <div class="hud-hearts" id="hud-hearts"></div>
+        <div class="hud-coins">💰 <span id="hud-coins">0</span></div>
+        <div class="hud-timer" id="hud-timer">⏱<span id="timer-num">15</span></div>
     </div>
 
-    <!-- ARENA -->
     <div class="arena" id="arena">
         <div class="battle-zone">
             <div class="fighter player" id="player">⚔️</div>
-            <div class="fighter enemy" id="enemy" style="position:relative">
-                👹
-                <div class="enemy-hp-bar"><div class="enemy-hp-fill" id="enemy-hp" style="width:100%"></div></div>
-            </div>
+            <div class="fighter enemy" id="enemy">👹</div>
         </div>
 
-        <!-- Timer bar -->
-        <div class="timer-bar-wrap"><div class="timer-bar-fill" id="timer-bar"></div></div>
+        <div class="monster-hp-wrap" id="monster-hp-wrap">❤️❤️❤️</div>
 
-        <!-- Word card -->
+        <div class="timer-wrap"><div class="timer-fill safe" id="timer-fill" style="width:100%"></div></div>
+
         <div class="word-card">
             <div class="en" id="word-en">abandon</div>
             <div class="ipa" id="word-ipa">/əˈbændən/</div>
+            <div class="combo" id="combo-display"></div>
         </div>
 
-        <!-- Options -->
         <div class="options" id="options"></div>
     </div>
 
-    <!-- Items bar -->
-    <div class="items-bar" id="items-bar">
-        <span class="items-label">🎒</span>
-        <div class="item-slot empty" id="item-1"><div class="tooltip"></div></div>
-        <div class="item-slot empty" id="item-2"><div class="tooltip"></div></div>
-        <div class="item-slot empty" id="item-3"><div class="tooltip"></div></div>
+    <div class="items-bar">
+        <span class="label">🎒</span>
+        <div class="item-slot empty" id="is0"><div class="tip"></div></div>
+        <div class="item-slot empty" id="is1"><div class="tip"></div></div>
+        <div class="item-slot empty" id="is2"><div class="tip"></div></div>
     </div>
+</div>
 
-    <!-- Floor banner -->
-    <div class="floor-banner" id="floor-banner">
-        <div class="txt" id="banner-txt">第 1 层</div>
-        <div class="sub" id="banner-sub">⚔️ 前进！</div>
-    </div>
+<!-- ========== FLOOR BANNER ========== -->
+<div class="floor-banner" id="floor-banner">
+    <div class="txt" id="banner-title">第 1 层</div>
+    <div class="sub" id="banner-sub">⚔️ 前进！</div>
+</div>
 
-    <!-- Game Over overlay -->
-    <div class="overlay" id="overlay-gameover">
-        <div class="big-emoji">💀</div>
-        <div class="title" style="color:#ef4444">你倒下了</div>
-        <div class="sub">深入地下城 <strong id="go-floor">5</strong> 层 · 答对 <strong id="go-correct">0</strong> 题</div>
-        <div class="stat-row">
-            <div class="stat-item"><div class="num" id="go-score">0</div><div class="lbl">得分</div></div>
-            <div class="stat-item"><div class="num" id="go-accuracy">0%</div><div class="lbl">正确率</div></div>
-            <div class="stat-item"><div class="num" id="go-streak">🔥0</div><div class="lbl">最高连击</div></div>
-        </div>
-        <button class="btn btn-primary" onclick="restartGame()">🔄 重新挑战</button>
+<!-- ========== GAME OVER OVERLAY ========== -->
+<div class="overlay" id="overlay-go">
+    <div class="big-emoji">💀</div>
+    <div class="title" style="color:#ef4444">你倒下了</div>
+    <div class="sub">深入 <strong id="go-floor">0</strong> 层 · 答对 <strong id="go-right">0</strong> 题</div>
+    <div class="stats">
+        <div class="s"><div class="n" id="go-score">0</div><div class="l">得分</div></div>
+        <div class="s"><div class="n" id="go-acc">0%</div><div class="l">正确率</div></div>
+        <div class="s"><div class="n" id="go-streak">🔥0</div><div class="l">最高连击</div></div>
     </div>
+    <div class="actions">
+        <button class="btn btn-primary" onclick="startAdventure()">🔄 重新挑战</button>
+        <button class="btn btn-secondary" onclick="goToScreen('screen-shop');closeOverlay('overlay-go')">🏪 去商店</button>
+    </div>
+</div>
 
-    <!-- Victory overlay -->
-    <div class="overlay" id="overlay-victory">
-        <div class="big-emoji">🏆</div>
-        <div class="title" style="color:#fbbf24">通关成功！</div>
-        <div class="sub">你征服了地下城！</div>
-        <div class="stat-row">
-            <div class="stat-item"><div class="num" id="v-score">0</div><div class="lbl">最终得分</div></div>
-            <div class="stat-item"><div class="num" id="v-accuracy">0%</div><div class="lbl">正确率</div></div>
-            <div class="stat-item"><div class="num" id="v-streak">🔥0</div><div class="lbl">最高连击</div></div>
-        </div>
-        <button class="btn btn-primary" onclick="restartGame()">🔄 再来一次</button>
+<!-- ========== VICTORY OVERLAY ========== -->
+<div class="overlay" id="overlay-win">
+    <div class="big-emoji">🏆</div>
+    <div class="title" style="color:#fbbf24">通关成功！</div>
+    <div class="sub">你征服了地下城！</div>
+    <div class="stats">
+        <div class="s"><div class="n" id="win-score">0</div><div class="l">最终得分</div></div>
+        <div class="s"><div class="n" id="win-acc">0%</div><div class="l">正确率</div></div>
+        <div class="s"><div class="n" id="win-streak">🔥0</div><div class="l">最高连击</div></div>
     </div>
+    <div class="actions">
+        <button class="btn btn-primary" onclick="startAdventure()">🔄 再来一次</button>
+    </div>
+</div>
+
+<!-- ========== TOAST ========== -->
+<div class="toast" id="toast"></div>
 </div>
 
 <script>
 // ============================================================
-//  WORD BANK
+//  WORDS
 // ============================================================
-const WORDS = [
-    {en:"abandon",ipa:"/əˈbændən/",cn:"放弃",diff:1},{en:"ability",ipa:"/əˈbɪləti/",cn:"能力",diff:1},
-    {en:"absorb",ipa:"/əbˈzɔːrb/",cn:"吸收",diff:1},{en:"accept",ipa:"/əkˈsept/",cn:"接受",diff:1},
-    {en:"achieve",ipa:"/əˈtʃiːv/",cn:"实现",diff:1},{en:"acquire",ipa:"/əˈkwaɪər/",cn:"获得",diff:1},
-    {en:"adapt",ipa:"/əˈdæpt/",cn:"适应",diff:1},{en:"admit",ipa:"/ədˈmɪt/",cn:"承认",diff:1},
-    {en:"adopt",ipa:"/əˈdɒpt/",cn:"采纳",diff:1},{en:"advance",ipa:"/ədˈvæns/",cn:"前进",diff:1},
-    {en:"advise",ipa:"/ədˈvaɪz/",cn:"建议",diff:1},{en:"afford",ipa:"/əˈfɔːrd/",cn:"负担得起",diff:1},
-    {en:"agree",ipa:"/əˈɡriː/",cn:"同意",diff:1},{en:"amaze",ipa:"/əˈmeɪz/",cn:"使惊奇",diff:1},
-    {en:"annual",ipa:"/ˈænjuəl/",cn:"每年的",diff:1},{en:"anxious",ipa:"/ˈæŋkʃəs/",cn:"焦虑的",diff:1},
-    {en:"apply",ipa:"/əˈplaɪ/",cn:"申请",diff:1},{en:"approach",ipa:"/əˈproʊtʃ/",cn:"接近",diff:1},
-    {en:"attempt",ipa:"/əˈtempt/",cn:"尝试",diff:1},{en:"attract",ipa:"/əˈtrækt/",cn:"吸引",diff:1},
-    {en:"balance",ipa:"/ˈbæləns/",cn:"平衡",diff:1},{en:"benefit",ipa:"/ˈbenɪfɪt/",cn:"受益",diff:1},
-    {en:"blame",ipa:"/bleɪm/",cn:"责备",diff:1},{en:"bother",ipa:"/ˈbɒðər/",cn:"打扰",diff:1},
-    {en:"bound",ipa:"/baʊnd/",cn:"界限",diff:1},{en:"brief",ipa:"/briːf/",cn:"简要的",diff:1},
-    {en:"burden",ipa:"/ˈbɜːrdn/",cn:"负担",diff:1},{en:"calm",ipa:"/kɑːm/",cn:"平静的",diff:1},
-    {en:"capable",ipa:"/ˈkeɪpəbl/",cn:"有能力的",diff:1},{en:"capture",ipa:"/ˈkæptʃər/",cn:"捕获",diff:1},
-    {en:"career",ipa:"/kəˈrɪr/",cn:"职业",diff:1},{en:"challenge",ipa:"/ˈtʃælɪndʒ/",cn:"挑战",diff:1},
-    {en:"claim",ipa:"/kleɪm/",cn:"声称",diff:2},{en:"clarify",ipa:"/ˈklærəfaɪ/",cn:"澄清",diff:2},
-    {en:"collapse",ipa:"/kəˈlæps/",cn:"崩溃",diff:2},{en:"command",ipa:"/kəˈmænd/",cn:"命令",diff:2},
-    {en:"commit",ipa:"/kəˈmɪt/",cn:"承诺",diff:2},{en:"compare",ipa:"/kəmˈper/",cn:"比较",diff:1},
-    {en:"compete",ipa:"/kəmˈpiːt/",cn:"竞争",diff:2},{en:"confess",ipa:"/kənˈfes/",cn:"承认",diff:2},
-    {en:"confident",ipa:"/ˈkɒnfɪdənt/",cn:"自信的",diff:1},{en:"confirm",ipa:"/kənˈfɜːrm/",cn:"确认",diff:1},
-    {en:"confuse",ipa:"/kənˈfjuːz/",cn:"使困惑",diff:1},{en:"connect",ipa:"/kəˈnekt/",cn:"连接",diff:1},
-    {en:"contribute",ipa:"/kənˈtrɪbjuːt/",cn:"贡献",diff:3},{en:"convince",ipa:"/kənˈvɪns/",cn:"说服",diff:2},
-    {en:"courage",ipa:"/ˈkɜːrɪdʒ/",cn:"勇气",diff:1},{en:"debate",ipa:"/dɪˈbeɪt/",cn:"辩论",diff:2},
-    {en:"declare",ipa:"/dɪˈkler/",cn:"宣布",diff:2},{en:"defeat",ipa:"/dɪˈfiːt/",cn:"击败",diff:2},
-    {en:"defend",ipa:"/dɪˈfend/",cn:"防御",diff:2},{en:"define",ipa:"/dɪˈfaɪn/",cn:"定义",diff:2},
-    {en:"demand",ipa:"/dɪˈmænd/",cn:"需求",diff:2},{en:"deserve",ipa:"/dɪˈzɜːrv/",cn:"值得",diff:2},
-    {en:"destroy",ipa:"/dɪˈstrɔɪ/",cn:"破坏",diff:1},{en:"determine",ipa:"/dɪˈtɜːrmɪn/",cn:"决定",diff:2},
-    {en:"develop",ipa:"/dɪˈveləp/",cn:"发展",diff:1},{en:"devote",ipa:"/dɪˈvoʊt/",cn:"奉献",diff:2},
-    {en:"discover",ipa:"/dɪˈskʌvər/",cn:"发现",diff:1},{en:"display",ipa:"/dɪˈspleɪ/",cn:"展示",diff:1},
-    {en:"distinct",ipa:"/dɪˈstɪŋkt/",cn:"不同的",diff:2},{en:"domestic",ipa:"/dəˈmestɪk/",cn:"国内的",diff:2},
-    {en:"dramatic",ipa:"/drəˈmætɪk/",cn:"戏剧性的",diff:2},{en:"eliminate",ipa:"/ɪˈlɪmɪneɪt/",cn:"消除",diff:3},
-    {en:"embrace",ipa:"/ɪmˈbreɪs/",cn:"拥抱",diff:2},{en:"emerge",ipa:"/ɪˈmɜːrdʒ/",cn:"出现",diff:2},
-    {en:"emotion",ipa:"/ɪˈmoʊʃn/",cn:"情感",diff:1},{en:"enable",ipa:"/ɪˈneɪbl/",cn:"使能够",diff:2},
-    {en:"encounter",ipa:"/ɪnˈkaʊntər/",cn:"遭遇",diff:3},{en:"enormous",ipa:"/ɪˈnɔːrməs/",cn:"巨大的",diff:2},
-    {en:"essential",ipa:"/ɪˈsenʃl/",cn:"必要的",diff:2},{en:"establish",ipa:"/ɪˈstæblɪʃ/",cn:"建立",diff:3},
-    {en:"evaluate",ipa:"/ɪˈvæljueɪt/",cn:"评估",diff:3},{en:"evolve",ipa:"/ɪˈvɒlv/",cn:"进化",diff:2},
-    {en:"examine",ipa:"/ɪɡˈzæmɪn/",cn:"检查",diff:2},{en:"exclude",ipa:"/ɪkˈskluːd/",cn:"排除",diff:2},
-    {en:"expand",ipa:"/ɪkˈspænd/",cn:"扩大",diff:2},{en:"explore",ipa:"/ɪkˈsplɔːr/",cn:"探索",diff:2},
-    {en:"expose",ipa:"/ɪkˈspoʊz/",cn:"暴露",diff:2},{en:"extend",ipa:"/ɪkˈstend/",cn:"扩展",diff:2},
-    {en:"extreme",ipa:"/ɪkˈstriːm/",cn:"极端的",diff:1},{en:"flexible",ipa:"/ˈfleksəbl/",cn:"灵活的",diff:2},
-    {en:"forecast",ipa:"/ˈfɔːrkæst/",cn:"预测",diff:2},{en:"forgive",ipa:"/fərˈɡɪv/",cn:"原谅",diff:1},
-    {en:"fortune",ipa:"/ˈfɔːrtʃən/",cn:"财富",diff:2},{en:"generate",ipa:"/ˈdʒenəreɪt/",cn:"产生",diff:2},
-    {en:"generous",ipa:"/ˈdʒenərəs/",cn:"慷慨的",diff:2},{en:"genuine",ipa:"/ˈdʒenjuɪn/",cn:"真正的",diff:2},
-    {en:"grasp",ipa:"/ɡræsp/",cn:"抓住",diff:2},{en:"guarantee",ipa:"/ˌɡærənˈtiː/",cn:"保证",diff:2},
-    {en:"hesitate",ipa:"/ˈhezɪteɪt/",cn:"犹豫",diff:2},{en:"horizon",ipa:"/həˈraɪzn/",cn:"地平线",diff:2},
-    {en:"identify",ipa:"/aɪˈdentɪfaɪ/",cn:"识别",diff:2},{en:"ignore",ipa:"/ɪɡˈnɔːr/",cn:"忽视",diff:1},
-    {en:"illustrate",ipa:"/ˈɪləstreɪt/",cn:"说明",diff:3},{en:"imagine",ipa:"/ɪˈmædʒɪn/",cn:"想象",diff:1},
-    {en:"immense",ipa:"/ɪˈmens/",cn:"巨大的",diff:2},{en:"imply",ipa:"/ɪmˈplaɪ/",cn:"暗示",diff:2},
-    {en:"impose",ipa:"/ɪmˈpoʊz/",cn:"强加",diff:3},{en:"impress",ipa:"/ɪmˈpres/",cn:"使印象深刻",diff:2},
-    {en:"indicate",ipa:"/ˈɪndɪkeɪt/",cn:"表明",diff:2},{en:"influence",ipa:"/ˈɪnfluəns/",cn:"影响",diff:2},
-    {en:"inform",ipa:"/ɪnˈfɔːrm/",cn:"通知",diff:1},{en:"innocent",ipa:"/ˈɪnəsnt/",cn:"无辜的",diff:2},
-    {en:"inspire",ipa:"/ɪnˈspaɪər/",cn:"鼓舞",diff:2},{en:"instant",ipa:"/ˈɪnstənt/",cn:"立即的",diff:2},
-    {en:"sufficient",ipa:"/səˈfɪʃnt/",cn:"充足的",diff:2},{en:"superior",ipa:"/suːˈpɪriər/",cn:"优越的",diff:2},
-    {en:"survive",ipa:"/sərˈvaɪv/",cn:"幸存",diff:2},{en:"suspect",ipa:"/səˈspekt/",cn:"怀疑",diff:2},
-    {en:"suspend",ipa:"/səˈspend/",cn:"暂停",diff:2},{en:"sustain",ipa:"/səˈsteɪn/",cn:"维持",diff:3},
-    {en:"symbol",ipa:"/ˈsɪmbl/",cn:"象征",diff:1},{en:"tendency",ipa:"/ˈtendənsi/",cn:"趋势",diff:2},
-    {en:"transfer",ipa:"/trænsˈfɜːr/",cn:"转移",diff:2},{en:"transform",ipa:"/trænsˈfɔːrm/",cn:"转变",diff:2},
-    {en:"tremble",ipa:"/ˈtrembl/",cn:"颤抖",diff:2},{en:"triumph",ipa:"/ˈtraɪəmf/",cn:"胜利",diff:2},
-    {en:"universal",ipa:"/ˌjuːnɪˈvɜːrsl/",cn:"普遍的",diff:2},{en:"urge",ipa:"/ɜːrdʒ/",cn:"催促",diff:2},
-    {en:"vanish",ipa:"/ˈvænɪʃ/",cn:"消失",diff:2},{en:"venture",ipa:"/ˈventʃər/",cn:"冒险",diff:2},
-    {en:"verify",ipa:"/ˈverɪfaɪ/",cn:"验证",diff:2},{en:"version",ipa:"/ˈvɜːrʒn/",cn:"版本",diff:1},
-    {en:"victim",ipa:"/ˈvɪktɪm/",cn:"受害者",diff:2},{en:"visible",ipa:"/ˈvɪzəbl/",cn:"可见的",diff:1},
-    {en:"vital",ipa:"/ˈvaɪtl/",cn:"至关重要的",diff:2},{en:"vivid",ipa:"/ˈvɪvɪd/",cn:"生动的",diff:2},
-    {en:"vulnerable",ipa:"/ˈvʌlnərəbl/",cn:"脆弱的",diff:3},{en:"welfare",ipa:"/ˈwelfer/",cn:"福利",diff:2},
-    {en:"withdraw",ipa:"/wɪðˈdrɔː/",cn:"撤回",diff:3},{en:"witness",ipa:"/ˈwɪtnəs/",cn:"目击者",diff:2},
-    {en:"yield",ipa:"/jiːld/",cn:"产出",diff:2},{en:"accelerate",ipa:"/əkˈseləreɪt/",cn:"加速",diff:3},
-    {en:"accumulate",ipa:"/əˈkjuːmjəleɪt/",cn:"积累",diff:3},{en:"acknowledge",ipa:"/əkˈnɒlɪdʒ/",cn:"承认",diff:3},
-    {en:"anticipate",ipa:"/ænˈtɪsɪpeɪt/",cn:"预期",diff:3},{en:"appreciate",ipa:"/əˈpriːʃieɪt/",cn:"欣赏",diff:2},
-    {en:"artificial",ipa:"/ˌɑːrtɪˈfɪʃl/",cn:"人工的",diff:2},{en:"controversy",ipa:"/kənˈtrɒvəːsi/",cn:"争议",diff:3},
-    {en:"depression",ipa:"/dɪˈpreʃn/",cn:"抑郁",diff:3},{en:"discrimination",ipa:"/dɪˌskrɪmɪˈneɪʃn/",cn:"歧视",diff:3},
-    {en:"distinguish",ipa:"/dɪˈstɪŋɡwɪʃ/",cn:"区分",diff:3},{en:"dominate",ipa:"/ˈdɒmɪneɪt/",cn:"主导",diff:2},
-    {en:"elaborate",ipa:"/ɪˈlæbərət/",cn:"详尽的",diff:3},{en:"enterprise",ipa:"/ˈentərpraɪz/",cn:"企业",diff:2},
-    {en:"equivalent",ipa:"/ɪˈkwɪvələnt/",cn:"等价的",diff:3},{en:"exaggerate",ipa:"/ɪɡˈzædʒəreɪt/",cn:"夸张",diff:3},
-    {en:"extraordinary",ipa:"/ɪkˈstrɔːrdɪneri/",cn:"非凡的",diff:3},{en:"fundamental",ipa:"/ˌfʌndəˈmentl/",cn:"基本的",diff:2},
-    {en:"harmony",ipa:"/ˈhɑːrməni/",cn:"和谐",diff:2},{en:"implement",ipa:"/ˈɪmplɪment/",cn:"实施",diff:3},
-    {en:"inevitable",ipa:"/ɪnˈevɪtəbl/",cn:"不可避免的",diff:3},{en:"interpret",ipa:"/ɪnˈtɜːrprɪt/",cn:"解释",diff:2},
-    {en:"investigate",ipa:"/ɪnˈvestɪɡeɪt/",cn:"调查",diff:2},{en:"maintain",ipa:"/meɪnˈteɪn/",cn:"维持",diff:2},
-    {en:"manipulate",ipa:"/məˈnɪpjuleɪt/",cn:"操纵",diff:3},{en:"negotiate",ipa:"/nɪˈɡoʊʃieɪt/",cn:"谈判",diff:3},
-    {en:"phenomenon",ipa:"/fəˈnɒmɪnən/",cn:"现象",diff:2},{en:"privilege",ipa:"/ˈprɪvəlɪdʒ/",cn:"特权",diff:2},
-    {en:"promote",ipa:"/prəˈmoʊt/",cn:"促进",diff:2},{en:"proportion",ipa:"/prəˈpɔːrʃn/",cn:"比例",diff:2},
-    {en:"recommend",ipa:"/ˌrekəˈmend/",cn:"推荐",diff:2},{en:"relevant",ipa:"/ˈreləvənt/",cn:"相关的",diff:2},
-    {en:"represent",ipa:"/ˌreprɪˈzent/",cn:"代表",diff:2},{en:"reputation",ipa:"/ˌrepjuˈteɪʃn/",cn:"声誉",diff:2},
-    {en:"resolve",ipa:"/rɪˈzɒlv/",cn:"解决",diff:2},{en:"restrict",ipa:"/rɪˈstrɪkt/",cn:"限制",diff:2},
-    {en:"reveal",ipa:"/rɪˈviːl/",cn:"揭示",diff:2},{en:"revenue",ipa:"/ˈrevənuː/",cn:"收入",diff:2},
-    {en:"sacrifice",ipa:"/ˈsækrɪfaɪs/",cn:"牺牲",diff:2},{en:"significant",ipa:"/sɪɡˈnɪfɪkənt/",cn:"重要的",diff:2},
-    {en:"sophisticated",ipa:"/səˈfɪstɪkeɪtɪd/",cn:"复杂的",diff:3},{en:"stimulate",ipa:"/ˈstɪmjuleɪt/",cn:"刺激",diff:2},
-    {en:"strategy",ipa:"/ˈstrætədʒi/",cn:"策略",diff:2},
+const WORDS=[
+{en:"abandon",ipa:"/əˈbændən/",cn:"放弃"},{en:"absorb",ipa:"/əbˈzɔːrb/",cn:"吸收"},{en:"accept",ipa:"/əkˈsept/",cn:"接受"},
+{en:"achieve",ipa:"/əˈtʃiːv/",cn:"实现"},{en:"acquire",ipa:"/əˈkwaɪər/",cn:"获得"},{en:"adapt",ipa:"/əˈdæpt/",cn:"适应"},
+{en:"admit",ipa:"/ədˈmɪt/",cn:"承认"},{en:"adopt",ipa:"/əˈdɒpt/",cn:"采纳"},{en:"advance",ipa:"/ədˈvæns/",cn:"前进"},
+{en:"afford",ipa:"/əˈfɔːrd/",cn:"负担"},{en:"amaze",ipa:"/əˈmeɪz/",cn:"使惊奇"},{en:"anxious",ipa:"/ˈæŋkʃəs/",cn:"焦虑的"},
+{en:"apply",ipa:"/əˈplaɪ/",cn:"申请"},{en:"attempt",ipa:"/əˈtempt/",cn:"尝试"},{en:"attract",ipa:"/əˈtrækt/",cn:"吸引"},
+{en:"balance",ipa:"/ˈbæləns/",cn:"平衡"},{en:"benefit",ipa:"/ˈbenɪfɪt/",cn:"受益"},{en:"blame",ipa:"/bleɪm/",cn:"责备"},
+{en:"bother",ipa:"/ˈbɒðər/",cn:"打扰"},{en:"bound",ipa:"/baʊnd/",cn:"界限"},{en:"brief",ipa:"/briːf/",cn:"简要的"},
+{en:"burden",ipa:"/ˈbɜːrdn/",cn:"负担"},{en:"calm",ipa:"/kɑːm/",cn:"平静的"},{en:"capable",ipa:"/ˈkeɪpəbl/",cn:"有能力"},
+{en:"capture",ipa:"/ˈkæptʃər/",cn:"捕获"},{en:"career",ipa:"/kəˈrɪr/",cn:"职业"},{en:"challenge",ipa:"/ˈtʃælɪndʒ/",cn:"挑战"},
+{en:"claim",ipa:"/kleɪm/",cn:"声称"},{en:"clarify",ipa:"/ˈklærəfaɪ/",cn:"澄清"},{en:"collapse",ipa:"/kəˈlæps/",cn:"崩溃"},
+{en:"commit",ipa:"/kəˈmɪt/",cn:"承诺"},{en:"compare",ipa:"/kəmˈper/",cn:"比较"},{en:"compete",ipa:"/kəmˈpiːt/",cn:"竞争"},
+{en:"confess",ipa:"/kənˈfes/",cn:"承认"},{en:"confident",ipa:"/ˈkɒnfɪdənt/",cn:"自信的"},{en:"confirm",ipa:"/kənˈfɜːrm/",cn:"确认"},
+{en:"confuse",ipa:"/kənˈfjuːz/",cn:"使困惑"},{en:"connect",ipa:"/kəˈnekt/",cn:"连接"},{en:"convince",ipa:"/kənˈvɪns/",cn:"说服"},
+{en:"courage",ipa:"/ˈkɜːrɪdʒ/",cn:"勇气"},{en:"debate",ipa:"/dɪˈbeɪt/",cn:"辩论"},{en:"declare",ipa:"/dɪˈkler/",cn:"宣布"},
+{en:"defeat",ipa:"/dɪˈfiːt/",cn:"击败"},{en:"defend",ipa:"/dɪˈfend/",cn:"防御"},{en:"define",ipa:"/dɪˈfaɪn/",cn:"定义"},
+{en:"delight",ipa:"/dɪˈlaɪt/",cn:"快乐"},{en:"demand",ipa:"/dɪˈmænd/",cn:"需求"},{en:"deserve",ipa:"/dɪˈzɜːrv/",cn:"值得"},
+{en:"destroy",ipa:"/dɪˈstrɔɪ/",cn:"破坏"},{en:"determine",ipa:"/dɪˈtɜːrmɪn/",cn:"决定"},{en:"develop",ipa:"/dɪˈveləp/",cn:"发展"},
+{en:"devote",ipa:"/dɪˈvoʊt/",cn:"奉献"},{en:"discover",ipa:"/dɪˈskʌvər/",cn:"发现"},{en:"display",ipa:"/dɪˈspleɪ/",cn:"展示"},
+{en:"distinct",ipa:"/dɪˈstɪŋkt/",cn:"不同的"},{en:"domestic",ipa:"/dəˈmestɪk/",cn:"国内的"},{en:"dramatic",ipa:"/drəˈmætɪk/",cn:"戏剧性的"},
+{en:"eliminate",ipa:"/ɪˈlɪmɪneɪt/",cn:"消除"},{en:"embrace",ipa:"/ɪmˈbreɪs/",cn:"拥抱"},{en:"emerge",ipa:"/ɪˈmɜːrdʒ/",cn:"出现"},
+{en:"emotion",ipa:"/ɪˈmoʊʃn/",cn:"情感"},{en:"enable",ipa:"/ɪˈneɪbl/",cn:"使能够"},{en:"encounter",ipa:"/ɪnˈkaʊntər/",cn:"遭遇"},
+{en:"enormous",ipa:"/ɪˈnɔːrməs/",cn:"巨大的"},{en:"essential",ipa:"/ɪˈsenʃl/",cn:"必要的"},{en:"establish",ipa:"/ɪˈstæblɪʃ/",cn:"建立"},
+{en:"evaluate",ipa:"/ɪˈvæljueɪt/",cn:"评估"},{en:"evolve",ipa:"/ɪˈvɒlv/",cn:"进化"},{en:"examine",ipa:"/ɪɡˈzæmɪn/",cn:"检查"},
+{en:"exclude",ipa:"/ɪkˈskluːd/",cn:"排除"},{en:"expand",ipa:"/ɪkˈspænd/",cn:"扩大"},{en:"explore",ipa:"/ɪkˈsplɔːr/",cn:"探索"},
+{en:"expose",ipa:"/ɪkˈspoʊz/",cn:"暴露"},{en:"extend",ipa:"/ɪkˈstend/",cn:"扩展"},{en:"extreme",ipa:"/ɪkˈstriːm/",cn:"极端的"},
+{en:"flexible",ipa:"/ˈfleksəbl/",cn:"灵活的"},{en:"forecast",ipa:"/ˈfɔːrkæst/",cn:"预测"},{en:"forgive",ipa:"/fərˈɡɪv/",cn:"原谅"},
+{en:"fortune",ipa:"/ˈfɔːrtʃən/",cn:"财富"},{en:"generate",ipa:"/ˈdʒenəreɪt/",cn:"产生"},{en:"generous",ipa:"/ˈdʒenərəs/",cn:"慷慨的"},
+{en:"genuine",ipa:"/ˈdʒenjuɪn/",cn:"真正的"},{en:"grasp",ipa:"/ɡræsp/",cn:"抓住"},{en:"guarantee",ipa:"/ˌɡærənˈtiː/",cn:"保证"},
+{en:"hesitate",ipa:"/ˈhezɪteɪt/",cn:"犹豫"},{en:"horizon",ipa:"/həˈraɪzn/",cn:"地平线"},{en:"ignore",ipa:"/ɪɡˈnɔːr/",cn:"忽视"},
+{en:"illustrate",ipa:"/ˈɪləstreɪt/",cn:"说明"},{en:"imagine",ipa:"/ɪˈmædʒɪn/",cn:"想象"},{en:"immense",ipa:"/ɪˈmens/",cn:"巨大的"},
+{en:"imply",ipa:"/ɪmˈplaɪ/",cn:"暗示"},{en:"impose",ipa:"/ɪmˈpoʊz/",cn:"强加"},{en:"impress",ipa:"/ɪmˈpres/",cn:"印象深刻"},
+{en:"indicate",ipa:"/ˈɪndɪkeɪt/",cn:"表明"},{en:"influence",ipa:"/ˈɪnfluəns/",cn:"影响"},{en:"inform",ipa:"/ɪnˈfɔːrm/",cn:"通知"},
+{en:"innocent",ipa:"/ˈɪnəsnt/",cn:"无辜的"},{en:"inspire",ipa:"/ɪnˈspaɪər/",cn:"鼓舞"},{en:"instant",ipa:"/ˈɪnstənt/",cn:"立即的"},
+{en:"sufficient",ipa:"/səˈfɪʃnt/",cn:"充足的"},{en:"superior",ipa:"/suːˈpɪriər/",cn:"优越的"},{en:"survive",ipa:"/sərˈvaɪv/",cn:"幸存"},
+{en:"suspect",ipa:"/səˈspekt/",cn:"怀疑"},{en:"suspend",ipa:"/səˈspend/",cn:"暂停"},{en:"symbol",ipa:"/ˈsɪmbl/",cn:"象征"},
+{en:"tendency",ipa:"/ˈtendənsi/",cn:"趋势"},{en:"transfer",ipa:"/trænsˈfɜːr/",cn:"转移"},{en:"transform",ipa:"/trænsˈfɔːrm/",cn:"转变"},
+{en:"triumph",ipa:"/ˈtraɪəmf/",cn:"胜利"},{en:"universal",ipa:"/ˌjuːnɪˈvɜːrsl/",cn:"普遍的"},{en:"urge",ipa:"/ɜːrdʒ/",cn:"催促"},
+{en:"vanish",ipa:"/ˈvænɪʃ/",cn:"消失"},{en:"venture",ipa:"/ˈventʃər/",cn:"冒险"},{en:"verify",ipa:"/ˈverɪfaɪ/",cn:"验证"},
+{en:"version",ipa:"/ˈvɜːrʒn/",cn:"版本"},{en:"victim",ipa:"/ˈvɪktɪm/",cn:"受害者"},{en:"visible",ipa:"/ˈvɪzəbl/",cn:"可见的"},
+{en:"vital",ipa:"/ˈvaɪtl/",cn:"至关重要"},{en:"vivid",ipa:"/ˈvɪvɪd/",cn:"生动的"},{en:"vulnerable",ipa:"/ˈvʌlnərəbl/",cn:"脆弱的"},
+{en:"witness",ipa:"/ˈwɪtnəs/",cn:"目击者"},{en:"yield",ipa:"/jiːld/",cn:"产出"},{en:"accelerate",ipa:"/əkˈseləreɪt/",cn:"加速"},
+{en:"accumulate",ipa:"/əˈkjuːmjəleɪt/",cn:"积累"},{en:"acknowledge",ipa:"/əkˈnɒlɪdʒ/",cn:"承认"},{en:"anticipate",ipa:"/ænˈtɪsɪpeɪt/",cn:"预期"},
+{en:"appreciate",ipa:"/əˈpriːʃieɪt/",cn:"欣赏"},{en:"artificial",ipa:"/ˌɑːrtɪˈfɪʃl/",cn:"人工的"},{en:"controversy",ipa:"/kənˈtrɒvəːsi/",cn:"争议"},
+{en:"depression",ipa:"/dɪˈpreʃn/",cn:"抑郁"},{en:"distinguish",ipa:"/dɪˈstɪŋɡwɪʃ/",cn:"区分"},{en:"dominate",ipa:"/ˈdɒmɪneɪt/",cn:"主导"},
+{en:"enterprise",ipa:"/ˈentərpraɪz/",cn:"企业"},{en:"equivalent",ipa:"/ɪˈkwɪvələnt/",cn:"等价的"},{en:"exaggerate",ipa:"/ɪɡˈzædʒəreɪt/",cn:"夸张"},
+{en:"extraordinary",ipa:"/ɪkˈstrɔːrdɪneri/",cn:"非凡的"},{en:"harmony",ipa:"/ˈhɑːrməni/",cn:"和谐"},{en:"implement",ipa:"/ˈɪmplɪment/",cn:"实施"},
+{en:"inevitable",ipa:"/ɪnˈevɪtəbl/",cn:"不可避免"},{en:"interpret",ipa:"/ɪnˈtɜːrprɪt/",cn:"解释"},{en:"investigate",ipa:"/ɪnˈvestɪɡeɪt/",cn:"调查"},
+{en:"maintain",ipa:"/meɪnˈteɪn/",cn:"维持"},{en:"negotiate",ipa:"/nɪˈɡoʊʃieɪt/",cn:"谈判"},{en:"phenomenon",ipa:"/fəˈnɒmɪnən/",cn:"现象"},
+{en:"privilege",ipa:"/ˈprɪvəlɪdʒ/",cn:"特权"},{en:"promote",ipa:"/prəˈmoʊt/",cn:"促进"},{en:"recommend",ipa:"/ˌrekəˈmend/",cn:"推荐"},
+{en:"relevant",ipa:"/ˈreləvənt/",cn:"相关的"},{en:"represent",ipa:"/ˌreprɪˈzent/",cn:"代表"},{en:"reputation",ipa:"/ˌrepjuˈteɪʃn/",cn:"声誉"},
+{en:"resolve",ipa:"/rɪˈzɒlv/",cn:"解决"},{en:"restrict",ipa:"/rɪˈstrɪkt/",cn:"限制"},{en:"reveal",ipa:"/rɪˈviːl/",cn:"揭示"},
+{en:"revenue",ipa:"/ˈrevənuː/",cn:"收入"},{en:"sacrifice",ipa:"/ˈsækrɪfaɪs/",cn:"牺牲"},{en:"significant",ipa:"/sɪɡˈnɪfɪkənt/",cn:"重要的"},
+{en:"sophisticated",ipa:"/səˈfɪstɪkeɪtɪd/",cn:"复杂的"},{en:"stimulate",ipa:"/ˈstɪmjuleɪt/",cn:"刺激"},{en:"strategy",ipa:"/ˈstrætədʒi/",cn:"策略"},
+{en:"contribute",ipa:"/kənˈtrɪbjuːt/",cn:"贡献"},{en:"fundamental",ipa:"/ˌfʌndəˈmentl/",cn:"基本的"}];
+
+// ============================================================
+//  GAME
+// ============================================================
+const $=id=>document.getElementById(id);
+const ENEMIES=['👹','🐉','👾','🧟','🐺','🕷️','👻','🐍','🤖','🧛','🦅','🧌'];
+const MAX_HP=5,TOTAL_FLOORS=20,BASE_TIME=15;
+const SHOP_ITEMS=[
+    {id:'potion',icon:'❤️',name:'生命药水',desc:'回复 1 点生命',cost:3,max:3,effect:()=>{if(S.hp<S.maxHp){S.hp++;showToast('❤️ 生命+1');updateHUD();return 1}else{showToast('❤️ 生命已满');return 0}}},
+    {id:'hourglass',icon:'⏰',name:'沙漏',desc:'每局时间+5秒',cost:2,max:5,effect:()=>{S.bonusTime+=5;showToast('⏰ 时间+5秒');return 1}},
+    {id:'shield',icon:'🛡️',name:'护盾',desc:'抵挡一次错误',cost:4,max:3,effect:()=>{S.shield++;showToast('🛡️ 获得护盾');return 1}},
+    {id:'lightning',icon:'⚡',name:'闪电',desc:'跳过当前怪物',cost:4,max:3,effect:()=>{S.items.push({id:'lightning',icon:'⚡',name:'闪电',desc:'跳过怪物'});renderItems();showToast('⚡ 获得闪电');return 1}},
 ];
+let S={},timer=null,timerPaused=false;
 
-// ============================================================
-//  GAME STATE
-// ============================================================
-const ENEMIES = ['👹','🐉','👾','🧟','🐺','🕷️','👻','🐍','🤖','🧛','🦅','🧌'];
-const ITEMS = [
-    {id:'heal',name:'❤️ 治疗',desc:'回复 1 点生命',icon:'❤️',effect:healEffect},
-    {id:'time',name:'⏰ 延时',desc:'增加 8 秒',icon:'⏰',effect:timeEffect},
-    {id:'fifty',name:'💡 明灯',desc:'去除两个错误答案',icon:'💡',effect:fiftyEffect},
-    {id:'skip',name:'⚡ 跳过',desc:'直接跳到下一题',icon:'⚡',effect:skipEffect},
-];
-const MAX_HP = 5;
-const TOTAL_FLOORS = 20;
-const BASE_TIME = 15;
-const ITEM_DROP_CHANCE = 0.25;
-
-let state = {};
-let timerInterval = null;
-
-// ===== DOM =====
-const $ = id => document.getElementById(id);
-const heartsEl = $('hearts');
-const floorNum = $('floor-num');
-const scoreDisplay = $('score-display');
-const timerNum = $('timer-num');
-const timerBar = $('timer-bar');
-const wordEn = $('word-en');
-const wordIpa = $('word-ipa');
-const optionsEl = $('options');
-const playerEl = $('player');
-const enemyEl = $('enemy');
-const enemyHp = $('enemy-hp');
-const arena = $('arena');
-const itemsBar = $('items-bar');
-
-// ===== START =====
-function restartGame(){
-    state = {
-        floor:0, hp:MAX_HP, maxHp:MAX_HP, score:0,
-        correct:0, wrong:0, streak:0, maxStreak:0,
-        items:[], frozen:false, usedWords:[],
-        isGameOver:false, enemyHp:1, totalAnswered:0
+function initGame(){
+    S={
+        floor:0,hp:MAX_HP,maxHp:MAX_HP,coins:0,correct:0,wrong:0,total:0,
+        streak:0,maxStreak:0,monsterHp:3,usedWords:[],shield:0,bonusTime:0,
+        items:[],gameOver:false,fiftyUsed:false
     };
-    document.getElementById('overlay-gameover').classList.remove('active');
-    document.getElementById('overlay-victory').classList.remove('active');
-    clearItems();
+    document.getElementById('start-hp').textContent='❤️'+MAX_HP;
+    renderShop();
+}
+
+function goToScreen(id){
+    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+    $(id).classList.add('active');
+}
+
+function showOverlay(id){$(id).classList.add('show')}
+function closeOverlay(id){$(id).classList.remove('show')}
+
+function showToast(msg){
+    const t=$('toast');
+    t.textContent=msg;t.classList.add('show');
+    clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),1800);
+}
+
+// ===== SHOP =====
+function renderShop(){
+    $('shop-coins').textContent=S.coins;
+    const g=$('shop-grid');g.innerHTML='';
+    SHOP_ITEMS.forEach((item,i)=>{
+        const d=document.createElement('div');d.className='shop-item';
+        const owned= S.shield>0 && item.id==='shield' ? S.shield : 0;
+        const bought=S[item.id+'_bought']||0;
+        d.innerHTML=`
+            <div class="icon">${item.icon}</div>
+            <div class="info"><div class="name">${item.name}</div><div class="desc">${item.desc}</div></div>
+            <button class="buy-btn ${S.coins>=item.cost&&bought<item.max?'afford':'broke'}" data-idx="${i}">
+                ${bought>=item.max?'已满':(S.coins>=item.cost?item.cost+'💰':'没钱')}
+            </button>
+        `;
+        const btn=d.querySelector('.buy-btn');
+        if(S.coins>=item.cost&&bought<item.max){
+            btn.addEventListener('click',()=>{
+                if(S.coins<item.cost||(S[item.id+'_bought']||0)>=item.max)return;
+                S.coins-=item.cost;
+                if(!S[item.id+'_bought'])S[item.id+'_bought']=0;
+                S[item.id+'_bought']++;
+                item.effect();
+                renderShop();
+                updateHUD();
+            });
+        }
+        g.appendChild(d);
+    });
+}
+
+// ===== START ADVENTURE =====
+function startAdventure(){
+    S.floor=0;S.hp=S.maxHp;S.coins=S.coins||0;S.correct=0;S.wrong=0;S.total=0;
+    S.streak=0;S.maxStreak=0;S.usedWords=[];S.gameOver=false;
+    closeOverlay('overlay-go');closeOverlay('overlay-win');
+    if(!S.bonusTime)S.bonusTime=0;
+    goToScreen('screen-game');
+    S.floor=0;
+    enterFloor();
+}
+
+function enterFloor(){
+    S.floor++;S.monsterHp=3;S.fiftyUsed=false;
     updateHUD();
-    nextFloor();
-}
+    if(S.floor>TOTAL_FLOORS){showOverlay('overlay-win');showWinStats();return;}
 
-function clearItems(){
-    state.items = [];
-    for(let i=1;i<=3;i++){
-        const slot = document.getElementById('item-'+i);
-        slot.className='item-slot empty'; slot.innerHTML='<div class="tooltip"></div>';
-    }
-}
+    // Banner
+    const fb=$('floor-banner');$('banner-title').textContent='第 '+S.floor+' 层';
+    const flavours=['⚔️ 前进！','💀 危险逼近','🔥 深入地下','🌑 黑暗笼罩','💪 坚持住','🌀 地牢深处','🕯️ 继续前行','⚡ 势如破竹'];
+    $('banner-sub').textContent=flavours[(S.floor-1)%flavours.length];
+    fb.classList.add('show');
+    setTimeout(()=>fb.classList.remove('show'),1000);
 
-function updateHUD(){
-    // Hearts
-    let h='';
-    for(let i=0;i<state.maxHp;i++) h+= i<state.hp ? '❤️' : '<span class="lost">🖤</span>';
-    heartsEl.innerHTML = h;
+    // Enemy
+    const enemy=$('enemy');
+    enemy.className='fighter enemy spawn';
+    enemy.textContent=ENEMIES[(S.floor-1)%ENEMIES.length];
+    $('player').className='fighter player';
+    updateMonsterHP();
 
-    floorNum.textContent = state.floor;
-    scoreDisplay.textContent = '💰 '+state.score;
-}
+    // Word
+    let bank=WORDS.filter(w=>!S.usedWords.includes(w.en));
+    if(bank.length<10)S.usedWords=[];
+    bank=WORDS.filter(w=>!S.usedWords.includes(w.en));
+    const w=bank[Math.floor(Math.random()*bank.length)];
+    S.usedWords.push(w.en);S.word=w;
+    $('word-en').textContent=w.en;
+    $('word-ipa').textContent=w.ipa;
 
-// ===== FLOOR =====
-function nextFloor(){
-    state.floor++;
-    updateHUD();
-
-    // Check victory
-    if(state.floor > TOTAL_FLOORS){
-        victory();
-        return;
-    }
-
-    // Show floor banner
-    const banner = document.getElementById('floor-banner');
-    document.getElementById('banner-txt').textContent = '第 '+state.floor+' 层';
-    const flavor = ['⚔️ 前进！','💀 危险逼近…','🔥 越来越深了','🌑 黑暗笼罩','💪 坚持住！','🌀 地牢深处…'];
-    document.getElementById('banner-sub').textContent = flavor[(state.floor-1)%flavor.length];
-    banner.classList.add('active');
-    setTimeout(()=>banner.classList.remove('active'), 1200);
-
-    // Reset enemy visual
-    enemyEl.className = 'fighter enemy';
-    enemyEl.textContent = ENEMIES[(state.floor-1) % ENEMIES.length];
-    enemyHp.style.width = '100%';
-    playerEl.className = 'fighter player';
-
-    // Question bank: get words not used recently
-    let bank = WORDS.filter(w => !state.usedWords.includes(w.en));
-    if(bank.length < 10) state.usedWords = [];
-    bank = WORDS.filter(w => !state.usedWords.includes(w.en));
-    const word = bank[Math.floor(Math.random()*bank.length)];
-    state.usedWords.push(word.en);
-    state.currentWord = word;
-
-    wordEn.textContent = word.en;
-    wordIpa.textContent = word.ipa;
-
-    // Generate options
-    let distractors = WORDS
-        .filter(w => w.cn !== word.cn)
-        .sort(()=>Math.random()-.5)
-        .slice(0,3)
-        .map(w=>w.cn);
-    while(distractors.length<3) distractors.push('未知释义');
-    const opts = [word.cn, ...distractors].sort(()=>Math.random()-.5);
-    state.correctAnswer = word.cn;
-    state.currentOptions = opts;
-    state.fiftyUsed = false;
-
-    optionsEl.innerHTML = '';
+    // Options
+    let dist=WORDS.filter(x=>x.cn!==w.cn).sort(()=>Math.random()-.5).slice(0,3).map(x=>x.cn);
+    while(dist.length<3)dist.push('?');
+    const opts=[w.cn,...dist].sort(()=>Math.random()-.5);
+    S.correctAnswer=w.cn;
+    const o=$('options');o.innerHTML='';
     opts.forEach(opt=>{
-        const btn = document.createElement('button');
-        btn.className = 'opt-btn';
-        btn.textContent = opt;
-        btn.addEventListener('click',()=>answer(btn,opt));
-        optionsEl.appendChild(btn);
+        const b=document.createElement('button');
+        b.className='opt-btn';b.textContent=opt;
+        b.addEventListener('click',()=>handleAnswer(b,opt));
+        o.appendChild(b);
     });
 
-    // Start timer
-    startTimer(BASE_TIME);
+    // Combo display
+    updateCombo();
+
+    // Timer
+    startTimer(BASE_TIME+(S.bonusTime||0));
+}
+
+function updateMonsterHP(){
+    const w=$('monster-hp-wrap');
+    let h='';
+    for(let i=0;i<3;i++) h+= i<S.monsterHp ? '❤️' : '<span class="lost">🖤</span>';
+    w.innerHTML=h;
+}
+function updateHUD(){
+    let h='';
+    for(let i=0;i<S.maxHp;i++) h+= i<S.hp ? '❤️' : '<span class="lost">🖤</span>';
+    $('hud-hearts').innerHTML=h;
+    $('floor-num').textContent=Math.min(S.floor,TOTAL_FLOORS);
+    $('hud-coins').textContent=S.coins;
+    updateMonsterHP();
+}
+function updateCombo(){
+    const c=$('combo-display');
+    if(S.streak>=5)c.innerHTML='<span class="super">🔥🔥🔥 '+S.streak+' 连击！</span>';
+    else if(S.streak>=3)c.innerHTML='<span class="fire">🔥 '+S.streak+' 连击</span>';
+    else c.innerHTML='';
 }
 
 // ===== TIMER =====
-function startTimer(secs){
-    clearInterval(timerInterval);
-    state.timeLeft = secs;
-    timerNum.textContent = state.timeLeft;
-    timerBar.style.width = '100%';
-    timerBar.className = 'timer-bar-fill safe';
-    updateTimerColor();
-
-    timerInterval = setInterval(()=>{
-        if(state.isGameOver) return;
-        if(state.frozen) return;
-        state.timeLeft--;
-        timerNum.textContent = state.timeLeft;
-        const pct = (state.timeLeft / secs) * 100;
-        timerBar.style.width = Math.max(0,pct)+'%';
-        updateTimerColor();
-        if(state.timeLeft <= 0){
-            // Time's up = wrong answer
-            clearInterval(timerInterval);
-            handleWrong(null);
+function startTimer(sec){
+    clearInterval(timer);
+    let t=sec;S.timeLeft=t;
+    $('timer-num').textContent=t;
+    $('timer-fill').style.width='100%';
+    $('timer-fill').className='timer-fill safe';
+    const el=$('hud-timer');el.classList.remove('danger');
+    timer=setInterval(()=>{
+        if(S.gameOver||timerPaused)return;
+        t--;S.timeLeft=t;
+        $('timer-num').textContent=t;
+        const p=Math.max(0,(t/sec)*100);
+        $('timer-fill').style.width=p+'%';
+        $('timer-fill').className='timer-fill';
+        if(t<=4)$('timer-fill').classList.add('danger');
+        else if(t<=8)$('timer-fill').classList.add('warn');
+        else $('timer-fill').classList.add('safe');
+        if(t<=4)el.classList.add('danger');
+        else el.classList.remove('danger');
+        if(t<=0){
+            clearInterval(timer);
+            handleWrong();
         }
     },1000);
 }
 
-function updateTimerColor(){
-    timerBar.className = 'timer-bar-fill';
-    if(state.timeLeft <= 4) timerBar.classList.add('danger');
-    else if(state.timeLeft <= 8) timerBar.classList.add('safe');
-    else timerBar.classList.add('safe');
-    if(state.timeLeft <= 4){
-        document.querySelector('.hud-timer').classList.add('danger');
-    } else {
-        document.querySelector('.hud-timer').classList.remove('danger');
-    }
+// ===== DMG NUMBER =====
+function showDmg(text,cls,target){
+    const d=document.createElement('div');
+    d.className='dmg-num '+cls;
+    d.textContent=text;
+    const tr=target.getBoundingClientRect(),ar=$('arena').getBoundingClientRect();
+    d.style.left=(tr.left-ar.left+tr.width/2-15)+'px';
+    d.style.top=(tr.top-ar.top+5)+'px';
+    $('arena').appendChild(d);
+    setTimeout(()=>d.remove(),900);
+}
+function showItemDrop(icon){
+    const d=document.createElement('div');
+    d.className='item-drop';
+    d.textContent=icon;
+    d.style.left=(30+Math.random()*40)+'%';d.style.top='35%';
+    $('arena').appendChild(d);
+    setTimeout(()=>d.remove(),1100);
 }
 
 // ===== ANSWER =====
-function answer(btn, chosen){
-    if(state.isGameOver) return;
-    const btns = optionsEl.querySelectorAll('.opt-btn');
+function handleAnswer(btn,chosen){
+    if(S.gameOver)return;
+    const btns=$('options').querySelectorAll('.opt-btn');
     btns.forEach(b=>b.classList.add('disabled'));
-
-    if(chosen === state.correctAnswer){
+    clearInterval(timer);
+    if(chosen===S.correctAnswer){
         btn.classList.add('correct');
-        handleCorrect();
+        S.streak++;S.correct++;S.total++;
+        if(S.streak>S.maxStreak)S.maxStreak=S.streak;
+        const fast=S.timeLeft>=10;
+        let coins=1+(fast?2:0)+(S.streak>=3?1:0)+(S.streak>=5?2:0);
+        S.coins+=coins;
+
+        // Player attack animation
+        const p=$('player'),e=$('enemy');
+        if(fast){p.className='fighter player crit';showDmg('⚡暴击!','crit',e);coins+=1;S.coins+=1;}
+        else p.className='fighter player attack';
+        e.className='fighter enemy hit';
+        showDmg('-1','damage',e);
+        showDmg('+'+coins+'💰','coin',p);
+
+        S.monsterHp--;
+        updateMonsterHP();
+        updateHUD();
+        updateCombo();
+
+        if(S.monsterHp<=0){
+            // Monster defeated!
+            e.className='fighter enemy dead';
+            $('options').querySelectorAll('.opt-btn').forEach(b=>b.classList.add('disabled'));
+            S.coins+=2; // bonus for killing monster
+            // Item drop
+            if(Math.random()<.35){
+                const items=[{icon:'❤️'},{icon:'⏰'},{icon:'🛡️'},{icon:'⚡'}];
+                const drop=items[Math.floor(Math.random()*items.length)];
+                showItemDrop(drop.icon);
+                S.items.push({id:drop.icon==='❤️'?'potion':drop.icon==='⏰'?'hourglass':drop.icon==='🛡️'?'shield':'lightning',icon:drop.icon,name:drop.icon==='❤️'?'药水':drop.icon==='⏰'?'沙漏':drop.icon==='🛡️'?'护盾':'闪电',desc:''});
+                renderItems();
+            }
+            updateHUD();
+            setTimeout(()=>{e.className='fighter enemy';enterFloor()},600);
+        } else {
+            // Keep fighting same monster
+            setTimeout(()=>{
+                p.className='fighter player';
+                e.className='fighter enemy';
+                nextQuestion();
+            },500);
+        }
     } else {
-        btn.classList.add('wrong');
-        btns.forEach(b=>{if(b.textContent===state.correctAnswer)b.classList.add('correct')});
         handleWrong(btn);
     }
 }
 
-function handleCorrect(){
-    clearInterval(timerInterval);
-    state.correct++;
-    state.streak++;
-    state.totalAnswered++;
-    if(state.streak > state.maxStreak) state.maxStreak = state.streak;
+function handleWrong(clickedBtn){
+    if(S.gameOver)return;
+    clearInterval(timer);
+    const btns=$('options').querySelectorAll('.opt-btn');
+    btns.forEach(b=>b.classList.add('disabled'));
+    if(clickedBtn){clickedBtn.classList.add('wrong');btns.forEach(b=>{if(b.textContent===S.correctAnswer)b.classList.add('correct')})}
 
-    // Score: base + time bonus + streak bonus
-    let pts = 10 + Math.floor(state.timeLeft * 1.5);
-    if(state.streak >= 3) pts += 5;
-    if(state.streak >= 5) pts += 10;
-    state.score += pts;
-
-    // Animation: player attacks, enemy hit
-    playerEl.className = 'fighter player attack-left';
-    enemyEl.className = 'fighter enemy hit-right';
-    showDmg('+'+pts+'💰', 'bonus', enemyEl);
-
-    updateHUD();
-
-    // Item drop chance
-    if(Math.random() < ITEM_DROP_CHANCE){
-        const item = ITEMS[Math.floor(Math.random()*ITEMS.length)];
-        addItem(item);
-        showItemDrop(item.icon);
+    if(S.shield>0){
+        S.shield--;showToast('🛡️ 护盾抵挡了伤害！');
+        // Shield saves us, but streak breaks
+        S.streak=0;S.total++;S.wrong++;
+        updateHUD();updateCombo();
+        setTimeout(()=>{btns.forEach(b=>b.classList.remove('disabled','wrong','correct'));nextQuestion()},600);
+        return;
     }
 
-    // Check if enemy defeated (always 1HP per floor)
-    setTimeout(()=>{
-        enemyEl.className = 'fighter enemy dead';
-        showDmg('💥', 'damage', enemyEl);
-        setTimeout(()=>{
-            enemyEl.className = 'fighter enemy';
-            nextFloor();
-        },500);
-    },600);
-}
+    S.streak=0;S.total++;S.wrong++;
+    S.hp--;
+    updateHUD();updateCombo();
 
-function handleWrong(clickedBtn){
-    clearInterval(timerInterval);
-    state.wrong++;
-    state.streak = 0;
-    state.totalAnswered++;
+    // Monster attacks player
+    const p=$('player'),e=$('enemy');
+    e.className='fighter enemy attack';
+    p.className='fighter player hit';
+    showDmg('-1 ❤️','damage',p);
+    $('arena').classList.remove('shake');void $('arena').offsetWidth;$('arena').classList.add('shake');
+    setTimeout(()=>$('arena').classList.remove('shake'),300);
 
-    // Player takes damage
-    state.hp--;
-    updateHUD();
-
-    // Animation: player hit
-    playerEl.className = 'fighter player hit-right';
-    enemyEl.className = 'fighter enemy';
-    showDmg('-1 ❤️', 'damage', playerEl);
-
-    // Check death
-    if(state.hp <= 0){
-        state.isGameOver = true;
-        setTimeout(gameOver, 800);
+    if(S.hp<=0){
+        S.gameOver=true;
+        showOverlay('overlay-go');
+        $('go-floor').textContent=S.floor;
+        $('go-right').textContent=S.correct;
+        $('go-score').textContent=S.coins;
+        const acc=S.total>0?Math.round(S.correct/S.total*100):0;
+        $('go-acc').textContent=acc+'%';
+        $('go-streak').textContent='🔥'+S.maxStreak;
         return;
     }
 
     setTimeout(()=>{
-        playerEl.className = 'fighter player';
-        // Continue to next floor (already took damage)
-        enemyEl.className = 'fighter enemy dead';
-        setTimeout(()=>{
-            enemyEl.className = 'fighter enemy';
-            nextFloor();
-        },400);
+        p.className='fighter player';
+        e.className='fighter enemy';
+        nextQuestion();
     },700);
 }
 
-// ===== ITEMS =====
-function addItem(item){
-    // Find empty slot or replace worst item
-    for(let i=0;i<3;i++){
-        if(!state.items[i]){
-            state.items[i] = {...item, count: 1};
-            renderItems();
-            showToast('🎁 获得 '+item.name);
-            return;
-        }
-        if(state.items[i].id === item.id){
-            state.items[i].count++;
-            renderItems();
-            showToast('🎁 '+item.name+' +1');
-            return;
-        }
-    }
-    // All slots full, replace first
-    state.items[0] = {...item, count: 1};
-    renderItems();
-    showToast('🎁 获得 '+item.name);
+function nextQuestion(){
+    // Same floor, new word
+    let bank=WORDS.filter(w=>!S.usedWords.includes(w.en));
+    if(bank.length<10)S.usedWords=[];
+    bank=WORDS.filter(w=>!S.usedWords.includes(w.en));
+    const w=bank[Math.floor(Math.random()*bank.length)];
+    S.usedWords.push(w.en);S.word=w;
+    $('word-en').textContent=w.en;
+    $('word-ipa').textContent=w.ipa;
+
+    let dist=WORDS.filter(x=>x.cn!==w.cn).sort(()=>Math.random()-.5).slice(0,3).map(x=>x.cn);
+    while(dist.length<3)dist.push('?');
+    const opts=[w.cn,...dist].sort(()=>Math.random()-.5);
+    S.correctAnswer=w.cn;S.fiftyUsed=false;
+    const o=$('options');o.innerHTML='';
+    opts.forEach(opt=>{
+        const b=document.createElement('button');
+        b.className='opt-btn';b.textContent=opt;
+        b.addEventListener('click',()=>handleAnswer(b,opt));
+        o.appendChild(b);
+    });
+    updateCombo();
+    startTimer(BASE_TIME+(S.bonusTime||0));
 }
 
+// ===== ITEMS =====
 function renderItems(){
     for(let i=0;i<3;i++){
-        const slot = document.getElementById('item-'+(i+1));
-        if(state.items[i]){
-            slot.className = 'item-slot';
-            const badge = state.items[i].count > 1 ? `<span class="badge">${state.items[i].count}</span>` : '';
-            slot.innerHTML = `${state.items[i].icon}${badge}<div class="tooltip">${state.items[i].name}: ${state.items[i].desc}</div>`;
-            slot.onclick = ()=>useItem(i);
+        const slot=$('is'+i);
+        if(S.items[i]){
+            slot.className='item-slot';
+            const c=S.items[i].count||1;
+            const badge=c>1?`<span class="badge">${c}</span>`:'';
+            slot.innerHTML=`${S.items[i].icon}${badge}<div class="tip">${S.items[i].name}</div>`;
+            slot.onclick=()=>useItem(i);
         } else {
-            slot.className = 'item-slot empty';
-            slot.innerHTML = '<div class="tooltip"></div>';
-            slot.onclick = null;
+            slot.className='item-slot empty';
+            slot.innerHTML='<div class="tip"></div>';
+            slot.onclick=null;
         }
     }
 }
 
 function useItem(idx){
-    if(!state.items[idx]) return;
-    state.items[idx].effect();
-    state.items[idx].count--;
-    if(state.items[idx].count <= 0) state.items[idx] = null;
+    if(!S.items[idx])return;
+    const item=S.items[idx];
+    if(item.id==='potion'){
+        if(S.hp<S.maxHp){S.hp++;showDmg('+1 ❤️','heal',$('player'));updateHUD();}
+        else {showToast('❤️ 生命已满');return;}
+    } else if(item.id==='hourglass'){
+        if(!timerPaused&&S.timeLeft){S.timeLeft=Math.min(S.timeLeft+8,25);$('timer-num').textContent=S.timeLeft;showToast('⏰ +8秒');}
+    } else if(item.id==='lightning'){
+        clearInterval(timer);
+        showToast('⚡ 跳过怪物');
+        $('enemy').className='fighter enemy dead';
+        setTimeout(()=>{if(!S.gameOver){$('enemy').className='fighter enemy';S.monsterHp=0;enterFloor()}},400);
+        S.items.splice(idx,1);renderItems();return;
+    } else if(item.id==='shield'){
+        S.shield++;showToast('🛡️ +1 护盾');
+    }
+    if(item.count&&item.count>1)item.count--;
+    else S.items.splice(idx,1);
     renderItems();
 }
 
-function healEffect(){
-    if(state.hp < state.maxHp){
-        state.hp++;
-        showDmg('+1 ❤️', 'heal', playerEl);
-        updateHUD();
-        showToast('❤️ 回复 1 点生命');
-    } else {
-        showToast('❤️ 生命已满');
-    }
-}
-
-function timeEffect(){
-    state.timeLeft = Math.min(state.timeLeft + 8, 20);
-    timerNum.textContent = state.timeLeft;
-    updateTimerColor();
-    showToast('⏰ 时间 +8 秒');
-}
-
-function fiftyEffect(){
-    if(state.fiftyUsed) { showToast('💡 已经用过了'); return; }
-    state.fiftyUsed = true;
-    const btns = optionsEl.querySelectorAll('.opt-btn');
-    let wrongs = [];
-    btns.forEach(b=>{
-        if(b.textContent !== state.correctAnswer) wrongs.push(b);
-    });
-    // Remove 2 wrong answers
-    const shuffled = wrongs.sort(()=>Math.random()-.5);
-    shuffled.slice(0,2).forEach(b=>{
-        b.style.visibility = 'hidden';
-        b.classList.add('disabled');
-    });
-    showToast('💡 去除了两个错误答案');
-}
-
-function skipEffect(){
-    clearInterval(timerInterval);
-    state.streak = 0;
-    // Don't count as wrong or right
-    showToast('⚡ 跳过此题');
-    enemyEl.className = 'fighter enemy dead';
-    setTimeout(()=>{
-        enemyEl.className = 'fighter enemy';
-        nextFloor();
-    },400);
-}
-
-// ===== VISUAL EFFECTS =====
-function showDmg(text, type, target){
-    const el = document.createElement('div');
-    el.className = 'dmg-num '+type;
-    el.textContent = text;
-    const rect = target.getBoundingClientRect();
-    const arenaRect = arena.getBoundingClientRect();
-    el.style.left = (rect.left - arenaRect.left + rect.width/2 - 20)+'px';
-    el.style.top = (rect.top - arenaRect.top + 20)+'px';
-    arena.appendChild(el);
-    setTimeout(()=>el.remove(), 1000);
-}
-
-function showItemDrop(icon){
-    const el = document.createElement('div');
-    el.className = 'item-drop';
-    el.textContent = icon;
-    el.style.left = (40 + Math.random()*60)+'%';
-    el.style.top = '40%';
-    arena.appendChild(el);
-    setTimeout(()=>el.remove(), 1200);
-}
-
-function showToast(msg){
-    const existing = document.querySelector('.game-toast');
-    if(existing) existing.remove();
-    const el = document.createElement('div');
-    el.className = 'game-toast';
-    el.style.cssText = `
-        position:absolute;bottom:60px;left:50%;transform:translateX(-50%);
-        background:rgba(0,0,0,.8);color:#e0dcd0;padding:8px 18px;border-radius:8px;
-        font-size:13px;z-index:30;animation:fadeToast 1.8s forwards;pointer-events:none;
-        border:1px solid rgba(255,255,255,.08);white-space:nowrap
-    `;
-    el.textContent = msg;
-    const style = document.createElement('style');
-    if(!document.getElementById('toast-style')){
-        style.id='toast-style';
-        style.textContent='@keyframes fadeToast{0%{opacity:0;transform:translateX(-50%)translateY(10px)}15%{opacity:1;transform:translateX(-50%)translateY(0)}85%{opacity:1}100%{opacity:0}}';
-        document.head.appendChild(style);
-    }
-    arena.appendChild(el);
-    setTimeout(()=>el.remove(), 1900);
-}
-
-// ===== END =====
-function gameOver(){
-    document.getElementById('overlay-gameover').classList.add('active');
-    document.getElementById('go-floor').textContent = state.floor;
-    document.getElementById('go-correct').textContent = state.correct;
-    document.getElementById('go-score').textContent = state.score;
-    const rate = state.totalAnswered > 0 ? Math.round(state.correct/state.totalAnswered*100) : 0;
-    document.getElementById('go-accuracy').textContent = rate+'%';
-    document.getElementById('go-streak').textContent = '🔥'+state.maxStreak;
-}
-
-function victory(){
-    document.getElementById('overlay-victory').classList.add('active');
-    document.getElementById('v-score').textContent = state.score;
-    const rate = state.totalAnswered > 0 ? Math.round(state.correct/state.totalAnswered*100) : 0;
-    document.getElementById('v-accuracy').textContent = rate+'%';
-    document.getElementById('v-streak').textContent = '🔥'+state.maxStreak;
+function showWinStats(){
+    $('win-score').textContent=S.coins;
+    const acc=S.total>0?Math.round(S.correct/S.total*100):0;
+    $('win-acc').textContent=acc+'%';
+    $('win-streak').textContent='🔥'+S.maxStreak;
 }
 
 // ===== START =====
-restartGame();
+initGame();
 </script>
 </body>
 </html>
