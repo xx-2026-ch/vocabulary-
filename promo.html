@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>词汇地牢 — 宣传片</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚔️</text></svg>">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;700;900&display=swap');
+body{font-family:'Noto Sans SC','Segoe UI',sans-serif;background:#07070e;color:#e0dcd0;overflow-x:hidden}
+.slide{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px;position:relative;overflow:hidden}
+
+/* ===== SLIDE 0: INTRO ===== */
+#s0{background:radial-gradient(ellipse at 50% 30%,rgba(108,92,231,.12),transparent 60%),linear-gradient(180deg,#0a0a16,#07070e)}
+#s0 .sword{font-size:80px;animation:float 3s ease-in-out infinite;filter:drop-shadow(0 8px 40px rgba(108,92,231,.4))}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-18px)}}
+#s0 h1{font-size:clamp(36px,8vw,64px);font-weight:900;margin-top:12px;background:linear-gradient(135deg,#a29bfe,#6c5ce7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:fadeUp .8s .3s both}
+#s0 .sub{font-size:clamp(16px,3vw,22px);color:#7a7a8a;margin-top:6px;animation:fadeUp .8s .6s both}
+#s0 .badges{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap;justify-content:center;animation:fadeUp .8s .9s both}
+#s0 .badges span{padding:8px 20px;border-radius:20px;font-size:14px;font-weight:600;border:1px solid rgba(255,255,255,.08)}
+#s0 .badges .p{background:rgba(108,92,231,.15);border-color:#6c5ce7;color:#a29bfe}
+#s0 .badges .g{background:rgba(16,185,129,.12);border-color:#10b981;color:#10b981}
+#s0 .badges .y{background:rgba(251,191,36,.12);border-color:#fbbf24;color:#fbbf24}
+#s0 .scroll-hint{position:absolute;bottom:24px;font-size:13px;color:#4a4a5a;animation:bounce 2s infinite}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+
+/* ===== SLIDE 1: FEATURES ===== */
+#s1{background:linear-gradient(180deg,#0e0e1a,#12121f)}
+#s1 h2{font-size:clamp(24px,5vw,40px);font-weight:900;margin-bottom:32px;animation:fadeUp .6s both}
+#s1 h2 span{background:linear-gradient(135deg,#a29bfe,#6c5ce7);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.features{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;max-width:800px;width:100%}
+.f-card{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:28px 24px;text-align:center;transition:all .3s;animation:fadeUp .6s both}
+.f-card:nth-child(1){animation-delay:.1s}.f-card:nth-child(2){animation-delay:.2s}.f-card:nth-child(3){animation-delay:.3s}.f-card:nth-child(4){animation-delay:.4s}
+.f-card:hover{transform:translateY(-4px);border-color:rgba(108,92,231,.3);background:rgba(108,92,231,.04)}
+.f-card .icon{font-size:40px;margin-bottom:10px}
+.f-card .name{font-size:17px;font-weight:700;margin-bottom:4px}
+.f-card .desc{font-size:13px;color:#7a7a8a;line-height:1.5}
+
+/* ===== SLIDE 2: GAME MODES ===== */
+#s2{background:linear-gradient(180deg,#12121f,#0a0a16)}
+#s2 h2{font-size:clamp(24px,5vw,40px);font-weight:900;margin-bottom:32px;text-align:center}
+#s2 h2 span{background:linear-gradient(135deg,#f59e0b,#fbbf24);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.modes{display:flex;flex-direction:column;gap:16px;max-width:420px;width:100%}
+.m-card{display:flex;align-items:center;gap:16px;padding:20px 24px;border-radius:14px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.02);animation:fadeUp .6s both}
+.m-card:nth-child(1){animation-delay:.1s}.m-card:nth-child(2){animation-delay:.25s}.m-card:nth-child(3){animation-delay:.4s}
+.m-card .mi{font-size:36px}
+.m-card .mt{flex:1}
+.m-card .mt .t{font-size:17px;font-weight:700}
+.m-card .mt .d{font-size:13px;color:#7a7a8a;margin-top:2px}
+
+/* ===== SLIDE 3: STORE ===== */
+#s3{background:linear-gradient(180deg,#0a0a16,#12121f)}
+#s3 h2{font-size:clamp(24px,5vw,40px);font-weight:900;margin-bottom:8px;text-align:center}
+#s3 h2 span{background:linear-gradient(135deg,#10b981,#34d399);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+#s3 .sub{color:#7a7a8a;font-size:15px;margin-bottom:28px;text-align:center}
+.shop-show{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;max-width:600px;width:100%}
+.s-item{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:18px 14px;text-align:center;animation:fadeUp .6s both}
+.s-item:nth-child(1){animation-delay:.1s}.s-item:nth-child(2){animation-delay:.15s}.s-item:nth-child(3){animation-delay:.2s}.s-item:nth-child(4){animation-delay:.25s}
+.s-item:nth-child(5){animation-delay:.3s}.s-item:nth-child(6){animation-delay:.35s}
+.s-item .si{font-size:28px}
+.s-item .sn{font-size:13px;font-weight:600;margin-top:4px}
+.s-item .sp{font-size:11px;color:#fbbf24;margin-top:1px}
+.s-item .sg{font-size:10px;color:rgba(16,185,129,.6)}.s-item .sg.ach{color:rgba(251,191,36,.8)}
+
+/* ===== SLIDE 4: EBINGHAUS ===== */
+#s4{background:radial-gradient(ellipse at 50% 40%,rgba(108,92,231,.08),transparent 60%),#07070e}
+#s4 h2{font-size:clamp(24px,5vw,40px);font-weight:900;margin-bottom:8px;text-align:center}
+#s4 h2 span{background:linear-gradient(135deg,#a29bfe,#6c5ce7);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+#s4 .sub{color:#7a7a8a;font-size:15px;margin-bottom:24px;text-align:center}
+.curve-wrap{position:relative;width:100%;max-width:500px;height:160px;margin-bottom:20px}
+.curve-svg{width:100%;height:100%}
+.curve-path{fill:none;stroke:#6c5ce7;stroke-width:2.5;stroke-linecap:round;animation:drawCurve 2.5s ease-out forwards;stroke-dasharray:800;stroke-dashoffset:800}
+.curve-path.without{stroke:#7a7a8a;stroke-dasharray:400;stroke-dashoffset:400;animation:drawCurve2 2s ease-out .5s forwards}
+@keyframes drawCurve{to{stroke-dashoffset:0}}
+@keyframes drawCurve2{to{stroke-dashoffset:0}}
+.curve-labels{display:flex;justify-content:space-between;font-size:11px;color:#7a7a8a;padding:0 10px;margin-top:-8px}
+.curve-legend{display:flex;gap:20px;justify-content:center;font-size:12px;color:#7a7a8a;margin-top:8px}
+.curve-legend span{display:flex;align-items:center;gap:6px}
+.curve-legend .dot{width:12px;height:3px;border-radius:2px}
+.review-info{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;max-width:500px;width:100%;margin-top:8px}
+.r-item{text-align:center;animation:fadeUp .6s both}
+.r-item:nth-child(1){animation-delay:.1s}.r-item:nth-child(2){animation-delay:.2s}.r-item:nth-child(3){animation-delay:.3s}.r-item:nth-child(4){animation-delay:.4s}
+.r-item .rn{font-size:22px;font-weight:800;color:#a29bfe}
+.r-item .rl{font-size:11px;color:#7a7a8a;margin-top:2px}
+
+/* ===== SLIDE 5: AUDIO ===== */
+#s5{background:linear-gradient(180deg,#12121f,#0e0e1a)}
+#s5 h2{font-size:clamp(24px,5vw,40px);font-weight:900;margin-bottom:8px;text-align:center}
+#s5 h2 span{background:linear-gradient(135deg,#f97316,#fbbf24);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+#s5 .sub{color:#7a7a8a;font-size:15px;margin-bottom:28px;text-align:center}
+.bgm-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;max-width:420px;width:100%}
+.b-item{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:16px;text-align:center;animation:fadeUp .6s both}
+.b-item:nth-child(1){animation-delay:.1s}.b-item:nth-child(2){animation-delay:.15s}.b-item:nth-child(3){animation-delay:.2s}
+.b-item:nth-child(4){animation-delay:.25s}.b-item:nth-child(5){animation-delay:.3s}.b-item:nth-child(6){animation-delay:.35s}
+.b-item .bi{font-size:26px;margin-bottom:2px;animation:pulse 2s ease-in-out infinite}
+.b-item .bn{font-size:13px;font-weight:600}
+
+/* ===== SLIDE 6: CTA ===== */
+#s6{background:radial-gradient(ellipse at 50% 40%,rgba(108,92,231,.15),transparent 60%),linear-gradient(180deg,#0a0a16,#12121f)}
+#s6 .big{font-size:80px;animation:float 3s ease-in-out infinite;filter:drop-shadow(0 8px 40px rgba(108,92,231,.4))}
+#s6 h2{font-size:clamp(28px,6vw,48px);font-weight:900;margin-top:12px}
+#s6 h2 span{background:linear-gradient(135deg,#a29bfe,#6c5ce7);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+#s6 .sub{color:#7a7a8a;font-size:16px;margin-top:4px}
+#s6 .btn{
+    margin-top:24px;padding:16px 48px;background:linear-gradient(135deg,#6c5ce7,#a29bfe);color:#fff;
+    border:none;border-radius:12px;font-size:18px;font-weight:700;cursor:pointer;text-decoration:none;
+    transition:opacity .2s;animation:fadeUp .8s .3s both
+}
+#s6 .btn:hover{opacity:.9}
+#s6 .links{margin-top:16px;display:flex;gap:16px;flex-wrap:wrap;justify-content:center;animation:fadeUp .8s .6s both}
+#s6 .links a{color:#7a7a8a;font-size:13px;text-decoration:none;transition:color .2s}
+#s6 .links a:hover{color:#a29bfe}
+#s6 .badge-row{display:flex;gap:8px;margin-top:20px;flex-wrap:wrap;justify-content:center;animation:fadeUp .8s .4s both}
+#s6 .badge-row span{padding:5px 14px;border-radius:16px;font-size:12px;border:1px solid rgba(255,255,255,.06);color:#7a7a8a}
+
+/* ===== COMMON ===== */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+.nav-dots{position:fixed;right:16px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:10px;z-index:100}
+.nav-dots a{width:10px;height:10px;border-radius:50%;border:1px solid rgba(255,255,255,.2);background:transparent;transition:all .3s;display:block}
+.nav-dots a.active{background:#6c5ce7;border-color:#6c5ce7;box-shadow:0 0 10px rgba(108,92,231,.4);transform:scale(1.3)}
+.nav-dots a:hover{border-color:#6c5ce7}
+
+@media(max-width:480px){
+.nav-dots{right:8px;gap:6px}
+.nav-dots a{width:8px;height:8px}
+}
+</style>
+</head>
+<body>
+
+<!-- Navigation dots -->
+<div class="nav-dots" id="nav-dots"></div>
+
+<!-- ===== SLIDE 0 ===== -->
+<section class="slide" id="s0">
+    <div class="sword">⚔️</div>
+    <h1>词汇地牢</h1>
+    <div class="sub">背单词 · 闯地牢 · 填拼图</div>
+    <div class="badges">
+        <span class="p">🎮 2种游戏模式</span>
+        <span class="g">🧠 SM-2 记忆算法</span>
+        <span class="y">🎵 沉浸式白噪音</span>
+    </div>
+    <div class="scroll-hint">↓ 向下滚动</div>
+</section>
+
+<!-- ===== SLIDE 1 ===== -->
+<section class="slide" id="s1">
+    <h2>🎯 <span>核心特色</span></h2>
+    <div class="features">
+        <div class="f-card"><div class="icon">⚔️</div><div class="name">地牢闯关</div><div class="desc">四选一答对击败怪物<br>3命制 · 连击系统</div></div>
+        <div class="f-card"><div class="icon">🧩</div><div class="name">填词拼图</div><div class="desc">看释义补全单词<br>像数独一样推理</div></div>
+        <div class="f-card"><div class="icon">🧠</div><div class="name">SM-2 算法</div><div class="desc">AI 自适应复习安排<br>战胜艾宾浩斯遗忘曲线</div></div>
+        <div class="f-card"><div class="icon">🏪</div><div class="name">商店 & 皮肤</div><div class="desc">8种角色皮肤 · 6种边框<br>沉浸式自定义体验</div></div>
+    </div>
+</section>
+
+<!-- ===== SLIDE 2 ===== -->
+<section class="slide" id="s2">
+    <h2>🎮 <span>双模式玩法</span></h2>
+    <div class="modes">
+        <div class="m-card">
+            <div class="mi">⚔️</div>
+            <div class="mt"><div class="t">地牢闯关</div><div class="d">每层3血怪物，答对造成1伤害，3次击败进入下一层</div></div>
+        </div>
+        <div class="m-card">
+            <div class="mi">🧩</div>
+            <div class="mt"><div class="t">填词拼图</div><div class="d">看中文释义，在空格中补齐缺失的字母，拼出完整单词</div></div>
+        </div>
+        <div class="m-card">
+            <div class="mi">📝</div>
+            <div class="mt"><div class="t">艾宾浩斯复习</div><div class="d">单词卡片模式，自评记忆程度，SM-2 算法动态安排复习间隔</div></div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== SLIDE 3 ===== -->
+<section class="slide" id="s3">
+    <h2>🏪 <span>商店 & 自定义</span></h2>
+    <div class="sub">赚金币，买皮肤，解锁成就</div>
+    <div class="shop-show">
+        <div class="s-item"><div class="si">⚔️</div><div class="sn">初始骑士</div><div class="sp">免费</div></div>
+        <div class="s-item"><div class="si">🗡️</div><div class="sn">暗夜刺客</div><div class="sp">50💰</div></div>
+        <div class="s-item"><div class="si">🏹</div><div class="sn">精灵射手</div><div class="sp">80💰</div></div>
+        <div class="s-item"><div class="si">🧙‍♂️</div><div class="sn">大魔法师</div><div class="sp">180💰</div></div>
+        <div class="s-item"><div class="si">🎓</div><div class="sn">高考达人</div><div class="sg ach">🏆通关解锁</div></div>
+        <div class="s-item"><div class="si">🌍</div><div class="sn">雅思宗师</div><div class="sg ach">🏆通关解锁</div></div>
+    </div>
+</section>
+
+<!-- ===== SLIDE 4 ===== -->
+<section class="slide" id="s4">
+    <h2>🧠 <span>SM-2 记忆算法</span></h2>
+    <div class="sub">科学对抗遗忘曲线</div>
+    <div class="curve-wrap">
+        <svg class="curve-svg" viewBox="0 0 500 150">
+            <!-- Grid -->
+            <line x1="0" y1="140" x2="500" y2="140" stroke="rgba(255,255,255,.06)"/>
+            <line x1="0" y1="90" x2="500" y2="90" stroke="rgba(255,255,255,.04)"/>
+            <line x1="0" y1="40" x2="500" y2="40" stroke="rgba(255,255,255,.04)"/>
+            <!-- Ebbinghaus curve (without review) -->
+            <path class="curve-path without" d="M10,20 C50,60 100,110 200,125 300,132 400,136 490,138"/>
+            <!-- SM-2 curve (with review) -->
+            <path class="curve-path" d="M10,15 C40,25 80,30 120,28 180,25 240,20 300,18 400,14 480,12 500,12"/>
+        </svg>
+        <div class="curve-labels">
+            <span>学习</span>
+            <span>1天</span>
+            <span>3天</span>
+            <span>7天</span>
+            <span>14天</span>
+            <span>30天</span>
+        </div>
+        <div class="curve-legend">
+            <span><div class="dot" style="background:#6c5ce7"></div>SM-2 复习后</span>
+            <span><div class="dot" style="background:#7a7a8a"></div>自然遗忘</span>
+        </div>
+    </div>
+    <div class="review-info">
+        <div class="r-item"><div class="rn">4级</div><div class="rl">自评等级</div></div>
+        <div class="r-item"><div class="rn">30天+</div><div class="rl">最长间隔</div></div>
+        <div class="r-item"><div class="rn">动态</div><div class="rl">EF易难度</div></div>
+        <div class="r-item"><div class="rn">✅</div><div class="rl">个性化安排</div></div>
+    </div>
+</section>
+
+<!-- ===== SLIDE 5 ===== -->
+<section class="slide" id="s5">
+    <h2>🎵 <span>沉浸式背景音乐</span></h2>
+    <div class="sub">程序实时生成 · 无音频文件</div>
+    <div class="bgm-grid">
+        <div class="b-item"><div class="bi">🤍</div><div class="bn">白噪音</div></div>
+        <div class="b-item"><div class="bi">🌧️</div><div class="bn">雨声</div></div>
+        <div class="b-item"><div class="bi">🌊</div><div class="bn">海浪</div></div>
+        <div class="b-item"><div class="bi">🌲</div><div class="bn">森林鸟鸣</div></div>
+        <div class="b-item"><div class="bi">🔥</div><div class="bn">壁炉</div></div>
+        <div class="b-item"><div class="bi">🌙</div><div class="bn">深夜蟋蟀</div></div>
+    </div>
+</section>
+
+<!-- ===== SLIDE 6 ===== -->
+<section class="slide" id="s6">
+    <div class="big">⚔️</div>
+    <h2><span>词汇地牢</span></h2>
+    <div class="sub">免费 · 开源 · 纯本地运行</div>
+    <a class="btn" href="https://xx-2026-ch.github.io/vocabulary-/">🚀 开始闯关</a>
+    <div class="badge-row">
+        <span>📱 PWA 可安装</span>
+        <span>🔒 不上传服务器</span>
+        <span>📚 3大词库</span>
+        <span>💾 存档系统</span>
+    </div>
+    <div class="links">
+        <a href="https://github.com/xx-2026-ch/vocabulary-" target="_blank">📂 GitHub</a>
+    </div>
+</section>
+
+<script>
+// Navigation dots
+const slides=document.querySelectorAll('.slide');
+const dots=document.getElementById('nav-dots');
+slides.forEach((_,i)=>{const a=document.createElement('a');a.href='#s'+i;a.onclick=e=>{e.preventDefault();document.getElementById('s'+i).scrollIntoView({behavior:'smooth'})};dots.appendChild(a)});
+
+// Active dot tracking
+const observer=new IntersectionObserver(entries=>{
+    entries.forEach(e=>{
+        if(e.isIntersecting){
+            const idx=e.target.id.replace('s','');
+            document.querySelectorAll('.nav-dots a').forEach((d,i)=>d.classList.toggle('active',i==idx));
+        }
+    });
+},{threshold:.5});
+slides.forEach(s=>observer.observe(s));
+
+// Track as visitor (no personal data)
+try{fetch('https://xx-2026-ch.github.io/vocabulary-/',{mode:'no-cors'})}catch(e){}
+</script>
+</body>
+</html>
