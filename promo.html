@@ -258,6 +258,45 @@ body{font-family:'Noto Sans SC','Segoe UI',sans-serif;background:#07070e;color:#
 </section>
 
 <script>
+// BGM — cinematic adventure theme via Web Audio
+let AC=null,AE=false;
+function initBGM(){if(AC)return;try{AC=new(window.AudioContext||window.webkitAudioContext)();AE=true;playBGM()}catch(e){}}
+function playBGM(){
+    if(!AC||!AE)return;
+    const mG=AC.createGain();mG.gain.value=0.04;mG.connect(AC.destination);
+    // Epic drone
+    const drone=AC.createOscillator();drone.type='sine';drone.frequency.value=65.41;
+    const dG=AC.createGain();dG.gain.value=0.025;drone.connect(dG);dG.connect(mG);drone.start();
+    // Adventure arpeggio sequence
+    const notes=[261.63,329.63,392,523.25,659.25,783.99,1046.5];
+    function seq(){
+        if(!AE)return;
+        notes.forEach((f,i)=>{
+            const o=AC.createOscillator();o.type='triangle';o.frequency.value=f;
+            const g=AC.createGain();g.gain.setValueAtTime(0.03,AC.currentTime+i*0.12);
+            g.gain.exponentialRampToValueAtTime(0.001,AC.currentTime+i*0.12+0.6);
+            o.connect(g);g.connect(mG);o.start(AC.currentTime+i*0.12);o.stop(AC.currentTime+i*0.12+0.6);
+        });
+        setTimeout(seq,notes.length*120+3000);
+    }
+    setTimeout(seq,500);
+    // Low pulse
+    function pulse(){
+        if(!AE)return;const o=AC.createOscillator();o.type='sine';o.frequency.value=55;
+        const g=AC.createGain();g.gain.setValueAtTime(0.035,AC.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.001,AC.currentTime+1.2);
+        o.connect(g);g.connect(mG);o.start();o.stop(AC.currentTime+1.2);
+        setTimeout(pulse,2800);
+    }
+    setTimeout(pulse,1200);
+}
+// User interaction starts audio
+document.addEventListener('click',initBGM,{once:true});
+document.addEventListener('touchstart',initBGM,{once:true});
+// Also scroll starts audio
+let scrolled=false;
+document.addEventListener('scroll',()=>{if(!scrolled){scrolled=true;initBGM()}},{once:true});
+
 // Navigation dots
 const slides=document.querySelectorAll('.slide');
 const dots=document.getElementById('nav-dots');
@@ -273,9 +312,6 @@ const observer=new IntersectionObserver(entries=>{
     });
 },{threshold:.5});
 slides.forEach(s=>observer.observe(s));
-
-// Track as visitor (no personal data)
-try{fetch('https://xx-2026-ch.github.io/vocabulary-/',{mode:'no-cors'})}catch(e){}
 </script>
 </body>
 </html>
