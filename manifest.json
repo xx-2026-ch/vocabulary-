@@ -1,0 +1,15 @@
+{
+  "name": "词汇地牢",
+  "short_name": "词汇地牢",
+  "description": "背单词 · 闯地牢 · 填拼图 · 艾宾浩斯复习",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#07070e",
+  "theme_color": "#6c5ce7",
+  "orientation": "portrait",
+  "categories": ["education", "games"],
+  "icons": [
+    {"src": "icon-192.png","sizes": "192x192","type": "image/png"},
+    {"src": "icon-512.png","sizes": "512x512","type": "image/png","purpose": "maskable"}
+  ]
+}
