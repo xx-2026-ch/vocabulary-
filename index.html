@@ -559,7 +559,7 @@ function renderShop(){
         const d=document.createElement('div');d.className='si';
         const cost=0; // first free, rest cost
         const price=s==='⚔️'?0:5;
-        d.innerHTML=`<div class="ic">${s}</div><div class="if"><div class="n">${s==='⚔️'?'初始骑士':s==='🗡️'?'暗夜刺客':s==='🏹'?'精灵射手':s==='🦸'?'英勇战士':s==='🧙‍♂️'?'大魔法师':s==='🧝‍♂️'?'森林精灵':s==='🦹'?'暗黑领主':s==='🤺'?'剑术大师'}${eq?' (使用中)':''}</div><div class="d">玩家皮肤</div></div>
+        d.innerHTML=`<div class="ic">${s}</div><div class="if"><div class="n">${s==='⚔️'?'初始骑士':s==='🗡️'?'暗夜刺客':s==='🏹'?'精灵射手':s==='🦸'?'英勇战士':s==='🧙‍♂️'?'大魔法师':s==='🧝‍♂️'?'森林精灵':s==='🦹'?'暗黑领主':s==='🤺'?'剑术大师':'未知皮肤'}${eq?' (使用中)':''}</div><div class="d">玩家皮肤</div></div>
             <button class="bu ${owned?(eq?'o':'a'):(U.coins>=price?'a':'b')}">${eq?'✓已装备':owned?'装备':price===0?'免费':price+'💰'}</button>`;
         const btn=d.querySelector('.bu');
         btn.onclick=()=>{
