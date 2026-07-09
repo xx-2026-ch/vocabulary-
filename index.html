@@ -1,422 +1,295 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>词汇地牢 — 单词闯关 & 填词拼图</title>
-<style>
-:root{--bd:1px solid rgba(255,255,255,.06);--bdr:rgba(255,255,255,.06);--bg2:rgba(255,255,255,.03);--txt:#e0dcd0;--txt2:#7a7a8a;--pr:#6c5ce7;--prl:#a29bfe;--su:#10b981;--wa:#ef4444;--go:#fbbf24;--cd:#12121f}
-*{margin:0;padding:0;box-sizing:border-box}
-body{background:#07070e;color:var(--txt);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden}
-#game{width:100%;max-width:500px;height:100vh;max-height:820px;background:linear-gradient(180deg,var(--cd),#0a0a16);position:relative;display:flex;flex-direction:column;overflow:hidden;border:var(--bd);transition:border-color .4s}
-#game.border-gold{--bd:2px solid #fbbf24;border:var(--bd);--bdr:#fbbf24}
-#game.border-fire{--bd:2px solid #f97316;border:var(--bd);--bdr:#f97316}
-#game.border-ice{--bd:2px solid #06b6d4;border:var(--bd);--bdr:#06b6d4}
-#game.border-dark{--bd:2px solid #a855f7;border:var(--bd);--bdr:#a855f7}
-#game.border-rainbow{--bd:2px solid transparent;border-image:linear-gradient(135deg,#ef4444,#f59e0b,#10b981,#06b6d4,#a855f7)1;border:2px solid}
+<style>*{margin:0;padding:0;box-sizing:border-box}
+body{background:#07070e;color:#e0dcd0;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden}
+#game{width:100%;max-width:500px;height:100vh;max-height:820px;background:linear-gradient(180deg,#12121f,#0a0a16);position:relative;display:flex;flex-direction:column;overflow:hidden;border:var(--bd,1px solid rgba(255,255,255,.06));transition:border-color .4s}
+#game.border-gold{border:2px solid #fbbf24}#game.border-fire{border:2px solid #f97316}#game.border-ice{border:2px solid #06b6d4}#game.border-dark{border:2px solid #a855f7}#game.border-rainbow{border:2px solid transparent;border-image:linear-gradient(135deg,#ef4444,#f59e0b,#10b981,#06b6d4,#a855f7)1}
 @media(min-width:520px){#game{border-radius:16px;height:94vh;margin:3vh auto;box-shadow:0 0 80px rgba(108,92,231,.08)}}
 .screen{display:none;flex-direction:column;height:100%;width:100%;position:absolute;inset:0}
 .screen.active{display:flex}
 .btn{padding:13px 0;border:none;border-radius:11px;font-size:16px;font-weight:700;cursor:pointer;transition:transform .1s,opacity .2s;font-family:inherit;width:100%}
 .btn:active{transform:scale(.95)}
-.btn-p{background:linear-gradient(135deg,var(--pr),var(--prl));color:#fff}
+.btn-p{background:linear-gradient(135deg,#6c5ce7,#a29bfe);color:#fff}
 .btn-p:hover{opacity:.9}
-.btn-s{background:rgba(255,255,255,.06);color:var(--txt);border:1px solid rgba(255,255,255,.1)}
+.btn-s{background:rgba(255,255,255,.06);color:#e0dcd0;border:1px solid rgba(255,255,255,.1)}
 .btn-s:hover{background:rgba(255,255,255,.1)}
-
-/* ===== HUB ===== */
 .hub{align-items:center;justify-content:center;padding:20px;text-align:center;background:radial-gradient(ellipse at 50% 0%,rgba(108,92,231,.1),transparent 70%)}
-.hub .hero{font-size:72px;margin-bottom:6px;filter:drop-shadow(0 8px 32px rgba(108,92,231,.3));animation:float 3s ease-in-out infinite;transition:font-size .3s}
+.hub .hero{font-size:72px;margin-bottom:6px;filter:drop-shadow(0 8px 32px rgba(108,92,231,.3));animation:float 3s ease-in-out infinite}
 @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
-.hub h1{font-size:36px;font-weight:900;background:linear-gradient(180deg,var(--prl),var(--pr));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.hub .sub{font-size:13px;color:var(--txt2);margin:2px 0 4px}
-.hub .bar{display:flex;justify-content:center;gap:20px;margin-bottom:14px;font-size:13px}
+.hub h1{font-size:36px;font-weight:900;background:linear-gradient(180deg,#a29bfe,#6c5ce7);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hub .sub{font-size:13px;color:#7a7a8a;margin:2px 0 8px}
+.hub .bar{display:flex;justify-content:center;gap:20px;margin-bottom:10px;font-size:13px;flex-wrap:wrap}
 .hub .bar .b{display:flex;align-items:center;gap:4px}
+.hub .slots{display:flex;gap:6px;justify-content:center;margin-bottom:12px}
+.hub .slots button{padding:4px 12px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);color:#7a7a8a;border-radius:6px;cursor:pointer;font-size:12px;font-family:inherit;transition:all .15s}
+.hub .slots button:hover{border-color:#6c5ce7;color:#a29bfe}
+.hub .slots button.act{border-color:#6c5ce7;background:rgba(108,92,231,.15);color:#6c5ce7;font-weight:700}
+.hub .slots .del{color:#ef4444!important;border-color:rgba(239,68,68,.3)!important;font-size:10px;padding:4px 6px}
+.hub .slots .del:hover{background:rgba(239,68,68,.1)!important}
 .hub .modes{display:flex;flex-direction:column;gap:10px;width:100%;max-width:260px;margin:0 auto}
-.hub .mode-btn{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:12px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);cursor:pointer;transition:all .15s;text-align:left;width:100%;font-family:inherit;color:var(--txt)}
-.hub .mode-btn:hover{background:rgba(108,92,231,.1);border-color:var(--pr);transform:translateY(-2px)}
+.hub .mode-btn{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:12px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);cursor:pointer;transition:all .15s;text-align:left;width:100%;font-family:inherit;color:#e0dcd0}
+.hub .mode-btn:hover{background:rgba(108,92,231,.1);border-color:#6c5ce7;transform:translateY(-2px)}
 .hub .mode-btn:active{transform:scale(.97)}
-.hub .mode-btn .m-icon{font-size:32px;flex-shrink:0}
-.hub .mode-btn .m-text{flex:1}
-.hub .mode-btn .m-text .t{font-size:15px;font-weight:700}
-.hub .mode-btn .m-text .d{font-size:11px;color:var(--txt2);margin-top:1px}
-.hub .mode-btn .m-arrow{font-size:18px;color:var(--txt2)}
-.hub .btm-row{display:flex;gap:8px;width:100%;max-width:260px;margin:10px auto 0;justify-content:center}
-.hub .btm-row .btn{padding:10px 0;font-size:13px;max-width:120px}
-.shop-badge{position:absolute;top:8px;right:8px;font-size:12px;background:var(--pr);color:#fff;border-radius:10px;padding:2px 8px;z-index:5}
+.hub .mode-btn .mi{font-size:32px;flex-shrink:0}
+.hub .mode-btn .mt{flex:1}
+.hub .mode-btn .mt .t{font-size:15px;font-weight:700}
+.hub .mode-btn .mt .d{font-size:11px;color:#7a7a8a;margin-top:1px}
+.hub .mode-btn .ma{font-size:18px;color:#7a7a8a}
+.hub .btm{display:flex;gap:6px;width:100%;max-width:260px;margin:8px auto 0;justify-content:center;flex-wrap:wrap}
+.hub .btm .btn{padding:8px 0;font-size:12px;max-width:100px}
+.audio-btn{position:absolute;top:10px;right:10px;z-index:5;width:30px;height:30px;border:1px solid rgba(255,255,255,.08);border-radius:8px;background:rgba(0,0,0,.3);color:#7a7a8a;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center}
+.audio-btn:hover{border-color:#6c5ce7;color:#a29bfe}
 
-/* ===== SHOP ===== */
-.sp{padding:14px}
-.sh-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
-.sh-hdr .back{padding:6px 14px;border:none;background:rgba(255,255,255,.05);color:var(--txt);border-radius:8px;cursor:pointer;font-size:13px;font-family:inherit}
-.sh-hdr .back:hover{background:rgba(255,255,255,.1)}
-.sh-hdr .cash{font-size:14px;color:var(--go);font-weight:700}
-.sp h3{font-size:16px;font-weight:800;margin-bottom:10px}
-.sp h4{font-size:13px;font-weight:700;color:var(--txt2);margin:12px 0 6px}
-.sg{display:grid;gap:8px}
-.si{display:flex;align-items:center;gap:10px;background:var(--bg2);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:10px 12px;transition:all .15s}
-.si:active{transform:scale(.98)}
-.si .ic{font-size:24px;flex-shrink:0}
-.si .if{flex:1}
-.si .if .n{font-size:13px;font-weight:700}
-.si .if .d{font-size:10px;color:var(--txt2)}
-.si .bu{padding:6px 14px;border-radius:6px;font-size:12px;font-weight:700;border:none;cursor:pointer;font-family:inherit;flex-shrink:0;transition:opacity .15s}
-.si .bu.a{background:linear-gradient(135deg,var(--go),#f59e0b);color:#1a1a2e}
-.si .bu.b{background:rgba(255,255,255,.08);color:var(--txt2);cursor:not-allowed}
-.si .bu.o{background:rgba(16,185,129,.15);color:var(--su);cursor:default}
-.sf{text-align:center;padding-top:10px;font-size:11px;color:var(--txt2)}
+/* Stats & Review */
+.stats-screen{padding:16px;overflow-y:auto}
+.sh{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.sh button{padding:6px 12px;border:none;background:rgba(255,255,255,.05);color:#e0dcd0;border-radius:8px;cursor:pointer;font-size:12px;font-family:inherit}
+.sh button:hover{background:rgba(255,255,255,.1)}
+.sc{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.sc .c{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:14px;text-align:center}
+.sc .c .nv{font-size:24px;font-weight:800;color:#a29bfe}
+.sc .c .lb{font-size:11px;color:#7a7a8a;margin-top:2px}
+.sb{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:14px;margin-bottom:12px}
+.sb h3{font-size:14px;font-weight:700;margin-bottom:8px}
+.sb .pb{height:6px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden}
+.sb .pf{height:100%;background:linear-gradient(90deg,#10b981,#34d399);border-radius:3px;transition:width .3s}
+.sb .pl{font-size:11px;color:#7a7a8a;margin-top:4px;display:flex;justify-content:space-between}
 
-/* ===== WORD BANK SELECT ===== */
-.wb{padding:16px}
-.wb-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
-.wb-hdr .back{padding:6px 14px;border:none;background:rgba(255,255,255,.05);color:var(--txt);border-radius:8px;cursor:pointer;font-size:13px;font-family:inherit}
-.wb-hdr .back:hover{background:rgba(255,255,255,.1)}
-.wb-grid{display:grid;gap:10px;flex:1;align-content:start}
-.wb-item{display:flex;align-items:center;gap:12px;background:var(--bg2);border:2px solid rgba(255,255,255,.06);border-radius:11px;padding:12px 14px;cursor:pointer;transition:all .15s}
-.wb-item:hover{border-color:var(--pr);background:rgba(108,92,231,.06)}
-.wb-item:active{transform:scale(.98)}
-.wb-item .ic{font-size:28px;flex-shrink:0}
-.wb-item .if{flex:1}
-.wb-item .if .n{font-size:14px;font-weight:700}
-.wb-item .if .d{font-size:11px;color:var(--txt2)}
-.wb-item .chk{font-size:18px;color:var(--su);display:none}
-.wb-item.active{border-color:var(--pr);background:rgba(108,92,231,.1)}
-.wb-item.active .chk{display:block}
-.custom-upload{margin-top:12px;text-align:center}
-.custom-upload label{padding:8px 20px;border:1px dashed var(--bdr);border-radius:8px;cursor:pointer;font-size:13px;color:var(--txt2);display:inline-block;transition:all .15s}
-.custom-upload label:hover{border-color:var(--pr);color:var(--pr)}
-.custom-upload input{display:none}
-.custom-badge{font-size:11px;color:var(--pr);margin-top:6px;display:none}
-
-/* ===== MODE COMMON ===== */
-.hud{padding:8px 14px 4px;display:flex;justify-content:space-between;align-items:center;background:rgba(0,0,0,.35);flex-shrink:0;flex-wrap:wrap;gap:4px}
-.hud-l{font-size:13px;font-weight:700;color:var(--prl)}
-.hud-l span{color:var(--txt)}
-.hud-h{display:flex;gap:2px;font-size:15px}
-.hud-h .lost{opacity:.2}
-.hud-c{font-size:13px;color:var(--go);font-weight:700}
-.hud-t{font-size:13px;display:flex;align-items:center;gap:3px;font-weight:700}
-.hud-t.danger{color:var(--wa);animation:blink .5s infinite}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+/* Review card */
+.rv{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:20px;text-align:center}
+.rv .re{font-size:32px;font-weight:800;color:#fff;margin-bottom:8px}
+.rv .ri{font-size:14px;color:#7a7a8a;margin-bottom:16px}
+.rv .rc{font-size:20px;color:#e0dcd0;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:20px;width:100%;max-width:300px;margin-bottom:20px;display:none;line-height:1.6}
+.rv .rb{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.rv .rb button{padding:10px 20px;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;transition:opacity .15s}
+.rv .rb button:active{transform:scale(.93)}
+.rv .rb .e{background:#10b981;color:#fff}
+.rv .rb .g{background:#fbbf24;color:#1a1a2e}
+.rv .rb .h{background:#6c5ce7;color:#fff}
+.rv .rb .a{background:rgba(255,255,255,.08);color:#e0dcd0;border:1px solid rgba(255,255,255,.1)}
+.rv .rpr{font-size:12px;color:#7a7a8a;margin-bottom:10px}
+.due-wrap{max-height:200px;overflow-y:auto}
+/* Keep existing game mode styles */
+.toast{position:absolute;bottom:50px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.88);color:#e0dcd0;padding:6px 16px;border-radius:8px;font-size:13px;z-index:60;pointer-events:none;border:1px solid rgba(255,255,255,.06);opacity:0;transition:all .3s;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%)translateY(-4px)}
 .overlay{position:absolute;inset:0;background:rgba(0,0,0,.82);backdrop-filter:blur(8px);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:50;padding:24px}
 .overlay.show{display:flex}
 .overlay .emoji{font-size:60px;margin-bottom:4px}
 .overlay .title{font-size:26px;font-weight:900;margin-bottom:2px}
-.overlay .sub{font-size:14px;color:var(--txt2);margin-bottom:14px;text-align:center;line-height:1.5}
+.overlay .sub{font-size:14px;color:#7a7a8a;margin-bottom:14px;text-align:center;line-height:1.5}
 .overlay .st{display:flex;gap:14px;margin-bottom:16px;flex-wrap:wrap;justify-content:center}
 .overlay .st .s{text-align:center}
-.overlay .st .s .n{font-size:22px;font-weight:800;color:var(--prl)}
-.overlay .st .s .l{font-size:11px;color:var(--txt2)}
+.overlay .st .s .n{font-size:22px;font-weight:800;color:#a29bfe}
+.overlay .st .s .l{font-size:11px;color:#7a7a8a}
 .overlay .ac{display:flex;flex-direction:column;gap:8px;width:100%;max-width:200px}
-.toast{position:absolute;bottom:50px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.88);color:var(--txt);padding:6px 16px;border-radius:8px;font-size:13px;z-index:60;pointer-events:none;border:1px solid rgba(255,255,255,.06);opacity:0;transition:all .3s;white-space:nowrap}
-.toast.show{opacity:1;transform:translateX(-50%)translateY(-4px)}
-.audio-btn{position:absolute;top:52px;right:14px;z-index:5;width:32px;height:32px;border:1px solid var(--bdr);border-radius:8px;background:rgba(0,0,0,.3);color:var(--txt2);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center}
-.audio-btn:hover{border-color:var(--pr);color:var(--prl)}
-
-/* ===== MODE 1: DUNGEON ===== */
+.hud{padding:8px 14px 4px;display:flex;justify-content:space-between;align-items:center;background:rgba(0,0,0,.35);flex-shrink:0;flex-wrap:wrap;gap:4px}
+.hud-l{font-size:13px;font-weight:700;color:#a29bfe}.hud-l span{color:#e0dcd0}
+.hud-h{display:flex;gap:2px;font-size:15px}.hud-h .lost{opacity:.2}
+.hud-c{font-size:13px;color:#fbbf24;font-weight:700}
+.hud-t{font-size:13px;display:flex;align-items:center;gap:3px;font-weight:700}
+.hud-t.danger{color:#ef4444;animation:blink .5s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.wc{width:100%;max-width:360px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:8px 12px 10px;text-align:center;flex-shrink:0;margin-bottom:4px}
+.wc .en{font-size:18px;font-weight:800;color:#fff}
+.wc .ipa{font-size:11px;color:#7a7a8a;margin-top:1px}.wc .combo{font-size:11px;color:#fbbf24}
+.ops{display:grid;grid-template-columns:1fr 1fr;gap:6px;width:100%;max-width:360px;flex-shrink:0;margin-bottom:2px}
+.op{padding:10px 4px;border:1px solid var(--bdr,rgba(255,255,255,.08));background:rgba(255,255,255,.03);color:#e0dcd0;border-radius:9px;font-size:14px;cursor:pointer;transition:all .1s;font-weight:500;font-family:inherit;text-align:center}
+.op:hover{background:rgba(108,92,231,.12);border-color:rgba(108,92,231,.3);transform:translateY(-1px)}.op:active{transform:scale(.95)}
+.op.disabled{pointer-events:none;opacity:.4}.op.correct{background:rgba(16,185,129,.2);border-color:#10b981;color:#10b981}.op.wrong{background:rgba(239,68,68,.2);border-color:#ef4444;color:#ef4444}
+.fig{font-size:54px;transition:transform .1s;line-height:1.2}
+.fig.p{filter:drop-shadow(0 0 16px rgba(108,92,231,.35))}.fig.e{filter:drop-shadow(0 0 16px rgba(239,68,68,.25))}
+.fig.atk{animation:swing .3s ease}.fig.hit{animation:getHit .35s ease}.fig.ded{opacity:0;transform:scale(0)rotate(20deg);transition:all .4s}
+@keyframes swing{0%{transform:rotate(-8deg)}40%{transform:rotate(20deg)translateX(16px)}100%{transform:rotate(0deg)}}
+@keyframes getHit{0%{transform:translateX(0)}15%{transform:translateX(-12px)}30%{transform:translateX(6px)}50%{transform:translateX(-4px)}100%{transform:translateX(0)}}
+.mhp{display:flex;gap:3px;margin-bottom:2px;font-size:15px}.mhp .lost{opacity:.15}
+.tw{width:100%;max-width:360px;height:4px;background:rgba(255,255,255,.05);border-radius:2px;margin-bottom:4px;overflow:hidden}
+.tf{height:100%;border-radius:2px;transition:width .3s linear}
+.tf.safe{background:linear-gradient(90deg,#10b981,#34d399)}.tf.warn{background:linear-gradient(90deg,#f59e0b,#fbbf24)}.tf.danger{background:linear-gradient(90deg,#ef4444,#f97316)}
 .arena{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 14px;min-height:0;position:relative}
 .bz{display:flex;align-items:center;justify-content:space-around;width:100%;max-width:340px;flex-shrink:0;margin-bottom:2px;position:relative}
-.fig{font-size:54px;transition:transform .1s;position:relative;line-height:1.2}
-.fig.p{filter:drop-shadow(0 0 16px rgba(108,92,231,.35))}
-.fig.e{filter:drop-shadow(0 0 16px rgba(239,68,68,.25))}
-.fig.atk{animation:swing .3s ease}
-.fig.hit{animation:getHit .35s ease}
-.fig.crit{animation:cSwing .35s ease}
-.fig.ded{opacity:0;transform:scale(0)rotate(20deg);transition:all .4s}
-@keyframes swing{0%{transform:rotate(-8deg)}40%{transform:rotate(20deg)translateX(16px)}100%{transform:rotate(0deg)}}
-@keyframes cSwing{0%{transform:rotate(-10deg)scale(1)}30%{transform:rotate(25deg)translateX(20px)scale(1.15)}100%{transform:rotate(0deg)scale(1)}}
-@keyframes getHit{0%{transform:translateX(0)}15%{transform:translateX(-12px)}30%{transform:translateX(6px)}50%{transform:translateX(-4px)}100%{transform:translateX(0)}}
-.mhp{display:flex;gap:3px;margin-bottom:2px;font-size:15px}
-.mhp .lost{opacity:.15}
-.tw{width:100%;max-width:360px;height:4px;background:rgba(255,255,255,.05);border-radius:2px;margin-bottom:4px;flex-shrink:0;overflow:hidden}
-.tf{height:100%;border-radius:2px;transition:width .3s linear}
-.tf.safe{background:linear-gradient(90deg,var(--su),#34d399)}
-.tf.warn{background:linear-gradient(90deg,#f59e0b,var(--go))}
-.tf.danger{background:linear-gradient(90deg,var(--wa),#f97316)}
-.wc{width:100%;max-width:360px;background:var(--bg2);border:1px solid var(--bdr);border-radius:12px;padding:8px 12px 10px;text-align:center;flex-shrink:0;margin-bottom:4px}
-.wc .en{font-size:18px;font-weight:800;color:#fff;letter-spacing:-.2px}
-.wc .ipa{font-size:11px;color:var(--txt2);margin-top:1px}
-.wc .combo{font-size:11px;font-weight:700;margin-top:1px;color:var(--go)}
-.ops{display:grid;grid-template-columns:1fr 1fr;gap:6px;width:100%;max-width:360px;flex-shrink:0;margin-bottom:2px}
-.op{padding:10px 4px;border:1px solid var(--bdr);background:var(--bg2);color:var(--txt);border-radius:9px;font-size:14px;cursor:pointer;transition:all .1s;font-weight:500;font-family:inherit;text-align:center}
-.op:hover{background:rgba(108,92,231,.12);border-color:rgba(108,92,231,.3);transform:translateY(-1px)}
-.op:active{transform:scale(.95)}
-.op.disabled{pointer-events:none;opacity:.4}
-.op.correct{background:rgba(16,185,129,.2);border-color:var(--su);color:var(--su)}
-.op.wrong{background:rgba(239,68,68,.2);border-color:var(--wa);color:var(--wa)}
-.dn{position:absolute;font-size:28px;font-weight:900;pointer-events:none;z-index:10;animation:dF 1s forwards;text-shadow:0 2px 8px rgba(0,0,0,.5)}
-.dn.damage{color:var(--wa)}.dn.crit{color:var(--go);font-size:38px}.dn.heal{color:var(--su)}.dn.coin{color:var(--go);font-size:20px}
+.dn{position:absolute;font-size:28px;font-weight:900;pointer-events:none;z-index:10;animation:dF 1s forwards}
+.dn.damage{color:#ef4444}.dn.crit{color:#fbbf24;font-size:38px}.dn.heal{color:#10b981}.dn.coin{color:#fbbf24;font-size:20px}
 @keyframes dF{0%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(-50px)}}
-.itd{position:absolute;font-size:32px;pointer-events:none;z-index:15;animation:idA 1.2s forwards}
-@keyframes idA{0%{opacity:1;transform:translateY(0)scale(.4)}30%{opacity:1;transform:translateY(-20px)scale(1.1)}100%{opacity:0;transform:translateY(-60px)scale(.6)}}
+.ib{display:flex;gap:5px;padding:4px 12px;flex-shrink:0;background:rgba(0,0,0,.12);border-top:1px solid rgba(255,255,255,.04);flex-wrap:wrap;align-items:center}
+.ib .lbl{font-size:10px;color:#7a7a8a;margin-right:2px}
+.is{width:36px;height:36px;border:1px solid rgba(255,255,255,.06);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;background:rgba(255,255,255,.02);cursor:pointer;transition:all .12s;position:relative}
+.is:hover{background:rgba(108,92,231,.1);border-color:#6c5ce7;transform:translateY(-2px)}.is:active{transform:scale(.9)}
+.is.emp{opacity:.12;cursor:default}.is.emp:hover{background:transparent;border-color:rgba(255,255,255,.06);transform:none}
 .fb{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;z-index:30;pointer-events:none}
-.fb.show{display:flex}
-.fb .t{font-size:48px;font-weight:900;background:linear-gradient(180deg,var(--prl),var(--pr));-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:bI .5s forwards}
-.fb .s{font-size:14px;color:var(--txt2);margin-top:3px;animation:bI .5s .15s forwards;opacity:0}
+.fb.show{display:flex}.fb .t{font-size:48px;font-weight:900;background:linear-gradient(180deg,#a29bfe,#6c5ce7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:bI .5s forwards}
+.fb .s{font-size:14px;color:#7a7a8a;margin-top:3px;animation:bI .5s .15s forwards;opacity:0}
 @keyframes bI{0%{opacity:0;transform:scale(.5)translateY(20px)}100%{opacity:1;transform:scale(1)translateY(0)}}
-.shk{animation:sS .3s}
-@keyframes sS{0%,100%{transform:translateX(0)}20%{transform:translateX(-5px)}40%{transform:translateX(5px)}60%{transform:translateX(-3px)}80%{transform:translateX(3px)}}
-.ib{display:flex;gap:5px;padding:4px 12px;flex-shrink:0;background:rgba(0,0,0,.12);border-top:1px solid var(--bdr);flex-wrap:wrap;align-items:center}
-.ib .lbl{font-size:10px;color:var(--txt2);margin-right:2px}
-.is{width:36px;height:36px;border:1px solid var(--bdr);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;background:var(--bg2);cursor:pointer;transition:all .12s;position:relative}
-.is:hover{background:rgba(108,92,231,.1);border-color:var(--pr);transform:translateY(-2px)}
-.is:active{transform:scale(.9)}
-.is.emp{opacity:.12;cursor:default}.is.emp:hover{background:transparent;border-color:var(--bdr);transform:none}
-.is .bdg{position:absolute;top:-4px;right:-4px;background:var(--pr);color:#fff;border-radius:8px;font-size:9px;font-weight:700;padding:1px 4px;line-height:1.3}
-.is .tip{position:absolute;bottom:40px;left:50%;transform:translateX(-50%);background:var(--cd);border:1px solid rgba(255,255,255,.1);border-radius:5px;padding:2px 7px;font-size:10px;white-space:nowrap;color:var(--txt);display:none;pointer-events:none;z-index:20}
-.is:hover .tip{display:block}
-
-/* ===== MODE 2: FILL PUZZLE ===== */
-.ga{flex:1;display:flex;flex-direction:column;padding:8px 12px;min-height:0;position:relative;align-items:center}
+.ga{flex:1;display:flex;flex-direction:column;padding:8px 12px;min-height:0;align-items:center}
 .pw{width:100%;max-width:400px;display:flex;gap:5px;margin-bottom:8px;flex-shrink:0}
 .pd{flex:1;height:3px;background:rgba(255,255,255,.06);border-radius:2px;transition:background .3s}
-.pd.done{background:var(--su)}.pd.fail{background:var(--wa)}
-.gw{background:var(--bg2);border:1px solid var(--bdr);border-radius:12px;padding:10px 8px;width:100%;max-width:400px;flex-shrink:0;margin-bottom:6px}
-.gr{display:flex;align-items:center;gap:4px;margin-bottom:4px}
-.gr:last-child{margin-bottom:0}
-.gr .cl{font-size:11px;color:var(--txt2);width:40px;flex-shrink:0;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;position:relative;cursor:pointer}
-.gr .cl:hover{color:var(--prl)}
-.gr .cl .fl{display:none;position:absolute;right:46px;top:-3px;background:var(--cd);border:1px solid rgba(255,255,255,.1);border-radius:5px;padding:3px 8px;font-size:10px;color:var(--txt);white-space:nowrap;z-index:10}
+.pd.done{background:#10b981}.pd.fail{background:#ef4444}
+.gw{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:10px 8px;width:100%;max-width:400px;flex-shrink:0;margin-bottom:6px}
+.gr{display:flex;align-items:center;gap:4px;margin-bottom:4px}.gr:last-child{margin-bottom:0}
+.gr .cl{font-size:11px;color:#7a7a8a;width:40px;flex-shrink:0;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;position:relative;cursor:pointer}
+.gr .cl:hover{color:#a29bfe}.gr .cl .fl{display:none;position:absolute;right:46px;top:-3px;background:#12121f;border:1px solid rgba(255,255,255,.1);border-radius:5px;padding:3px 8px;font-size:10px;color:#e0dcd0;white-space:nowrap;z-index:10}
 .gr .cl:hover .fl{display:block}
 .cls{display:flex;gap:3px;flex:1;justify-content:center}
-.cl{width:28px;height:32px;border:1px solid var(--bdr);border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:var(--txt);background:var(--bg2);transition:all .12s;text-transform:lowercase}
-.cl.filled{background:rgba(16,185,129,.12);border-color:var(--su);color:var(--su)}
-.cl.empty{cursor:pointer}.cl.empty:hover{border-color:var(--pr);background:rgba(108,92,231,.08)}
-.cl.given{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.14);color:var(--prl);cursor:default}
-.cl.active{animation:cP 1s infinite}
-@keyframes cP{0%,100%{border-color:var(--pr)}50%{border-color:var(--prl)}}
+.cl{width:28px;height:32px;border:1px solid rgba(255,255,255,.12);border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#e0dcd0;background:rgba(255,255,255,.03);transition:all .12s;text-transform:lowercase}
+.cl.filled{background:rgba(16,185,129,.12);border-color:#10b981;color:#10b981}
+.cl.empty{cursor:pointer}.cl.empty:hover{border-color:#6c5ce7;background:rgba(108,92,231,.08)}
+.cl.given{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.14);color:#a29bfe;cursor:default}
 .ia{display:flex;gap:6px;width:100%;max-width:400px;flex-shrink:0;margin-bottom:6px}
-.ia input{flex:1;padding:8px 12px;border:2px solid var(--bdr);border-radius:9px;background:var(--bg2);color:var(--txt);font-size:16px;font-weight:700;outline:none;font-family:inherit;text-align:center;text-transform:lowercase;letter-spacing:1px}
-.ia input:focus{border-color:var(--pr)}.ia input::placeholder{color:#4a4a5a;font-weight:400;font-size:13px}
-.ia .sb{padding:8px 18px;background:linear-gradient(135deg,var(--pr),var(--prl));color:#fff;border:none;border-radius:9px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;transition:opacity .15s}
-.ia .sb:active{transform:scale(.95)}.ia .sb:disabled{opacity:.4;cursor:not-allowed}
+.ia input{flex:1;padding:8px 12px;border:2px solid rgba(255,255,255,.1);border-radius:9px;background:rgba(255,255,255,.04);color:#e0dcd0;font-size:16px;font-weight:700;outline:none;font-family:inherit;text-align:center;text-transform:lowercase;letter-spacing:1px}
+.ia input:focus{border-color:#6c5ce7}.ia input::placeholder{color:#4a4a5a;font-weight:400;font-size:13px}
+.ia .sb{padding:8px 18px;background:linear-gradient(135deg,#6c5ce7,#a29bfe);color:#fff;border:none;border-radius:9px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit}
+.ia .sb:active{transform:scale(.95)}
 .ha{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;flex-shrink:0;margin-bottom:2px}
-.ha .hb{padding:4px 12px;border:1px solid var(--bdr);border-radius:7px;background:var(--bg2);color:var(--txt2);font-size:11px;cursor:pointer;transition:all .15s;font-family:inherit}
-.ha .hb:hover{border-color:var(--pr);color:var(--prl)}
-.ha .hb:active{transform:scale(.95)}
-.ha .hb .cs{color:var(--go);font-size:9px}
+.ha .hb{padding:4px 12px;border:1px solid rgba(255,255,255,.08);border-radius:7px;background:rgba(255,255,255,.03);color:#7a7a8a;font-size:11px;cursor:pointer;font-family:inherit}
+.ha .hb:hover{border-color:#6c5ce7;color:#a29bfe}
 .os{display:flex;gap:4px;flex-wrap:wrap;justify-content:center;flex-shrink:0;padding:2px 0}
-.ol{width:30px;height:30px;border:1px solid var(--bdr);border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;background:var(--bg2);color:var(--txt);cursor:pointer;transition:all .1s}
-.ol:hover{background:rgba(108,92,231,.15);border-color:var(--pr);transform:translateY(-2px)}
-.ol:active{transform:scale(.9)}.ol.usd{opacity:.12;cursor:default;pointer-events:none}
-
-/* ===== SKIN DISPLAY ===== */
-.player-skin{transition:all .3s}
-
-@media(max-height:640px){.fig{font-size:44px}.wc .en{font-size:16px}.op{padding:8px 3px;font-size:13px}}
-@media(max-height:540px){.fig{font-size:36px}.cl{width:24px;height:26px;font-size:14px}}
-</style>
-</head>
+.ol{width:30px;height:30px;border:1px solid rgba(255,255,255,.08);border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;background:rgba(255,255,255,.03);color:#e0dcd0;cursor:pointer;transition:all .1s}
+.ol:hover{background:rgba(108,92,231,.15);border-color:#6c5ce7;transform:translateY(-2px)}.ol:active{transform:scale(.9)}.ol.usd{opacity:.12;cursor:default}
+@media(max-height:640px){.fig{font-size:44px}.wc .en{font-size:16px}.op{padding:8px 3px;font-size:13px}.cl{width:24px;height:26px;font-size:14px}}
+</style></head>
 <body>
 <div id="game">
-
 <!-- ===== HUB ===== -->
 <div class="screen hub active" id="s-hub">
     <div class="hero" id="hub-hero">⚔️</div>
     <h1>词汇地牢</h1>
-    <div class="sub">背单词 · 闯地牢 · 填拼图</div>
+    <div class="sub">背单词 · 闯地牢 · 填拼图 · 艾宾浩斯复习</div>
     <div class="bar">
         <span class="b">💰 <b id="hub-coins">0</b></span>
         <span class="b">📚 <b id="hub-bank">四级</b></span>
+        <span class="b">📊 <b id="hub-due">0</b>待复习</span>
     </div>
+    <div class="slots" id="slot-bar"></div>
     <div class="modes">
         <button class="mode-btn" onclick="startMode(1)">
-            <span class="m-icon" id="m1-icon">⚔️</span>
-            <span class="m-text"><div class="t">地牢闯关</div><div class="d">四选一，答对击败怪物，深入地下城</div></span>
-            <span class="m-arrow">›</span>
+            <span class="mi" id="hub-skin">⚔️</span>
+            <span class="mt"><div class="t">地牢闯关</div><div class="d">四选一，答对击败怪物</div></span>
+            <span class="ma">›</span>
         </button>
         <button class="mode-btn" onclick="startMode(2)">
-            <span class="m-icon">🧩</span>
-            <span class="m-text"><div class="t">填词拼图</div><div class="d">看释义补字母，拼出完整单词</div></span>
-            <span class="m-arrow">›</span>
+            <span class="mi">🧩</span>
+            <span class="mt"><div class="t">填词拼图</div><div class="d">看释义补字母，拼出完整单词</div></span>
+            <span class="ma">›</span>
+        </button>
+        <button class="mode-btn" onclick="startReview()">
+            <span class="mi">📝</span>
+            <span class="mt"><div class="t">艾宾浩斯复习</div><div class="d">根据遗忘曲线推送待复习单词</div></span>
+            <span class="ma">›</span>
         </button>
     </div>
-    <div class="btm-row">
-        <button class="btn btn-s" onclick="showScreen('s-shop')">🏪 商店</button>
-        <button class="btn btn-s" onclick="showScreen('s-wordbank')">📚 词库</button>
+    <div class="btm">
+        <button class="btn btn-s" onclick="showScreen('s-shop')">🏪</button>
+        <button class="btn btn-s" onclick="showScreen('s-wb')">📚</button>
+        <button class="btn btn-s" onclick="showStats()">📊</button>
     </div>
-    <div class="shop-badge" id="new-item-badge" style="display:none">🆕</div>
     <button class="audio-btn" onclick="toggleAudio()">🔇</button>
 </div>
 
-<!-- ===== SHOP ===== -->
-<div class="screen sp" id="s-shop">
-    <div class="sh-hdr">
-        <button class="back" onclick="showScreen('s-hub')">←</button>
-        <div class="cash">💰 <span id="shop-cash">0</span></div>
-    </div>
-    <div style="flex:1;overflow-y:auto;padding-bottom:10px">
-        <h3>🏪 商店</h3>
-        <h4>🔋 道具</h4>
-        <div class="sg" id="shop-items"></div>
-        <h4>🎨 皮肤</h4>
-        <div class="sg" id="shop-skins"></div>
-        <h4>🖼️ 边框</h4>
-        <div class="sg" id="shop-borders"></div>
-    </div>
-    <div class="sf">两种模式共用金币，皮肤边框全局生效</div>
+<!-- ===== SHOP ===== (placeholder - reuse logic) -->
+<div class="screen sp" id="s-shop" style="display:none;padding:16px;overflow-y:auto">
+    <div class="sh"><button onclick="showScreen('s-hub')">← 返回</button><span style="font-size:14px;color:#fbbf24">💰 <span id="shop-cash">0</span></span></div>
+    <h3 style="font-size:16px;font-weight:800;margin-bottom:10px">🏪 商店</h3>
+    <div id="shop-items"></div>
+    <h4 style="font-size:13px;font-weight:700;color:#7a7a8a;margin:12px 0 6px">🎨 皮肤</h4>
+    <div id="shop-skins"></div>
+    <h4 style="font-size:13px;font-weight:700;color:#7a7a8a;margin:12px 0 6px">🖼️ 边框</h4>
+    <div id="shop-borders"></div>
 </div>
 
-<!-- ===== WORD BANK SELECT ===== -->
-<div class="screen wb" id="s-wordbank">
-    <div class="wb-hdr">
-        <button class="back" onclick="showScreen('s-hub')">←</button>
-        <div style="font-size:13px">共 <span id="wb-total">0</span> 词</div>
-    </div>
-    <h3 style="font-size:16px;font-weight:800;margin-bottom:10px">📚 选择词库</h3>
-    <div class="wb-grid" id="wb-grid"></div>
-    <div class="custom-upload">
-        <label id="custom-label">📄 上传自定义词库（每行：单词,释义）</label>
-        <input type="file" id="custom-input" accept=".csv,.txt">
-        <div class="custom-badge" id="custom-badge">✅ 已加载</div>
-    </div>
+<!-- ===== WORD BANK ===== -->
+<div class="screen wb" id="s-wb" style="display:none;padding:16px;overflow-y:auto">
+    <div class="sh"><button onclick="showScreen('s-hub')">←</button><span style="font-size:13px" id="wb-total">0词</span></div>
+    <h3 style="font-size:16px;font-weight:800;margin-bottom:10px">📚 词库</h3>
+    <div id="wb-grid"></div>
+    <div style="margin-top:10px;text-align:center"><label style="padding:8px 20px;border:1px dashed rgba(255,255,255,.1);border-radius:8px;cursor:pointer;font-size:13px;color:#7a7a8a;display:inline-block">📄 上传词库</label><input type="file" id="custom-input" accept=".csv,.txt" style="display:none"><div id="custom-badge" style="font-size:11px;color:#6c5ce7;margin-top:4px;display:none">✅ 已加载</div></div>
 </div>
 
-<!-- ===== MODE 1: DUNGEON ===== -->
-<div class="screen" id="s-dungeon">
-    <div class="hud">
-        <div class="hud-l">🏰 <span id="d-floor">1</span>/10</div>
-        <div class="hud-h" id="d-hearts"></div>
-        <div class="hud-c">💰 <span id="d-coins">0</span></div>
-        <div class="hud-t" id="d-timer">⏱<span id="d-tn">15</span></div>
-        <button style="background:none;border:none;color:var(--txt2);font-size:16px;cursor:pointer;padding:2px 6px;border-radius:4px" onclick="pauseGame()">⏸️</button>
-    </div>
-    <div class="arena" id="arena">
-        <div class="bz">
-            <div class="fig p" id="d-player">⚔️</div>
-            <div class="fig e" id="d-enemy">👹</div>
-        </div>
-        <div class="mhp" id="d-mhp">❤️❤️❤️</div>
-        <div class="tw"><div class="tf safe" id="d-tf" style="width:100%"></div></div>
-        <div class="wc">
-            <div class="en" id="d-wen">abandon</div>
-            <div class="ipa" id="d-wipa">/əˈbændən/</div>
-            <div class="combo" id="d-combo"></div>
-        </div>
-        <div class="ops" id="d-ops"></div>
-    </div>
-    <div class="ib">
-        <span class="lbl">🎒</span>
-        <div class="is emp" id="di0"><div class="tip"></div></div>
-        <div class="is emp" id="di1"><div class="tip"></div></div>
-        <div class="is emp" id="di2"><div class="tip"></div></div>
+<!-- ===== STATS ===== -->
+<div class="screen stats-screen" id="s-stats" style="display:none">
+    <div class="sh"><button onclick="showScreen('s-hub')">← 返回</button><span style="font-weight:700">📊 学习统计</span></div>
+    <div class="sc" id="stats-cards"></div>
+    <div class="sb"><h3>📈 掌握进度</h3><div class="pb"><div class="pf" id="mastery-bar" style="width:0%"></div></div><div class="pl"><span id="mastery-text">0 / 0</span><span id="mastery-pct">0%</span></div></div>
+    <div class="sb"><h3>🧠 艾宾浩斯复习状态</h3><div class="pl"><span>待复习：<b id="due-count">0</b> 词</span><span>已掌握：<b id="mastered-count">0</b> 词</span></div><div style="font-size:11px;color:#7a7a8a;margin-top:6px">复习间隔：1h → 1d → 3d → 7d → 14d → 30d</div></div>
+    <div class="sb"><h3>📋 学习记录</h3><div style="font-size:12px;color:#7a7a8a;line-height:1.8"><div>总答题：<b id="stat-total">0</b></div><div>正确率：<b id="stat-acc">0%</b></div><div>最高连击：<b id="stat-streak">0</b></div><div>已完成复习：<b id="stat-reviews">0</b></div></div></div>
+</div>
+
+<!-- ===== REVIEW ===== -->
+<div class="screen" id="s-review" style="display:none">
+    <div class="hud"><div class="hud-l">📝 艾宾浩斯复习</div><div class="hud-c" id="rev-prog">0/0</div><button style="background:none;border:none;color:#7a7a8a;font-size:18px;cursor:pointer" onclick="exitReview()">✕</button></div>
+    <div class="rv" id="review-area">
+        <div class="rpr" id="rev-remaining">无待复习单词</div>
     </div>
 </div>
 
-<!-- ===== MODE 2: FILL PUZZLE ===== -->
-<div class="screen" id="s-puzzle">
-    <div class="hud">
-        <div class="hud-l">🧩 <span id="p-lvl">1</span>/8</div>
-        <div class="hud-h" id="p-hearts"></div>
-        <div class="hud-c">💰 <span id="p-coins">0</span></div>
-        <div class="hud-t" id="p-timer">⏱<span id="p-tn">90</span></div>
-        <button style="background:none;border:none;color:var(--txt2);font-size:16px;cursor:pointer;padding:2px 6px;border-radius:4px" onclick="pauseGame()">⏸️</button>
-    </div>
-    <div class="ga" id="p-ga">
-        <div class="pw" id="p-pw"></div>
-        <div class="gw" id="p-gw"></div>
-        <div class="ia">
-            <input type="text" id="p-inp" placeholder="输入完整单词…" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-            <button class="sb" id="p-sb">↵</button>
-        </div>
-        <div class="ha">
-            <button class="hb" onclick="pGiveHint()">💡 提示 <span class="cs">(2💰)</span></button>
-            <button class="hb" onclick="pSkip()">⚡ 跳过 <span class="cs">(3💰)</span></button>
-            <button class="hb" onclick="pShowOpts()">📋 备选 <span class="cs">(1💰)</span></button>
-        </div>
-        <div class="os" id="p-os"></div>
-    </div>
+<!-- ===== DUNGEON ===== -->
+<div class="screen" id="s-dungeon" style="display:none">
+    <div class="hud"><div class="hud-l">🏰 <span id="d-floor">1</span>/10</div><div class="hud-h" id="d-hearts"></div><div class="hud-c">💰 <span id="d-coins">0</span></div><div class="hud-t" id="d-timer">⏱<span id="d-tn">15</span></div><button style="background:none;border:none;color:#7a7a8a;font-size:16px;cursor:pointer;padding:2px 6px" onclick="pauseGame()">⏸️</button></div>
+    <div class="arena" id="arena"><div class="bz"><div class="fig p" id="d-player">⚔️</div><div class="fig e" id="d-enemy">👹</div></div>
+    <div class="mhp" id="d-mhp">❤️❤️❤️</div><div class="tw"><div class="tf safe" id="d-tf" style="width:100%"></div></div>
+    <div class="wc"><div class="en" id="d-wen">abandon</div><div class="ipa" id="d-wipa"></div><div class="combo" id="d-combo"></div></div>
+    <div class="ops" id="d-ops"></div></div>
+    <div class="ib"><span class="lbl">🎒</span><div class="is emp" id="di0"><div class="tip"></div></div><div class="is emp" id="di1"><div class="tip"></div></div><div class="is emp" id="di2"><div class="tip"></div></div></div>
+</div>
+
+<!-- ===== PUZZLE ===== -->
+<div class="screen" id="s-puzzle" style="display:none">
+    <div class="hud"><div class="hud-l">🧩 <span id="p-lvl">1</span>/8</div><div class="hud-h" id="p-hearts"></div><div class="hud-c">💰 <span id="p-coins">0</span></div><div class="hud-t" id="p-timer">⏱<span id="p-tn">90</span></div><button style="background:none;border:none;color:#7a7a8a;font-size:16px;cursor:pointer;padding:2px 6px" onclick="pauseGame()">⏸️</button></div>
+    <div class="ga" id="p-ga"><div class="pw" id="p-pw"></div><div class="gw" id="p-gw"></div><div class="ia"><input type="text" id="p-inp" placeholder="输入完整单词…" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"><button class="sb" id="p-sb">↵</button></div><div class="ha"><button class="hb" onclick="pGiveHint()">💡提示</button><button class="hb" onclick="pSkip()">⚡跳过</button><button class="hb" onclick="pShowOpts()">📋备选</button></div><div class="os" id="p-os"></div></div>
 </div>
 
 <!-- ===== OVERLAYS ===== -->
-<div class="overlay" id="o-win">
-    <div class="emoji">🏆</div>
-    <div class="title" style="color:var(--go)">通关成功！</div>
-    <div class="sub" id="o-win-sub">完成了全部关卡！</div>
-    <div class="st">
-        <div class="s"><div class="n" id="ow-c">0</div><div class="l">得分</div></div>
-        <div class="s"><div class="n" id="ow-a">0%</div><div class="l">正确率</div></div>
-        <div class="s"><div class="n" id="ow-s">🔥0</div><div class="l">连击</div></div>
-    </div>
-    <div class="ac"><button class="btn btn-p" onclick="backHub()">🏠 返回</button></div>
-</div>
-<div class="overlay" id="o-lose">
-    <div class="emoji">💀</div>
-    <div class="title" style="color:var(--wa)">倒下了</div>
-    <div class="sub" id="o-lose-sub">再试一次吧</div>
-    <div class="st">
-        <div class="s"><div class="n" id="ol-c">0</div><div class="l">得分</div></div>
-        <div class="s"><div class="n" id="ol-a">0%</div><div class="l">正确率</div></div>
-        <div class="s"><div class="n" id="ol-s">🔥0</div><div class="l">连击</div></div>
-    </div>
-    <div class="ac">
-        <button class="btn btn-p" id="ol-retry">🔄 重试</button>
-        <button class="btn btn-s" onclick="backHub()">🏠 返回</button>
-    </div>
-</div>
-<!-- ===== PAUSE OVERLAY ===== -->
-<div class="overlay" id="o-pause">
-    <div class="emoji">⏸️</div>
-    <div class="title" style="color:var(--prl)">已暂停</div>
-    <div class="sub">休息一下，准备好了再继续</div>
-    <div class="ac">
-        <button class="btn btn-p" onclick="resumeGame()">▶️ 继续</button>
-        <button class="btn btn-s" onclick="confirmExit()">🚪 退出</button>
-    </div>
-</div>
-
-<!-- ===== BANNER ===== -->
+<div class="overlay" id="o-win"><div class="emoji">🏆</div><div class="title" style="color:#fbbf24">通关成功！</div><div class="sub" id="o-win-sub"></div><div class="st"><div class="s"><div class="n" id="ow-c">0</div><div class="l">得分</div></div><div class="s"><div class="n" id="ow-a">0%</div><div class="l">正确率</div></div><div class="s"><div class="n" id="ow-s">🔥0</div><div class="l">连击</div></div></div><div class="ac"><button class="btn btn-p" onclick="backHub()">🏠 返回</button></div></div>
+<div class="overlay" id="o-lose"><div class="emoji">💀</div><div class="title" style="color:#ef4444">倒下了</div><div class="sub" id="o-lose-sub"></div><div class="st"><div class="s"><div class="n" id="ol-c">0</div><div class="l">得分</div></div><div class="s"><div class="n" id="ol-a">0%</div><div class="l">正确率</div></div><div class="s"><div class="n" id="ol-s">🔥0</div><div class="l">连击</div></div></div><div class="ac"><button class="btn btn-p" id="ol-retry">🔄 重试</button><button class="btn btn-s" onclick="backHub()">🏠 返回</button></div></div>
+<div class="overlay" id="o-pause"><div class="emoji">⏸️</div><div class="title" style="color:#a29bfe">已暂停</div><div class="sub">准备好了再继续</div><div class="ac"><button class="btn btn-p" onclick="resumeGame()">▶️ 继续</button><button class="btn btn-s" onclick="confirmExit()">🚪 退出</button></div></div>
 <div class="fb" id="fb"><div class="t" id="fb-t"></div><div class="s" id="fb-s"></div></div>
-
 <div class="toast" id="toast"></div>
+</div>
+
+<!-- ===== WORD BANK DATA (loaded from external files) ===== -->
+<div id="word-bank-loader" style="display:none">
+    <p>Loading word banks...</p>
 </div>
 
 <script>
 // ═══════════════════════════════════════════════════════════════
-//  WORD BANKS
+//  WORD BANKS (full lists loaded from external JS)
 // ═══════════════════════════════════════════════════════════════
-const BANKS={gaokao:[{en:'bury',cn:'v. 埋葬；隐藏 n. (Bury)人名；(法)比里；(英、西)伯里；(德、意、罗、波、捷、匈)布里；(俄)布雷'},{en:'large',cn:'adj. 大的；多数的；广博的 adv. 大大地；夸大地 n. 大'},{en:'system',cn:'n.  体系， 系统'},{en:'comma',cn:'n. 逗号；停顿'},{en:'thank',cn:'v. 感谢 n. 感谢 int. 谢谢'},{en:'agent',cn:'n.  代理商'},{en:'mend',cn:'v. 修理，修补；改善；修改 n. 好转，改进；修补处'},{en:'engine',cn:'n. 引擎，发动机；机车，火车头；工具'},{en:'gentle',cn:'adj.  温柔的， 柔和的'},{en:'document',cn:'n. 文件，公文；[计] 文档；证件 v. 用文件证明'},{en:'vinegar',cn:'n. 醋'},{en:'separately',cn:'adv. 分别地；分离地；个别地'},{en:'pull',cn:'v. 拉，拖 n.  拉力， 引力'},{en:'modem',cn:'n. 调制解调器（等于modulator-demodulator）'},{en:'solid',cn:'adj. 固体的；可靠的；立体的；结实的；一致的 n. 固体；立方体'},{en:'altogether',cn:'adv. 完全地；总共；总而言之 n. 整个；裸体'},{en:'win',cn:'v. 赢得；在…中获胜；劝诱 n. 赢；胜利'},{en:'die',cn:'v. 死亡；凋零；熄灭 n. 冲模，钢模；骰子'},{en:'sleepy',cn:'adj.  想睡的， 困倦的， 瞌睡的'},{en:'why',cn:'adv. 为什么 interjection. 哎呀，嗨〔表示惊讶或突然意识到某事〕'},{en:'memorial',cn:'n. 纪念碑，纪念馆；纪念仪式；纪念物 adj. 记忆的；纪念的，追悼的'},{en:'powder',cn:'n. 粉；粉末；[化工][军] 火药；尘土 v. 使成粉末；撒粉；搽粉于'},{en:'phone',cn:'n. 电话；耳机，听筒 v. 打电话'},{en:'outgoing',cn:'adj.  好交际的， 外向的； 即将离职的'},{en:'headteacher',cn:'n. 中小学的校长'},{en:'broken',cn:'adj.  弄坏了的， 破碎的'},{en:'sure',cn:'adj. 确信的；可靠的；必定的 adv. 当然；的确 n. (Sure)人名；(英)休尔'},{en:'astronomy',cn:'n. 天文学'},{en:'fasten',cn:'v. 使固定；集中于；扎牢；强加于 n. (Fasten)人名；(英)法森'},{en:'peach',cn:'n. 桃子；桃树；桃红色；受人喜欢的人（或物） adj. 桃色的；用桃子制成的 v. 告密'},{en:'total',cn:'adj. 总数的；总括的；完全的 n. 合计 vt.  合计为'},{en:'view',cn:'n.  看法； 景色'},{en:'pity',cn:'n.  怜悯， 同情； 憾事'},{en:'tale',cn:'n. 故事；传说；叙述；流言蜚语'},{en:'specific',cn:'adj.  特殊的； 明确的'},{en:'pipe',cn:'n. 管；烟斗；笛 v. 吹笛；尖叫'},{en:'worth',cn:'adj. 值…的 n. 价值；财产'},{en:'plus',cn:'prep.  加， 加上'},{en:'chart',cn:'n.  图表； 航海图'},{en:'master',cn:'v. 控制；精通；征服 n. 硕士；主人；大师；教师 adj. 主人的；主要的；熟练的'},{en:'cruel',cn:'adj.  残忍的， 残酷的； 无情的'},{en:'swing',cn:'v. 挥舞，摆动 n.  秋千'},{en:'anxious',cn:'adj.  忧虑的； 焦急的'},{en:'promote',cn:'v. 促进；提升；推销；发扬'},{en:'handful',cn:'n. 少数；一把；棘手事'},{en:'flame',cn:'n.  火焰， 光辉'},{en:'fluency',cn:'n.  流利， 流畅'},{en:'affair',cn:'n.  事， 事情'},{en:'offshore',cn:'adj. 离岸的；[海洋] 近海的；吹向海面的 adv. 向海面，向海'},{en:'inspire',cn:'v. 激发；鼓舞；启示；产生；使生灵感'},{en:'account',cn:'n. 账户；解释；账目，账单；理由；描述 v. 解释；导致；报账'},{en:'gas',cn:'n. 气体；[矿业] 瓦斯；汽油；毒气 v. 加油；毒（死）'},{en:'salt',cn:'n. 盐；风趣，刺激性 adj. 咸水的；含盐的，咸味的；盐腌的；猥亵的 v. 用盐腌；给…加盐；将盐撒在道路上使冰或雪融化'},{en:'cube',cn:'n. 立方；立方体；骰子 v. 使成立方形；使自乘二次；量…的体积'},{en:'against',cn:'prep. 反对，违反；靠；倚；防备 adj. 不利的；对立的'},{en:'wise',cn:'adj.  聪明的， 明智的'},{en:'midnight',cn:'n. 午夜，半夜12点钟 adj. 半夜的；漆黑的'},{en:'clumsy',cn:'adj. 笨拙的'},{en:'passage',cn:'n. 一段（文章）；走廊；通路'},{en:'preparation',cn:'n.  准备， 预备； 准备工作， 准备措施'},{en:'school',cn:'n. 学校；学院；学派；鱼群 v. 教育'},{en:'tissue',cn:'n.  薄的纱织品； 薄纸；  组织'},{en:'even',cn:'adj. [数] 偶数的；平坦的；相等的 adv. 甚至；即使；还；实际上 v. 使平坦；使相等 n. (Even)人名；(法)埃旺；(德)埃文；(英)埃文'},{en:'hard',cn:'adj. 努力的；硬的；困难的；辛苦的；确实的；严厉的；猛烈的；冷酷无情的 adv. 努力地；困难地；辛苦地；接近地；猛烈地；牢固地 n. (Hard)人名；(英、芬、瑞典)哈德'},{en:'commercial',cn:'adj.  商业的， 贸易的'},{en:'interrupt',cn:'v. 中断；打断；插嘴；妨碍 n. 中断'},{en:'his',cn:'pron. 他的 n. (His)人名；(法)伊斯'},{en:'messy',cn:'adj.  乱七八糟的'},{en:'merely',cn:'adv. 仅仅，只不过；只是'},{en:'precious',cn:'adj. 宝贵的；珍贵的；矫揉造作的 n. (Precious)人名；(英)普雷舍斯，普雷舍丝(女名)'},{en:'rubbish',cn:'n.  垃圾； 废物'},{en:'afford',cn:'vt.  买得起； 有时间做； 承担得起； 提供'},{en:'believe',cn:'v. 信任；料想；笃信宗教'},{en:'feeling',cn:'n. 感觉，触觉；感情，情绪；同情 adj. 有感觉的；有同情心的；富于感情的 v. 感觉；认为（feel的现在分词）；触摸'},{en:'recipe',cn:'n.  食谱'},{en:'drop',cn:'v. 滴；使降低；使终止；随口漏出 n. 滴；落下；空投；微量；滴剂'},{en:'lamp',cn:'n. 灯；照射器 vt. 照亮 vi. 发亮'},{en:'idiom',cn:'n. 成语，习语；土话'},{en:'deed',cn:'n. 行动；功绩；证书；[法] 契据 vt. 立契转让'},{en:'fiction',cn:'n. 小说；虚构，编造；谎言'},{en:'guide',cn:'n. 指南；向导；入门书 v. 引导；带领；操纵'},{en:'publicly',cn:'adv. 公然地；以公众名义'},{en:'neat',cn:'adj. 灵巧的；整洁的；优雅的；齐整的；未搀水的；平滑的'},{en:'weed',cn:'n.  野草， 杂草'},{en:'irrigation',cn:'n. 灌溉；[临床] 冲洗；冲洗法'},{en:'inland',cn:'n. 内地；内陆 adj. 内陆的；内地的；国内的 adv. 在内地；向内地；向内陆；在内陆'},{en:'race',cn:'n. 属，种；种族，人种；家庭，门第 v. 使参加比赛；和…竞赛；使急走，使全速行进'},{en:'pay',cn:'v. 支付，付；偿还，补偿；给予 n. 工资，薪水；付款；报答 adj. 收费的；需付费的'},{en:'difficult',cn:'adj.  难的； 艰难的； 不易相处的'},{en:'classic',cn:'adj. 经典的；古典的，传统的；最优秀的 n. 名著；经典著作；大艺术家'},{en:'escape',cn:'v. 逃避，避开，避免；被忘掉；被忽视 n. 逃跑；逃亡；逃走；逃跑工具或方法；野生种；泄漏'},{en:'person',cn:'n. 人；身体；容貌，外表；人称'},{en:'register',cn:'v. 登记；注册；记录；挂号邮寄；把…挂号；正式提出 n. 登记；注册；记录；寄存器；登记簿'},{en:'speaker',cn:'n. 演讲者；扬声器；说话者；说某种语言的人'},{en:'alphabet',cn:'n.  字母表'},{en:'well',cn:'adv. 很好地；充分地；满意地；适当地 adj. 良好的；健康的；适宜的 n. 井；源泉 v. 涌出'},{en:'bored',cn:'adj. 无聊的；无趣的；烦人的 v. 使厌烦（bore的过去式）；烦扰'},{en:'with',cn:'prep.  与， 伴随； 有， 以'},{en:'function',cn:'vi.  起作用； 行使职责 n. 功能，作用，职责；函数'},{en:'walk',cn:'n. 步行，走；散步 v. 散步；走过'},{en:'wonder',cn:'n. 惊奇；奇迹；惊愕 v. 怀疑；想知道；惊讶 adj. 奇妙的；非凡的'},{en:'menu',cn:'n. 菜单'},{en:'mind',cn:'v.  介意 n. 思想'},{en:'apron',cn:'n.  围裙； 台口'},{en:'undo',cn:'v. 取消；解开；破坏；扰乱'},{en:'cloudy',cn:'adj.  多云的， 阴天的'},{en:'expression',cn:'n. 表现，表示，表达；表情，脸色，态度，腔调，声调；式，符号；词句，语句，措辞，说法'},{en:'few',cn:'adj. 很少的；几乎没有的 pron. 很少 n. 很少数'},{en:'homeland',cn:'n. 祖国；故乡'},{en:'title',cn:'n. 冠军；标题；头衔；权利；字幕 v. 加标题于；赋予头衔；把…称为 adj. 冠军的；标题的；头衔的'},{en:'charge',cn:'v. 收费；指控；索价；充电 n.  费用， 价钱'},{en:'diary',cn:'n. 日志，日记；日记簿'},{en:'November',cn:'n. 十一月'},{en:'illegal',cn:'adj.  违法的， 不合规定的'},{en:'rigid',cn:'adj.  刚硬的， 刚性的； 严格的'},{en:'athletics',cn:'n. 竞技；体育运动；田径运动'},{en:'ballpoint',cn:'n. 圆珠笔'},{en:'scenery',cn:'n. 风景；景色；舞台布景'},{en:'nearby',cn:'adv.  在附近 adj. 附近的'},{en:'feel',cn:'vi. 摸索，寻找 v.  觉得； 摸起来 vt. 感觉；触摸；认为'},{en:'pet',cn:'n. 宠物；生气；受宠爱的人 v. 宠爱 adj. 宠爱的'},{en:'immigration',cn:'n.  移民'},{en:'yawn',cn:'v.  打呵欠'},{en:'sour',cn:'adj.  酸的'},{en:'savage',cn:'adj. 野蛮的；残酷的；狂怒的；荒凉的 n. 未开化的人；粗鲁的人；残暴成性的人 v. 乱咬；粗暴的对待'},{en:'liberty',cn:'n.  自由'},{en:'tyre',cn:'vt. 装轮胎于 n. [橡胶] 轮胎；轮箍'},{en:'disturb',cn:'v. 打扰；妨碍；使不安；弄乱；使恼怒'},{en:'visa',cn:'n.  签证'},{en:'pill',cn:'n. 药丸；弹丸，子弹；口服避孕药 v. 把…制成丸剂；使服用药丸；抢劫，掠夺（古语）'},{en:'character',cn:'n. 性格，品质；特性；角色；[计] 字符 v. 印，刻；使具有特征'},{en:'prohibit',cn:'vt.  禁止， 阻止'},{en:'vice',cn:'n. 恶习；缺点；[机] 老虎钳；卖淫 prep. 代替 vt. 钳住 adj. 副的；代替的'},{en:'fair',cn:'adj. 公平的；晴朗的；白皙的 n.  集市， 展览会'},{en:'September',cn:'n. 九月'},{en:'actor',cn:'n. 男演员；行动者；作用物'},{en:'centre',cn:'v. 以…为中心 n. 中心 adj. 中央的'},{en:'nationwide',cn:'adj.  全国性的'},{en:'technique',cn:'n. 技巧，技术；手法'},{en:'delicate',cn:'adj. 微妙的；精美的，雅致的；柔和的；易碎的；纤弱的；清淡可口的'},{en:'AIDS',cn:'abbr. 获得性免疫缺乏综合征；爱滋病（Acquired Immune Deficiency Syndrome）'},{en:'settle',cn:'vi. 安家，定居 vt.  解决'},{en:'pressure',cn:'n. 压力；压迫，[物] 压强 v. 迫使；密封；使……增压'},{en:'move',cn:'n. 移动；步骤；迁居；策略 v. 移动；搬家，迁移；离开'},{en:'inside',cn:'n. 里面；内部；内情；内脏 adj. 里面的；内部的；秘密的 adv. 在里面 prep. 少于；在…之内'},{en:'incident',cn:'n.  事件'},{en:'acre',cn:'n.  英亩； 田地'},{en:'conservative',cn:'adj. 保守的 n. 保守派，守旧者'},{en:'medium',cn:'adj. 中间的，中等的；半生熟的 n. 方法；媒体；媒介；中间物'},{en:'swear',cn:'v.   发誓， 诅咒'},{en:'by',cn:'prep.  靠近； 到…时； 被； 由； 以…的标准'},{en:'roof',cn:'n. 屋顶；最高处，顶部；最高限度 v. 给…盖屋顶，覆盖'},{en:'find',cn:'v. 查找，找到；发现；认为；感到；获得 n. 发现'},{en:'irrigate',cn:'v. 灌溉；冲洗；使清新'},{en:'revision',cn:'n. [印刷] 修正；复习；修订本'},{en:'boycott',cn:'v. 联合抵制；拒绝参加 n. 联合抵制'},{en:'end',cn:'n. 结束；目标；尽头；末端；死亡 v. 结束，终止；终结'},{en:'stick',cn:'v. 刺，戳；伸出；粘贴 n. 棍；手杖；呆头呆脑的人'},{en:'Mom',cn:'n. 妈妈'},{en:'civil',cn:'adj. 公民的；民间的；文职的；有礼貌的；根据民法的 n. (Civil)人名；(土)吉维尔；(法)西维尔'},{en:'anxiety',cn:'n. 焦虑；渴望；挂念；令人焦虑的事'},{en:'cast',cn:'v. 投，抛；计算；浇铸；投射（光、影、视线等） n. 投掷，抛；铸件，[古生] 铸型；演员阵容；脱落物'},{en:'rubber',cn:'n. 橡胶；橡皮；合成橡胶；按摩师 adj. 橡胶制成的 v. 涂橡胶于；用橡胶制造'},{en:'exit',cn:'n.  出口'},{en:'early',cn:'adv.  早， 在早期 adj. 早的，早期的'},{en:'advise',cn:'vt.  忠告， 劝告， 建议'},{en:'look',cn:'v. 看；期待；注意；面向；看上去像 n. 看；样子；面容'},{en:'fancy',cn:'adj. 奇特的；空想的 n. 空想，假想 vt.  想象， 空想'},{en:'climate',cn:'n. 气候；风气；思潮；风土'},{en:'distribute',cn:'v.  分布； 分配'},{en:'splendid',cn:'adj. 辉煌的；灿烂的；极好的；杰出的'},{en:'nearly',cn:'adv.  将近； 几乎'},{en:'giraffe',cn:'n. 长颈鹿'},{en:'summary',cn:'n.  [C] 摘要， 概要'},{en:'disagreement',cn:'n. 不一致；争论；意见不同'},{en:'soon',cn:'adv.  不久， 很快， 一会儿'},{en:'remind',cn:'vt.  提醒， 使记起'},{en:'up',cn:'adv. 起来；上涨；向上 prep. 在…之上；向…的较高处 adj. 涨的；起床的；向上的 n. 上升；繁荣'},{en:'substitute',cn:'n. 代用品；代替者 v. 替代'},{en:'assist',cn:'n. 帮助；助攻 v. 参加；出席'},{en:'Tokyo',cn:'n. 东京（日本首都）'},{en:'customs',cn:'n. 海关；风俗（custom的复数）；习惯；关税'},{en:'eyewitness',cn:'n. 目击者；见证人'},{en:'rag',cn:'n.  破布， 抹布'},{en:'downstairs',cn:'adv. 在楼下 adj. 楼下的 n. 楼下'},{en:'confident',cn:'adj.  自信的； 确信的'},{en:'sacrifice',cn:'n&v.  牺牲， 奉献'},{en:'reasonable',cn:'adj. 合理的，公道的；通情达理的'},{en:'broadcast',cn:'v. 广播 n.  广播节目'},{en:'poison',cn:'v. 污染；使中毒，放毒于；败坏；阻碍 n. 毒药，毒物；酒；有毒害的事物；[助剂] 抑制剂 adj. 有毒的'},{en:'grill',cn:'v. 烧，烤； n. 烤架，铁格子；烤肉'},{en:'billion',cn:'n. 十亿；大量 num. 十亿 adj. 十亿的'},{en:'airmail',cn:'n.  〈总称〉航空邮件'},{en:'Britain',cn:'n. 英国；不列颠'},{en:'worthy',cn:'adj. 值得的；有价值的；配得上的，相称的；可尊敬的；应…的 n. 杰出人物；知名人士'},{en:'ought',cn:'aux. 应该，应当；大概 vi. 应该，应当；大概'},{en:'radioactive',cn:'adj. [核] 放射性的；有辐射的'},{en:'extension',cn:'n.  伸展， 延伸'},{en:'master',cn:'vt. 精通，掌握 n.  主人； 硕士'},{en:'sharpener',cn:'n. 卷笔刀；[机] 磨具；研磨者'},{en:'day',cn:'n. 一天；时期；白昼 adv. 每天；经常在白天地 adj. 日间的；逐日的'},{en:'reputation',cn:'n.  名誉， 名声'},{en:'Thursday',cn:'n. 星期四'},{en:'popcorn',cn:'n. 爆米花，爆玉米花'},{en:'assist',cn:'v.  帮助， 协助'},{en:'flood',cn:'v.  淹没， 泛滥 n. 洪水'},{en:'noisily',cn:'adv. 吵闹地，喧闹地'},{en:'stress',cn:'n. 压力 vt.  强调'},{en:'consult',cn:'v.  请教， 商议； 查询'},{en:'engineer',cn:'n. 工程师；工兵；火车司机 v. 设计；策划；精明地处理'},{en:'athlete',cn:'n. 运动员，体育家；身强力壮的人'},{en:'pass',cn:'n. 及格；经过；护照；途径；传球 v. 经过；传递；变化；终止'},{en:'happen',cn:'v. 发生；碰巧；偶然遇到'},{en:'water',cn:'n. 水；海水；雨水；海域，大片的水 v. 使湿；供以水；给…浇水'},{en:'foreign',cn:'adj.  外国的'},{en:'admirable',cn:'adj. 令人钦佩的；极好的；值得赞扬的'},{en:'sleeve',cn:'n. [机] 套筒，[机] 套管；袖子，[服装] 袖套 vt. 给……装袖子；给……装套筒'},{en:'Iceland',cn:'n. 冰岛（欧洲岛名，在大西洋北部，近北极圈）'},{en:'wedding',cn:'n.  婚礼， 结婚'},{en:'trip',cn:'v. 绊倒；远足；犯错误；轻快地走 n. 旅行；绊倒；差错'},{en:'rocket',cn:'v. 飞驰，飞快地移动；迅速增加 n. 火箭'},{en:'relate',cn:'v.  有关； 涉及'},{en:'south',cn:'n. 南方，南边；南部 adv. 在南方，向南方 adj. 南的，南方的'},{en:'three',cn:'n. 三，三个 num. 三 adj. 三的，三个的'},{en:'alcohol',cn:'n. 酒精，乙醇'},{en:'bridegroom',cn:'n. 新郎'},{en:'addicted',cn:'adj. 沉溺于某种（尤其是不良的）嗜好的；入了迷的，上了瘾的 v. 使…上瘾（addict的过去分词）'},{en:'favourite',cn:'adj. 特别喜爱的 n.  特别喜爱的人'},{en:'girl',cn:'n. 女孩；姑娘，未婚女子；女职员，女演员；（男人的）女朋友'},{en:'tradition',cn:'n.  传统， 惯例'},{en:'asleep',cn:'adj.  睡着的， 熟睡的'},{en:'accuracy',cn:'n.  准确性'},{en:'digest',cn:'v.  消化； 领会 n.  摘要， 概要； 文摘'},{en:'breathe',cn:'v. 呼吸；低语；松口气；（风）轻拂'},{en:'jam',cn:'n. 果酱；拥挤；困境；扣篮 v. 使堵塞；挤进，使塞满；混杂；压碎'},{en:'terrify',cn:'v. 恐吓；使恐怖；使害怕'},{en:'part',cn:'v.  分离， 分别 n. 部分；角色'},{en:'chain',cn:'n.  链， 链条'},{en:'campaign',cn:'vi.  参加活动； 作战 n. 战役；竞选活动'},{en:'error',cn:'n. 误差；错误；过失'},{en:'champion',cn:'n. 冠军；拥护者；战士 v. 支持；拥护 adj. 优胜的；第一流的'},{en:'fountain',cn:'n. 喷泉，泉水；源泉'},{en:'facial',cn:'adj. 面部的，表面的；脸的，面部用的 n. 美容，美颜；脸部按摩'},{en:'bookcase',cn:'n. [家具] 书柜，书架'},{en:'tobacco',cn:'n. 烟草，烟叶；烟草制品；抽烟'},{en:'search',cn:'v. 搜寻；调查；探求 n. 搜寻；探究，查究'},{en:'hatch',cn:'n. 孵化；舱口 v. 孵；策划'},{en:'absorb',cn:'v. 吸收；吸引；承受；理解；使…全神贯注'},{en:'wide',cn:'adj.  宽的， 宽阔的； 广泛的'},{en:'drawer',cn:'n. 抽屉；开票人；出票人；起草者；酒馆侍'},{en:'container',cn:'n. 集装箱；容器'},{en:'for',cn:'conj.  因为， 由于 prep. 为了；在…期间；对于'},{en:'deed',cn:'n.  行为， 事迹'},{en:'break',cn:'v. 打破；折断；弄坏；削弱 n. 破裂；间断；（持续一段时间的状况的）改变；间歇'},{en:'triangle',cn:'n. 三角（形）；三角关系；三角形之物；三人一组'},{en:'news',cn:'n. 新闻，消息；新闻报导'},{en:'sense',cn:'n. 感觉，功能；观念；道理；理智 v. 感觉到；检测'},{en:'possibility',cn:'n.  可能， 可能性'},{en:'way',cn:'n.  道路； 方法； 作风'},{en:'half',cn:'n. 一半；半场；半学年 adv. 一半地；部分地 adj. 一半的；不完全的；半途的'},{en:'decorate',cn:'v.  装饰， 修饰'},{en:'decade',cn:'n.  十年'},{en:'honour',cn:'n. 荣誉；尊敬；勋章 v. 尊敬；[金融] 承兑；承兑远期票据'},{en:'govern',cn:'v. 管理；支配；统治；控制 n. (Govern)人名；(英)戈文'},{en:'yell',cn:'v. 大叫，叫喊 n. 喊声，叫声'},{en:'gifted',cn:'adj.  有天赋的， 有才华的'},{en:'rise',cn:'v. 上升；增强；起立；高耸 n. 上升；高地；增加；出现'},{en:'complete',cn:'adj.  完成的， 完整的 vt. 完成；结束'},{en:'commit',cn:'v. 犯罪，做错事；把交托给；指派…作战；使…承担义务'},{en:'intelligence',cn:'n. 智力；情报工作；情报机关；理解力；才智，智慧；天分'},{en:'tend',cn:'v. 趋向，倾向；照料，照顾'},{en:'expose',cn:'v. 揭露，揭发；使曝光；显示'},{en:'ashamed',cn:'adj. 惭愧的，感到难为情的；耻于……的'},{en:'chairman',cn:'n. 主席，会长；董事长'},{en:'skateboard',cn:'n. 溜冰板 v. 用滑板滑行'},{en:'constant',cn:'adj. 不变的；恒定的；经常的 n. [数] 常数；恒量'},{en:'framework',cn:'n. 框架，骨架；结构，构架'},{en:'irrigation',cn:'n.  灌溉'},{en:'canteen',cn:'n. 食堂，小卖部；水壶'},{en:'file',cn:'n. 文件；档案；文件夹；锉刀 v. 提出；锉；琢磨；把…归档'},{en:'pleasure',cn:'n. 快乐；希望；娱乐；令人高兴的事 vt. 使高兴；使满意 vi. 高兴；寻欢作乐'},{en:'convince',cn:'v. 说服；使确信，使信服'},{en:'date',cn:'n. 日期；约会；年代；枣椰子 v. 过时；注明日期；始于（某一历史时期）'},{en:'clothes',cn:'n. 衣服'},{en:'skillfully',cn:'adv. 巧妙地；精巧地'},{en:'adequate',cn:'adj.  足够的， 适当的'},{en:'steady',cn:'adj.  稳固的； 平稳的'},{en:'equal',cn:'adj. 平等的；相等的；胜任的 v. 等于；比得上 n. 对手；匹敌；同辈；相等的事物'},{en:'virtue',cn:'n. 美德；优点；贞操；功效'},{en:'partly',cn:'adv.  部分地， 在一定程度上'},{en:'glare',cn:'v. 瞪眼，怒目而视；闪耀 n.  强光'},{en:'tailor',cn:'v. 剪裁；使合适 n. 裁缝'},{en:'ambassador',cn:'n. 大使；代表；使节'},{en:'brush',cn:'n. 刷子；画笔；毛笔；争吵；与某人有效冲突；灌木丛地带；矮树丛；狐狸尾巴 v. 刷；画；'},{en:'quiz',cn:'n. 考查；恶作剧；课堂测验 v. 挖苦；张望；对…进行测验'},{en:'operate',cn:'v.  动手术； 操作， 运转'},{en:'blood',cn:'n. 血，血液；血统 v. 从…抽血；使先取得经验'},{en:'remember',cn:'v.  记得； 纪念'},{en:'rest',cn:'v. 使休息，使轻松；把…寄托于 n. 休息，静止；休息时间；剩余部分；支架'},{en:'tongue',cn:'n. 舌头；语言 v. 舔；斥责；用舌吹'},{en:'reward',cn:'n. [劳经] 报酬；报答；酬谢 v. [劳经] 奖励；奖赏'},{en:'down',cn:'adv. 向下，下去；在下面 adj. 向下的 n. 软毛，绒毛；[地质] 开阔的高地 prep. 沿着，往下 v. 打倒，击败'},{en:'Australian',cn:'adj. 澳大利亚的，澳大利亚人的 n. 澳大利亚人'},{en:'although',cn:'conj.  虽然， 尽管'},{en:'liquid',cn:'adj. 液体的；清澈的；明亮的；易变的 n. 液体，流体；流音'},{en:'explanation',cn:'n.  解释， 说明'},{en:'plan',cn:'n&v.   计划， 打算'},{en:'strike',cn:'v. 打，打击；罢工；敲，敲击；抓；打动；穿透 n. 罢工；打击；殴打'},{en:'lion',cn:'n. 狮子；名人；勇猛的人；社交场合的名流'},{en:'physics',cn:'n. 物理学；物理现象'},{en:'peace',cn:'n.  和平； 安宁'},{en:'translation',cn:'n. 翻译；译文；转化；调任'},{en:'acknowledge',cn:'vt.  答谢； 承认'},{en:'condemn',cn:'vt.  谴责， 声讨'},{en:'stay',cn:'v. 保持，停止，阻止 n.  逗留'},{en:'burial',cn:'n. 埋葬；葬礼；弃绝 adj. 埋葬的'},{en:'pest',cn:'n. 害虫；有害之物；讨厌的人'},{en:'band',cn:'n. 带，环；[物] 波段；(演奏流行音乐的) 乐队 v. 用带绑扎；给镶边'},{en:'globe',cn:'n. 地球；地球仪；球体 vt. 使…成球形 vi. 成球状'},{en:'melon',cn:'n.  甜瓜'},{en:'bedclothes',cn:'n. 床上用品；铺盖'},{en:'farm',cn:'v. 种田，务农；经营农场 n. 农场；农家；畜牧场'},{en:'biochemistry',cn:'n.  生物化学'},{en:'drunk',cn:'adj.  醉的'},{en:'still',cn:'adv.  仍然， 还 adj. 静止的，平静的'},{en:'progress',cn:'n. 进步，发展；前进 v. 前进，进步；进行'},{en:'Moscow',cn:'n. 莫斯科（俄罗斯首都）'},{en:'influence',cn:'n&vt.  影响'},{en:'peaceful',cn:'adj. 和平的，爱好和平的；平静的'},{en:'wet',cn:'adj. [气象][物] 潮湿的；有雨的 n. 雨天；湿气 v. 弄湿'},{en:'acid',cn:'adj.  酸的'},{en:'boy',cn:'n. 男孩；男人'},{en:'thief',cn:'n. 小偷，贼'},{en:'advance',cn:'v&n.  推进， 前进'},{en:'fresh',cn:'adj. 新鲜的；清新的；淡水的；无经验的 n. 开始；新生；泛滥 adv. 刚刚，才；最新地'},{en:'immigration',cn:'n. 外来移民；移居'},{en:'quiet',cn:'adj. 安静的；安定的；不动的；温顺的 n. 安静；和平 v. 使平息；安慰'},{en:'extra',cn:'adv. 特别地，非常；另外 n. 临时演员；号外；额外的事物；上等产品 adj. 额外的，另外收费的；特大的'},{en:'talk',cn:'v. 谈话，议论 n.  谈话， 会谈； 演讲'},{en:'agricultural',cn:'adj.  农业的'},{en:'final',cn:'adj. 最后的 n.  决赛； 期末考试'},{en:'explain',cn:'vt.  解释， 说明'},{en:'tree',cn:'n. 树；木料；树状物 v. 把赶上树'},{en:'effect',cn:'n.  效果； 作用， 影响'},{en:'every',cn:'adj.  每一， 每个的； 每…'},{en:'chief',cn:'n. 首领；酋长；主要部分 adj. 首席的；主要的；主任的 adv. 主要地；首要地'},{en:'doctor',cn:'v. 修理；篡改，伪造；为…治病；授以博士学位 n. 医生；博士'},{en:'avoid',cn:'v. 避免；避开，躲避；消除'},{en:'slim',cn:'adj. 苗条的；修长的；微小的；差的 v. 使…体重减轻；使…苗条 n. (Slim)人名；(阿拉伯)萨利姆；(英、西)斯利姆'},{en:'why',cn:'int. 哎呀！什么？ adv. 为什么'}],cet4:[{en:'expand',cn:'v. 扩大；使膨胀'},{en:'allow',cn:'vt. 允许， 准许； 同意给； 承认； 允许…进入'},{en:'bubble',cn:'n. 泡 v. 冒泡，沸腾'},{en:'evolutionary',cn:'adj. 进化的；演变的'},{en:'infinite',cn:'adj. 无限的；无数的'},{en:'affirm',cn:'v. 断言，声明'},{en:'nevertheless',cn:'conj. 然而 adv. 仍然'},{en:'route',cn:'n. 路线， 路程'},{en:'moral',cn:'adj. 道德的，有道德的 n. 品行； 道德规范； 寓意'},{en:'treasure',cn:'v. 珍爱'},{en:'determine',cn:'vi. 决意 vt. 决定；查明；使下决心'},{en:'socialize',cn:'v. 交往，联谊'},{en:'sew',cn:'v. 缝制，缝纫'},{en:'comment',cn:'n. 评论'},{en:'butter',cn:'n. 黄油；奶油'},{en:'nineteen',cn:'num. 十九，十九个'},{en:'soil',cn:'v. 弄脏'},{en:'mosquito',cn:'n. 蚊子'},{en:'helpful',cn:'adj. 给予帮助的； 有用的'},{en:'onion',cn:'n. 洋葱； 洋葱类植物'},{en:'cancel',cn:'v. 取消'},{en:'ashamed',cn:'adj. 惭愧的， 羞耻的， 害臊的'},{en:'depend',cn:'v. 依靠，依赖；相信'},{en:'announcer',cn:'n. 播音员'},{en:'rob',cn:'vt. 抢劫， 盗窃'},{en:'largely',cn:'adv. 大部分；大量地'},{en:'limit',cn:'n. 限度；限制；范围'},{en:'weekly',cn:'adv. 每周 adj. 每周的'},{en:'suspect',cn:'adj. 可疑的， 不信任的 vt. 疑有；推测；对…表示怀疑 n. 嫌疑犯，可疑分子'},{en:'hunt',cn:'v. 打猎； 搜寻； 驱逐'},{en:'birth',cn:'n. 分娩，出生；出身'},{en:'characteristic',cn:'n. 特点'},{en:'forbid',cn:'v. 禁止，不许；阻止'},{en:'stranger',cn:'n. 陌生人；新来者'},{en:'lock',cn:'n. 锁 v. 锁上，锁住'},{en:'weep',cn:'v. 哭泣， 流泪； 渗出'},{en:'upper',cn:'adj. 上面的；地位较高的'},{en:'path',cn:'n. 路，小道；道路'},{en:'phone',cn:'n. 电话，电话机'},{en:'childish',cn:'adj. 孩子的；幼稚的'},{en:'elevator',cn:'n. 电梯， 升降机'},{en:'reveal',cn:'v. 揭示，揭露；展现'},{en:'misguide',cn:'v. 误导'},{en:'once',cn:'adv. 一次；曾经'},{en:'average',cn:'adj. 平均的；平常的 v. 平均 n. 平均数，平均'},{en:'fragment',cn:'n. 碎片，破片，碎块'},{en:'typical',cn:'adj. 典型的，代表性的'},{en:'previous',cn:'adj. 先的；前的'},{en:'cassette',cn:'n. 盒式录音带'},{en:'fatigue',cn:'n. 疲劳，疲乏'},{en:'loan',cn:'n&v. 贷款， 借'},{en:'original',cn:'adj. 最初的；新颖的'},{en:'initiate',cn:'v. 开始，发起'},{en:'realm',cn:'n. 领域；王国，国土'},{en:'vice',cn:'n. 罪恶； 恶习， 缺点； 虎钳'},{en:'clinic',cn:'n. 诊所'},{en:'bay',cn:'n. 湾； 分隔间'},{en:'endure',cn:'v. 忍耐；容忍'},{en:'epidemic',cn:'adj. 流行性的；传染的 n. 流行病； 传播'},{en:'itself',cn:'pron. 它自己；自身'},{en:'damp',cn:'adj. 潮湿的，有湿气的'},{en:'require',cn:'v. 要求，命令'},{en:'competitiveness',cn:'n. 竞争力'},{en:'Asia',cn:'n. 亚洲'},{en:'heroine',cn:'n. 女英雄；女主角'},{en:'aware',cn:'adj. 知道的，意识到的'},{en:'live',cn:'v. 居住；活 adj. 活的'},{en:'handbag',cn:'n. 手提包'},{en:'accusation',cn:'n. 谴责； 【律】 指控'},{en:'treasure',cn:'n. 财富；珍宝 v. 珍视'},{en:'behave',cn:'v. 表现'},{en:'ignorant',cn:'adj. 无知的'},{en:'punctual',cn:'adj. 严守时刻的；准时的'},{en:'weakness',cn:'n. 弱点；虚弱；软弱'},{en:'inference',cn:'n. 推断结果， 结论； 推论， 推理， 推断'},{en:'writing',cn:'n. 书写， 写； 著作'},{en:'prove',cn:'v. 证实， 证明； 结果是'},{en:'intention',cn:'n. 打算，意图'},{en:'previous',cn:'adj. 先的， 前的； 以前的'},{en:'lap',cn:'v. 舔； 拍打 n. 膝部；一圈，一段'},{en:'draw',cn:'v. 画，划'},{en:'careless',cn:'adj. 粗心的'},{en:'respond',cn:'vi. 回答， 答复； 作出反应， 响应'},{en:'deepen',cn:'v. 加深；深化'},{en:'copper',cn:'n. 铜； 铜币， 铜制器'},{en:'importance',cn:'n. 重要；重要性'},{en:'fortunately',cn:'adv. 幸运地； 幸亏'},{en:'hungry',cn:'adj. 饥饿的；渴望的'},{en:'union',cn:'n. 协会；联合'},{en:'network',cn:'n. 网状物；网络'},{en:'error',cn:'n. 错误， 谬误， 差错'},{en:'hateful',cn:'adj. 可恨的，可恶的'},{en:'nearby',cn:'adj. 附近的 adv. 在附近'},{en:'petrol',cn:'n. 汽油'},{en:'convince',cn:'vt. 使确信， 使信服， 说服'},{en:'inevitable',cn:'adj. 不可避免的'},{en:'another',cn:'det. 再一个的；别的'},{en:'instant',cn:'n. 瞬间 adj. 立即的'},{en:'gesture',cn:'n. 姿势，手势；姿态'},{en:'fine',cn:'v. 罚款'},{en:'nowadays',cn:'adv. 现今，现在'},{en:'thinking',cn:'adj. 深思的， 有理性的 n. 想法，意见，见解'},{en:'superficial',cn:'adj. 肤浅的；表面的'},{en:'obtain',cn:'v. 获得，得到，买到'},{en:'establishment',cn:'n. 建立， 设立， 确立； 企业； 当权人物'},{en:'bronze',cn:'n. 青铜；青铜制品'},{en:'bristle',cn:'n. 短而硬的毛；鬃毛'},{en:'asset',cn:'n. 资产， 财产； 有价值的特性或技能， 优点'},{en:'arrest',cn:'vt. 逮捕，拘留；停止，阻止；吸引 n. 逮捕， 拘留， 扣留'},{en:'underline',cn:'v. 强调'},{en:'rainbow',cn:'n. 虹， 彩虹'},{en:'slightly',cn:'adv. 轻微地'},{en:'static',cn:'adj. 静的；静态的'},{en:'honor',cn:'n. 荣誉；崇敬，敬重，敬意'},{en:'interaction',cn:'n. 相互作用， 干扰'},{en:'assume',cn:'v. 假定，认为'},{en:'connectivity',cn:'n. 连接，联系'},{en:'positive',cn:'adj. 确实的， 明确的； 积极的， 肯定的'},{en:'significant',cn:'adj. 有意义的；重要的'},{en:'treat',cn:'v. 对待；处理 n. 款待'},{en:'ribbon',cn:'n. 缎带， 丝带； 色带'},{en:'rifle',cn:'n. 步枪，来复枪'},{en:'disgust',cn:'n. 厌恶，憎恶'},{en:'utter',cn:'adj. 完全的，彻底的 vt. 发出， 说， 讲'},{en:'squeeze',cn:'v. 压，榨'},{en:'superb',cn:'adj. 极好的； 高质量的'},{en:'pledge',cn:'n. 保证，誓言'},{en:'landscape',cn:'n. 风景，景色；风景画；全景 vt. 美化…的景观'},{en:'hand',cn:'n. 手；指针'},{en:'carry',cn:'v. 携带；运载；传送'},{en:'first',cn:'num. 第一 adv. 最初'},{en:'maximum',cn:'n. 最大量 adj. 最大的'},{en:'convenience',cn:'n. 便利，方便；厕所'},{en:'fate',cn:'n. 命运，天数'},{en:'passenger',cn:'n. 乘客，旅客'},{en:'along',cn:'prep. 沿着 adv. 向前'},{en:'emergence',cn:'n. 出现，发生'},{en:'mist',cn:'v. 蒙上薄雾； 模糊 n. 薄雾'},{en:'resemble',cn:'v. 像，相似'},{en:'oral',cn:'adj. 口头的；口的'},{en:'definition',cn:'n. 定义， 释义， 定界； 清晰， 鲜明'},{en:'minimize',cn:'vt. 将…减少； 最小化'},{en:'appreciation',cn:'n. 感激'},{en:'lavatory',cn:'n. 盥洗室，厕所'},{en:'span',cn:'n. 跨距，一段时间 vt. 持续， 贯穿； 包括； 横跨， 跨越'},{en:'perform',cn:'v. 演出；履行，执行'},{en:'accomplish',cn:'vt. 达到； 完成'},{en:'colonel',cn:'n. 陆军上校；中校'},{en:'lap',cn:'n. 〔坐着时的〕大腿部'},{en:'via',cn:'prep. 经过；通过'},{en:'slender',cn:'adj. 细长的；微薄的'},{en:'code',cn:'n. 准则；法典；代码'},{en:'friendly',cn:'adj. 友好的；友谊的'},{en:'durable',cn:'adj. 耐久的， 耐用的'},{en:'construct',cn:'v. 建造；建设；构筑'},{en:'strain',cn:'v. 扭伤，拉伤'},{en:'beginning',cn:'n. 开始，开端；起源'},{en:'establish',cn:'v. 建立，设立；确立'},{en:'factory',cn:'n. 工厂，制造厂'},{en:'product',cn:'n. 产品， 产物； 乘积'},{en:'as',cn:'conj. 当…的时候'},{en:'hare',cn:'n. 野兔'},{en:'programming',cn:'n. 〔计算机的〕程序编写，程序设计；程序；；〔电视或广播〕节目；电视[广播]节目策划，编排'},{en:'insight',cn:'n. 洞察力； 洞悉； 深刻见解'},{en:'contain',cn:'v. 包含，容纳'},{en:'pan',cn:'n. 平底锅；烤盘'},{en:'coarse',cn:'adj. 粗的，粗糙的'},{en:'external',cn:'adj. 外部的，外面的'},{en:'spare',cn:'v. 抽出；拨出；留出；匀出 adj. 多余的'},{en:'aboard',cn:'adv. 在船（车）上；上船'},{en:'astonish',cn:'v. 使惊讶，使大为吃惊'},{en:'butterfly',cn:'n. 蝴蝶'},{en:'ideal',cn:'adj. 理想的；观念的；空想的 n. 理想； 理想的东西'},{en:'manage',cn:'v. 管理；设法；成功应付，对付'},{en:'convention',cn:'n. 习俗，惯例；公约'},{en:'proof',cn:'adj. 耐…的， 能防…的 n. 证据，证明；校样，样张'},{en:'deep',cn:'adj. 深的；纵深的'},{en:'update',cn:'v. 更新；使现代化'},{en:'pessimistic',cn:'adj. 悲观的；厌世的'},{en:'peace',cn:'n. 和平；平静；和睦'},{en:'assume',cn:'vt. 假定， 假设， 臆断； 承担， 担任； 呈现'},{en:'lawyer',cn:'n. 律师；法学家'},{en:'fortunately',cn:'adv. 幸运地'},{en:'specimen',cn:'n. 样本，标本，样品'},{en:'respect',cn:'n. 尊敬；尊重；问候；方面 vt. 尊敬； 尊重'},{en:'therapy',cn:'n. 疗法 治疗'},{en:'profession',cn:'n. 职业； 声明， 表白'},{en:'wool',cn:'n. 羊毛；毛线，绒线'},{en:'assign',cn:'v. 指派〔任务〕；分配；分派'},{en:'gasoline',cn:'n. 汽油'},{en:'tame',cn:'adj. 驯服的；顺从的'},{en:'confirm',cn:'vt. 证实， 肯定； 确认； 批准'},{en:'scientific',cn:'adj. 科学的'},{en:'yield',cn:'v. 产生，得出〔结果、答案或资料 n. 产量'},{en:'subtract',cn:'vt. 减， 减去， 去掉'},{en:'naughty',cn:'adj. 顽皮的，淘气的'},{en:'ant',cn:'n. 蚂蚁'},{en:'hut',cn:'n. 小屋， 棚屋'},{en:'midnight',cn:'n. 午夜，子夜，夜半'},{en:'philosopher',cn:'n. 哲学家'},{en:'fabric',cn:'n. 织物， 纺织品； 结构'},{en:'approximately',cn:'adv. 大约'},{en:'cotton',cn:'n. 棉；棉线；棉布'},{en:'undergo',cn:'vt. 经历， 经受， 忍受； 接受'},{en:'heavily',cn:'adv. 重重地；大量地'},{en:'chest',cn:'n. 胸腔， 胸膛； 箱子'},{en:'mechanical',cn:'adj. 机械的；力学的'},{en:'duck',cn:'n. 鸭；中文释义: 雌鸭；鸭肉'},{en:'junior',cn:'adj. 青少年的 n. 晚辈'},{en:'stain',cn:'v. 沾污；给…着色'},{en:'afterward',cn:'adv. 后来，以后'},{en:'primitive',cn:'adj. 原始的；简单的；简单的，简陋的'},{en:'valid',cn:'adj. 有效的'},{en:'office',cn:'n. 办公室；处，局，社'},{en:'precaution',cn:'n. 预防； 防备， 警惕'},{en:'passion',cn:'n. 热情，激情'},{en:'confrontation',cn:'n. 冲突，对抗'},{en:'competition',cn:'n. 竞争；比赛'},{en:'improve',cn:'v. 改善；使更好'},{en:'disservice',cn:'n. 伤害，帮倒忙'},{en:'ignorance',cn:'n. 无知，愚昧'},{en:'organ',cn:'n. 器官；管风琴；机构'},{en:'cop',cn:'n. 警察'},{en:'flourish',cn:'vi. 繁荣，茂盛，兴旺 vt. 挥动'},{en:'heading',cn:'n. 标题，题词，题名'},{en:'considerable',cn:'adj. 相当大的；重要的'},{en:'virtual',cn:'adj. 虚拟的'},{en:'bury',cn:'v. 埋葬，葬；埋藏'},{en:'basic',cn:'adj. 基本的，基础的'},{en:'undergo',cn:'v. 经历，经受，忍受'},{en:'Britain',cn:'n. 不列颠，英国'},{en:'malfunction',cn:'n. 失灵，故障'},{en:'necessarily',cn:'adv. 必要地； 必然'},{en:'fatal',cn:'adj. 致命的， 命运的； 重大的， 决定性的'},{en:'everyday',cn:'adj. 每天的，日常的'},{en:'cargo',cn:'n. 船货， 货物'},{en:'outcome',cn:'n. 结果'},{en:'thoughtful',cn:'adj. 体贴的；沉思的'},{en:'benefit',cn:'v. 有益于； 得益 n. 利益，恩惠；救济金，保险金，津贴'},{en:'swing',cn:'v. 摇摆；回转 n. 摇摆'},{en:'sting',cn:'v. 刺，蜇，叮 n. 刺伤处，蜇伤处'},{en:'well-known',cn:'adj. 众所周知的， 著名的'},{en:'instinct',cn:'n. 本能， 天性； 直觉'},{en:'northwest',cn:'n. 西北 adj. 位于西北的'},{en:'encourage',cn:'vt. 鼓励， 怂恿； 促进， 助长， 激发'},{en:'beat',cn:'v. 打，敲；打败'},{en:'artificial',cn:'adj. 人工的， 人为的； 矫揉造作的； 模拟的'},{en:'despair',cn:'n. 绝望 v. 绝望，感到无望'},{en:'diameter',cn:'n. 直径'},{en:'puzzle',cn:'v. 迷惑 n. 难解之事，谜'},{en:'straw',cn:'n. 稻草；麦杆；吸管'},{en:'retail',cn:'n. 零售 v. 零售'},{en:'preferable',cn:'adj. 更可取的，更好的'},{en:'combination',cn:'n. 结合， 联合； 化合'},{en:'steer',cn:'v. 驾驶'},{en:'origin',cn:'n. 起源'},{en:'wage',cn:'v. 开展（运动）'},{en:'observe',cn:'v. 遵守'},{en:'progress',cn:'n. 前进；进展；进步'},{en:'engagement',cn:'n. 婚约'},{en:'input',cn:'n. 输入；投入的资金'},{en:'applicant',cn:'n. 申请人'},{en:'farewell',cn:'int. 再会 n. 告别'},{en:'evolve',cn:'vt. 使进化， 使发展'},{en:'sketch',cn:'v. 绘…的略图， 画…的素描； 概述 n. 略图；梗概；素描，速写'},{en:'workshop',cn:'n. 车间，工场；创作室'},{en:'resident',cn:'n. 居民'},{en:'mirror',cn:'n. 镜子 v. 与〔另一事物〕相似；反映'},{en:'confess',cn:'vt. 供认， 坦白； 承认'},{en:'trail',cn:'n. 痕迹，小径 vt. 跟踪， 追踪'},{en:'statistic',cn:'n. 统计数值， 统计资料； 统计学'},{en:'temple',cn:'n. 圣堂，神殿，庙宇'},{en:'curtain',cn:'n. 帘，窗帘；幕（布）'},{en:'switch',cn:'v. 转换， 改变 n. 开关，电闸；转换，改变'},{en:'invade',cn:'vt. 入侵， 侵略， 侵袭'},{en:'refrigerator',cn:'n. 冰箱， 冷藏库'},{en:'bulb',cn:'n. 电灯泡， 球状物'},{en:'socialist',cn:'n. 社会主义者'},{en:'alter',cn:'v. 改变'},{en:'accordingly',cn:'adv. 因此， 所以； 照着'},{en:'comprehensive',cn:'adj. 综合的，全面的'},{en:'classification',cn:'n. 分类；分级；分类法'},{en:'curious',cn:'adj. 好奇的'},{en:'ability',cn:'n. 能力；能耐；本领'},{en:'transmit',cn:'vt. 传送， 传递； 传染； 播送， 发射'},{en:'evidence',cn:'n. 根据；证据，证人'},{en:'April',cn:'n. 四月'},{en:'yawn',cn:'v. 打呵欠 n. 呵欠'},{en:'radar',cn:'n. 雷达'},{en:'govern',cn:'vi. 居支配地位， 占优势 vt. 统治，治理，支配'},{en:'comparison',cn:'n. 比较， 对照； 比拟， 比喻'},{en:'expression',cn:'n. 词句；表达；表情'},{en:'terminal',cn:'adj. 末端的 n. 〔飞机、公共汽车、轮船客运或货物运输的〕集散站，终点站'},{en:'intention',cn:'n. 意图，意向，目的'},{en:'negotiate',cn:'v. 谈判，协商，交涉'},{en:'academic',cn:'adj. 学院的；学术的'},{en:'hardware',cn:'n. 五金器具； 硬件'},{en:'librarian',cn:'n. 图书馆馆长'},{en:'hazard',cn:'n. 危险；公害'},{en:'flat',cn:'adv. 平直地； 直截了当地 adj. 平的；固定的；漏气的；平淡的；沉闷的；浅的 n. 一套房间，单元住宅'},{en:'jail',cn:'n. 监狱，看守所 vt. 监禁， 拘留； 塞满； 卡住； 干扰'},{en:'receipt',cn:'n. 发票， 收据； 收入， 进款； 收到， 接到'},{en:'steep',cn:'adj. 险峻的， 陡峭的； 过高的； 急剧的'},{en:'variable',cn:'adj. 易变的 n. 变量'},{en:'optimistic',cn:'adj. 乐观的'},{en:'sphere',cn:'n. 球， 球体； 范围'},{en:'orphan',cn:'n. 孤儿'},{en:'player',cn:'n. 游戏的人；比赛者'},{en:'substance',cn:'n. 物质； 实质； 大意， 要旨； 根据， 理由'},{en:'qualify',cn:'v. 使……有资格'},{en:'feature',cn:'vi. 起重要作用 n. 特征，特色；面貌；特写，专题节目；故事片 vt. 突出；由…主演'},{en:'tragedy',cn:'n. 悲剧， 惨事， 惨案； 悲剧艺术'},{en:'ultimately',cn:'adv. 最后，最终'},{en:'automatic',cn:'adj. 自动的；机械的'},{en:'avoid',cn:'vt. 避免， 躲开； 撤销'},{en:'harness',cn:'vt. 治理；给上挽具 n. 马具， 挽具'},{en:'invest',cn:'v. 投资， 投入； 授予'},{en:'casual',cn:'adj. 漫不经心的，随便的；偶然的'},{en:'shield',cn:'n. 防护物，护罩；盾 vt. 保护， 防护'},{en:'preceding',cn:'adj. 在前的；在先的'},{en:'fatigue',cn:'v. 疲劳 n. 疲劳，劳累'},{en:'develop',cn:'v. 发展；形成；开发'},{en:'fold',cn:'v. 折叠，合拢 n. 褶， 折叠的部分'},{en:'appealing',cn:'adj. 吸引人的'},{en:'textile',cn:'adj. 纺织的 n. 纺织品；纺织业'},{en:'further',cn:'adv. 更远地 adj. 更远的'},{en:'threaten',cn:'v. 威胁'},{en:'oxygen',cn:'n. 氧， 氧气'},{en:'carrier',cn:'n. 运输工具；运载工具'},{en:'spill',cn:'v. 溢出，洒落 n. 溢出'},{en:'efficiency',cn:'n. 效率；效能；功效'},{en:'width',cn:'n. 宽阔， 广阔； 宽度'},{en:'criticize',cn:'v. 批评；非难；评论'},{en:'decide',cn:'v. 决定，决心；解决'},{en:'mobile',cn:'adj. 运动的；流动的'},{en:'group',cn:'n. 小组，群 v. 聚集'},{en:'intensity',cn:'n. 强烈， 剧烈； 强度'},{en:'radio',cn:'n. 无线电；收音机'},{en:'at',cn:'prep. 在…里；在…时'},{en:'literary',cn:'adj. 文学的； 文人的， 书卷气的'},{en:'conservative',cn:'adj. 保守的，守旧的；不时兴的，传统的 n. 保守的人'},{en:'survive',cn:'v. 幸免于；活下来'},{en:'visibility',cn:'n. 可见度， 能见度； 可见性， 明显性'},{en:'installation',cn:'n. 安装； 装置， 设施； 就任， 就职'},{en:'frost',cn:'n. 冰冻，严寒；霜'},{en:'scout',cn:'n. 侦察员，侦察机'},{en:'diligent',cn:'adj. 勤勉的，勤奋的'},{en:'arrange',cn:'v. 安排，筹划'},{en:'claim',cn:'vt. 声称，主张；对…提出要求，索取；以…为其成果；需要，值得 n. 要求， 认领， 索赔； 声称； 断言'},{en:'scrape',cn:'v. 刮；擦 n. 刮；擦伤；擦痕'},{en:'violet',cn:'adj. 紫色的 n. 紫罗兰'},{en:'abroad',cn:'adv. 到国外； 在传播， 在流传'},{en:'amateur',cn:'adj. 业余爱好的， 业余的； 外行的 n. 业余爱好者；外行'},{en:'apartment',cn:'n. 一套公寓房间'},{en:'accept',cn:'v. 接受；同意'},{en:'frank',cn:'adj. 坦白的， 直率的'},{en:'harsh',cn:'adj. 严厉的； 粗糙的'},{en:'headquarters',cn:'n. 司令部， 总部'},{en:'bomb',cn:'n. 炸弹 v. 轰炸'},{en:'manufacture',cn:'vt. 制造，加工 n. 制造， 制造业'},{en:'complain',cn:'vi. 抱怨， 诉苦； 控告， 投诉'},{en:'refreshing',cn:'adj. 恢复活力的'},{en:'connect',cn:'v. 连接，连结；联系'},{en:'withdraw',cn:'v. 撤退；收回；撤回'},{en:'cultivate',cn:'v. 培养， 养成'},{en:'legal',cn:'adj. 法律的； 合法的'},{en:'intelligence',cn:'n. 智力； 理解力； 情报'},{en:'wicked',cn:'adj. 坏的；令人厌恶的'},{en:'being',cn:'n. 存在；生物；生命'},{en:'determine',cn:'v. 决定；下决心'},{en:'affirmation',cn:'n. 断言，肯定'},{en:'logically',cn:'adv. 合乎情理地，符合逻辑地'},{en:'fussy',cn:'adj. 爱挑剔的；'},{en:'competent',cn:'adj. 胜任的，有能力的'},{en:'postpone',cn:'vt. 延迟， 延期'},{en:'enormous',cn:'adj. 巨大的'},{en:'physician',cn:'n. 内科医生'},{en:'subsidize',cn:'v. 提供补贴'},{en:'glory',cn:'n. 光荣， 荣誉的事； 美丽'},{en:'adopt',cn:'v. 收养；采用；采取'},{en:'medium',cn:'adj. 中等的 n. 媒体；媒介物，传导体'},{en:'solar',cn:'adj. 太阳的， 日光的； 太阳能的'},{en:'industry',cn:'n. 工业，产业；勤劳'},{en:'vibrate',cn:'v. 颤动'},{en:'decay',cn:'v. 腐烂；衰败 n. 腐烂'},{en:'guitar',cn:'n. 吉他， 六弦琴'},{en:'intentional',cn:'adj. 故意的，有意识的'},{en:'inferior',cn:'adj. 下等的；劣等的'},{en:'beast',cn:'n. 兽， 野兽， 牲畜； 凶残的人， 令人厌憎的人'},{en:'invite',cn:'v. 邀请；（正式）邀请，请求'},{en:'imply',cn:'v. 暗示；意味；'},{en:'dump',cn:'v. 扔下，倾倒；倾销'},{en:'chess',cn:'n. 棋；国际象棋'},{en:'cubic',cn:'adj. 立方形的；立方的'},{en:'instrument',cn:'n. 仪器， 工具； 乐器'},{en:'consist',cn:'v. 由……组成'},{en:'image',cn:'n. 图像；映像；形象；印象'},{en:'impossible',cn:'adj. 不可能的，办不到的'},{en:'grocer',cn:'n. 食品商；杂货商'},{en:'luxury',cn:'n. 奢侈，奢华；奢侈品'},{en:'cast',cn:'v. 投，扔，抛；浇铸'},{en:'literary',cn:'adj. 文学（上）的'},{en:'curl',cn:'n. 鬈发； 卷曲， 卷曲物'},{en:'block',cn:'v. 阻碍 n. 街区'},{en:'better',cn:'adj. 较好的 adv. 更好地'},{en:'gallery',cn:'n. 画廊， 美术馆； 楼座； 旁听席； 回廊， 走廊'},{en:'racial',cn:'adj. 种族的， 人种的'},{en:'physicist',cn:'n. 物理学家'},{en:'favourite',cn:'adj. 特别受喜爱的 n. 特别受喜爱的人'},{en:'screen',cn:'v. 筛查'},{en:'flavour',cn:'n. 味，味道；风味'},{en:'kindness',cn:'n. 仁慈， 好意'},{en:'bake',cn:'v. 烤，烘，焙；烧硬'},{en:'funeral',cn:'n. 葬礼， 丧礼， 丧葬'},{en:'create',cn:'v. 创造；引起，产生'},{en:'mechanics',cn:'n. 力学'},{en:'picture',cn:'n. 画，图片 v. 画'},{en:'push',cn:'v. 推；鼓励；敦促；逼迫'},{en:'stare',cn:'n&vi. 盯， 凝视'},{en:'minute',cn:'n. 分，分钟；一会儿'},{en:'ash',cn:'n. 灰， 灰末； 骨灰'},{en:'fridge',cn:'n. 电冰箱'},{en:'region',cn:'n. 地区， 地带， 区域； 范围， 幅度'},{en:'innocent',cn:'adj. 清白的； 幼稚的； 没有恶意的'},{en:'considerate',cn:'adj. 考虑周到的， 体贴的， 体谅的'},{en:'ownership',cn:'n. 所有（权），所有制'},{en:'clumsy',cn:'adj. 笨拙的，不圆滑的'},{en:'forge',cn:'vt. 打制， 锻造； 伪造'},{en:'finally',cn:'adv. 最后'},{en:'compensation',cn:'n. 补偿， 赔偿'},{en:'customer',cn:'n. 顾客，主顾'},{en:'regarding',cn:'prep. 关于'},{en:'announce',cn:'v. 宣布，宣告，发表'},{en:'merry',cn:'adj. 欢乐的，愉快的'},{en:'awfully',cn:'adv. 令人畏惧的；很'},{en:'prevail',cn:'v. 流行，盛行'},{en:'lover',cn:'n. 爱好者； 情人'},{en:'climate',cn:'n. 气候； 风土， 地带； 风气， 气氛'},{en:'ninety',cn:'num. 九十，九十个'},{en:'jewish',cn:'adj. 犹太人的'},{en:'scarce',cn:'adj. 缺乏的， 不足的； 稀少的， 罕见的'},{en:'chin',cn:'n. 颏，下巴'},{en:'auto',cn:'n. （口语）汽车'},{en:'plantation',cn:'n. 种植园， 人工林'},{en:'conscious',cn:'adj. 意识到的；有意的'},{en:'seminar',cn:'n. 研究班， 研讨会'},{en:'nine',cn:'num. 九，九个'},{en:'vain',cn:'adj. 徒劳的； 自负的'},{en:'handwriting',cn:'n. 笔迹，手迹，书法'},{en:'authority',cn:'n. 官方； 权力； 当权者， 行政管理机构； 权威， 专家'},{en:'merely',cn:'adv. 仅仅， 只不过'},{en:'outline',cn:'n. 梗概，提纲，草稿，要点'},{en:'parcel',cn:'n. 包裹，小包，邮包'},{en:'awkward',cn:'adj. 尴尬的；笨拙的'},{en:'tide',cn:'n. 潮，潮汐；潮流'},{en:'brow',cn:'n. 额， 眉， 眉毛'},{en:'fire',cn:'n. 火；火灾 v. 开火'},{en:'mercury',cn:'n. 水银，汞'},{en:'appear',cn:'v. 似乎；出现；来到'},{en:'selfish',cn:'adj. 自私的'},{en:'either',cn:'det,pron. （两者）任何一个'},{en:'elegant',cn:'adj. 优美的， 文雅的， 讲究的； 简练的， 简洁的'},{en:'workman',cn:'n. 工人，劳动者，工匠'},{en:'paradox',cn:'n. 悖论；自相矛盾'},{en:'palm',cn:'n. 手掌，手心'},{en:'volt',cn:'n. 伏特， 伏'},{en:'poison',cn:'n. 毒，毒药 v. 毒害'},{en:'burn',cn:'v. 烧，燃烧 n. 烧伤'},{en:'award',cn:'n. 奖，奖品；判定 vt. 授予， 给予； 判给， 裁定'},{en:'want',cn:'n. 需要；缺乏'},{en:'cloud',cn:'n. 云；云状物；阴影'},{en:'board',cn:'n. 板 v. 上（船、车等）'},{en:'death',cn:'n. 死，死亡；灭亡'},{en:'measurement',cn:'n. 衡量， 测量； 尺寸， 大小'},{en:'finance',cn:'v. 筹措资金 n. 财政，金融；财源，财务情况'},{en:'moisture',cn:'n. 潮湿，湿气'},{en:'client',cn:'n. 客户'},{en:'majority',cn:'n. 多数，大多数'},{en:'committee',cn:'n. 委员会'},{en:'technician',cn:'n. 技术员，技师'},{en:'overweight',cn:'adj. 超重的'},{en:'emit',cn:'v. 散发；发射；发表'},{en:'read',cn:'v. 读，看懂'},{en:'virtually',cn:'adv. 实际上，事实上'},{en:'nitrogen',cn:'n. 氮'},{en:'liable',cn:'adj. 易于…的；可能的'},{en:'up-to-date',cn:'adj. 直到最近的， 现代的； 跟上时代的'},{en:'saucer',cn:'n. 茶托，浅碟'},{en:'arise',cn:'vi. 出现； 由…引起； 起身， 起床'},{en:'visible',cn:'adj. 可见的， 看得见的， 有形的'},{en:'publicity',cn:'n. 公众的注意， 名声； 宣传， 宣扬'},{en:'metal',cn:'n. 金属，金属制品'},{en:'section',cn:'n. 部分， 章节； 部门， 科； 截面， 剖面'},{en:'major',cn:'adj. 较大的；主要的；重大的 n. 少校； 专业'},{en:'oneself',cn:'pron. 自己；亲自'},{en:'prolong',cn:'vt. 拉长， 延长'},{en:'suppose',cn:'v. 猜想；假定'},{en:'prosperous',cn:'adj. 繁荣的，昌盛的'},{en:'reflexion',cn:'n. 映象；反映；反射'},{en:'directly',cn:'adv. 直接地； 正好地， 截然； 立即'}],cet6:[{en:'civilian',cn:'n. 平民 adj. 平民的'},{en:'incidence',cn:'n. 发生率'},{en:'footpath',cn:'n. 小路，人行道'},{en:'consume',cn:'vi. 消灭， 毁灭 vt. 消费；吃完，喝光'},{en:'hose',cn:'n. 软管；袜类（包括连裤袜、长筒袜、短袜）'},{en:'presentation',cn:'n. 提供， 显示； 外观， 图像； 授予， 赠送； 报告， 介绍； 表演'},{en:'worship',cn:'v. 崇拜；做礼拜'},{en:'sheer',cn:'adj. 纯粹的'},{en:'foster',cn:'v. 培养；抚育，代养'},{en:'solo',cn:'adv. 以独力，单独地 adj. 单独的，单独进行的 n. 独奏， 独唱， 独舞'},{en:'timely',cn:'adj. 及时的， 适时的'},{en:'transform',cn:'vt. 使改观， 改革； 变换， 把…转换成'},{en:'remedy',cn:'n. 补救办法，纠正办法；药品，治疗法 vt. 补救， 纠正； 医治， 治疗'},{en:'quicken',cn:'v. 加快'},{en:'solution',cn:'n. 解决； 解决办法； 溶液'},{en:'board',cn:'v. 付费（在某人家里）膳宿'},{en:'climate',cn:'n. 气候； 风土， 地带； 风气， 气氛'},{en:'blaze',cn:'v. 使燃烧，燃烧'},{en:'van',cn:'n. 大篷车， 运货车'},{en:'clause',cn:'n. 条款'},{en:'indispensable',cn:'adj. 必不可少的， 必需的'},{en:'even',cn:'adj. 平稳的，均匀的'},{en:'disgrace',cn:'n. 失宠，耻辱，丢脸'},{en:'hoarse',cn:'adj. （声音）嘶哑的'},{en:'breed',cn:'v. 繁殖；导致'},{en:'presume',cn:'v. 假定，假设，揣测'},{en:'whereby',cn:'adv. 凭此； 借以； 由于'},{en:'absent',cn:'adj. 不在的'},{en:'accomplish',cn:'vt. 达到， 完成'},{en:'mall',cn:'n. 购物中心'},{en:'addict',cn:'n. 有瘾的人； 入迷的人 vt. 使成瘾， 使入迷'},{en:'quantitative',cn:'adj. 量的， 定量的'},{en:'perception',cn:'n. 感知， 觉察； 认识， 观念， 看法'},{en:'platform',cn:'n. 政纲，党纲，宣言'},{en:'previous',cn:'adj. 先的， 前的， 以前的'},{en:'landscape',cn:'n. 风景，景色，景致'},{en:'recurrence',cn:'n. 再次发生'},{en:'mortgage',cn:'n. 抵押，抵押借款 vt. 抵押'},{en:'overhear',cn:'v. 偶然听到；偷听'},{en:'agenda',cn:'n. 议程'},{en:'telecommunications',cn:'n. 通信， 电信'},{en:'eloquent',cn:'adj. 雄辩的， 口才流利的， 有说服力的； 明白显示出的'},{en:'insert',cn:'vt. 插入， 嵌入； 登载'},{en:'individual',cn:'adj. 特殊的'},{en:'tact',cn:'n. 机敏，圆滑，得体'},{en:'memorandum',cn:'n. 备忘录'},{en:'logical',cn:'adj. 逻辑的， 合乎常理的'},{en:'prolonged',cn:'adj. 长时间的'},{en:'genius',cn:'n. 天才'},{en:'whitewash',cn:'n. 石灰水 v. 粉饰'},{en:'cloudy',cn:'adj. 混浊的；模糊不清的'},{en:'isolation',cn:'n. 隔绝，隔离'},{en:'stammer',cn:'v. 口吃地说 n. 口吃'},{en:'federation',cn:'n. 联合会； 联邦'},{en:'athletic',cn:'adj. 强壮的；擅长运动的；运动的，运动员的'},{en:'ice',cn:'v. 使成冰，结冰'},{en:'stabilize',cn:'v. 使稳固，使安定'},{en:'reference',cn:'n. 参考文献；参照物'},{en:'endanger',cn:'v. 危及，危害'},{en:'unlimited',cn:'adj. 无限的；不定的'},{en:'subsequently',cn:'adv. 其后，其次，接着'},{en:'radius',cn:'n. 半径距离，半径范围'},{en:'thesis',cn:'n. 论文；论题，论点'},{en:'mingle',cn:'vt. 使混合，混合起来'},{en:'intensify',cn:'v. 增强， 加剧'},{en:'pasture',cn:'n. 牧草地，牧场 vt. 放牧'},{en:'segregation',cn:'n. 隔离'},{en:'calcium',cn:'n. 钙'},{en:'morality',cn:'n. 道德，美德，品行'},{en:'undergo',cn:'vt. 经历； 经受， 忍受'},{en:'dizzy',cn:'adj. 头晕目眩的，眩晕的；头晕的 vt. 令人发晕'},{en:'devise',cn:'vt. 设计， 发明'},{en:'unstable',cn:'adj. 不稳定的'},{en:'evidence',cn:'n. 根据， 证据； 证人'},{en:'formulate',cn:'v. 制定，规划'},{en:'framework',cn:'n. 体制'},{en:'conservative',cn:'adj. 保守的，守旧的'},{en:'mighty',cn:'adj. 强大的；巨大的'},{en:'tumble',cn:'vi. 跌倒，摔下，滚下；翻滚；暴跌；不由自主地卷入 n. 跌倒， 摔倒'},{en:'cereal',cn:'n. 加工而成的谷类食物； 谷类植物， 谷物'},{en:'infect',cn:'v. 使受影响'},{en:'cling',cn:'v. 粘住；依附；坚持'},{en:'morality',cn:'n. 道德， 道德性； 德行， 品行； 道德观， 道德规则'},{en:'vivid',cn:'adj. 生动的'},{en:'soluble',cn:'adj. 可溶的； 可解决的'},{en:'foreign',cn:'adj. 外国的，国外的'},{en:'ambient',cn:'adj. 周围的，包围着的'},{en:'mutual',cn:'adj. 相互的； 共同的'},{en:'multiply',cn:'v. 增加， 繁殖； 乘'},{en:'doubtless',cn:'adv. 无疑地；很可能'},{en:'kidnap',cn:'v. 绑架'},{en:'jeopardize',cn:'vt. 危及， 危害'},{en:'through',cn:'prep. 因为，由于'},{en:'infinitely',cn:'adv. 无限地，无边地'},{en:'appropriation',cn:'n. 据为己有， 占有； 挪用； 拨款'},{en:'concentration',cn:'n. 集中； 专注， 专心； 浓缩； 浓度'},{en:'pronoun',cn:'n. 代词'},{en:'pope',cn:'n. （罗马天主教的）教皇'},{en:'layoff',cn:'n. 解雇； 裁员； 歇工期， 停工期'},{en:'shoulder',cn:'v. 承担；挑起'},{en:'bemoan',cn:'v. 抱怨；惋惜'},{en:'thrive',cn:'vi. 兴旺， 繁荣， 旺盛'},{en:'skip',cn:'v. 跳过'},{en:'shell',cn:'n. 炮弹，猎枪子弹'},{en:'skeleton',cn:'n. 骨骼，骷髅；骨架'},{en:'provision',cn:'n. 规定，条款，条项'},{en:'accountable',cn:'adj. 应负责的，有责任的'},{en:'twist',cn:'v. 扭曲'},{en:'accomplish',cn:'v. 实现'},{en:'strain',cn:'n. 压力'},{en:'impulsive',cn:'adj. 冲动的'},{en:'chip',cn:'n. 屑片， 碎片； 炸土豆条； 集成电路片， 集成块； 缺口， 瑕疵'},{en:'distort',cn:'vi. 变形 vt. 歪曲，曲解；扭曲，使变形'},{en:'attempt',cn:'vt. 尝试， 试图， 努力'},{en:'motive',cn:'n. 动机， 目的'},{en:'relay',cn:'v. 分程传递；使接替；转播'},{en:'exchange',cn:'n&vt. 交换； 交流； 兑换'},{en:'seemingly',cn:'adv. 表面上，外表上'},{en:'dimension',cn:'n. 尺寸；维'},{en:'dubious',cn:'adj. 怀疑的， 犹豫不决的， 无把握的； 有问题的； 靠不住的'},{en:'obscure',cn:'adj. 不著名的，不重要的；费解的，模糊不清的 vt. 使变糊， 掩盖'},{en:'prevailing',cn:'adj. 流行的'},{en:'justify',cn:'vt. 证明…是正当的'},{en:'gangster',cn:'n. 匪徒，歹徒，暴徒'},{en:'bribe',cn:'n. 贿赂 v. 向…行贿'},{en:'curriculum',cn:'n. 课程'},{en:'diminish',cn:'v. 减少，减小'},{en:'suffice',cn:'v. 足够'},{en:'cumulative',cn:'adj. 积累的， 渐增的'},{en:'bearing',cn:'n. 方位；（机器的）承座；轴承；忍受'},{en:'throne',cn:'n. 王位'},{en:'multiple',cn:'adj. 复合的；多重的，多样的 n. 倍数'},{en:'impair',cn:'vt. 损害， 损伤； 削弱'},{en:'economic',cn:'adj. 经济的；经济学的 n. 经济学； 经济状况'},{en:'assignment',cn:'n. 任务； 指定的作业； 分配， 指派'},{en:'abundant',cn:'adj. 丰富的， 富裕的； 大量的， 充足的'},{en:'susceptible',cn:'adj. 易受影响的； 过敏的； 能经受的， 容许的'},{en:'excessively',cn:'adv. 过分，极端地'},{en:'subsidiary',cn:'adj. 辅助的，次要的，附设的 n. 子公司， 附属机构'},{en:'calculation',cn:'n. 计算'},{en:'garment',cn:'n. 衣服'},{en:'coalition',cn:'n. 结合体， 同盟； 结合， 联合'},{en:'blunder',cn:'vi. 跌跌撞撞地走， 慌乱地走； 犯错误 n. 错误'},{en:'ornamental',cn:'adj. 装饰的'},{en:'institution',cn:'n. 机构'},{en:'subject',cn:'v. 使隶属'},{en:'intake',cn:'n. 吸入；输入能量'},{en:'garage',cn:'n. 汽车修理站'},{en:'beforehand',cn:'adv. 预先， 事先'},{en:'hypothesis',cn:'n. 假设， 假说， 前提'},{en:'pore',cn:'vi. 仔细阅读， 审视 n. 毛孔，细孔'},{en:'precede',cn:'vt. 在…之前， 先于'},{en:'jerk',cn:'v. 猛地一拉，急拉'},{en:'breakthrough',cn:'n. 突破性进展'},{en:'weave',cn:'v. 织布，编织'},{en:'unique',cn:'adj. 无可匹敌的；极好的'},{en:'cathedral',cn:'n. 大教堂'},{en:'situation',cn:'n. （建筑物等的）位置'},{en:'accuse',cn:'v. 指控'},{en:'adopt',cn:'v. 采纳'},{en:'shepherd',cn:'n. 牧羊人，羊倌 vt. 带领， 引导'},{en:'possibility',cn:'n. 可能的事'},{en:'mature',cn:'v. 使成熟，成熟'},{en:'commonsense',cn:'adj. 有常识的'},{en:'cluster',cn:'vi. 群集，丛生 n. 串，簇；群，组 vt. 使群集， 集中'},{en:'napkin',cn:'n. 餐巾'},{en:'trench',cn:'n. 深沟；壕沟，战壕'},{en:'politics',cn:'n. 政纲，政见，策略'},{en:'discrete',cn:'adj. 分离的， 不相关联的'},{en:'diploma',cn:'n. 毕业文凭，学位证书'},{en:'cover',cn:'v. 遮盖，遮蔽'},{en:'prospective',cn:'adj. 预期的； 未来的； 可能的'},{en:'figure',cn:'vi. 出现；合乎情理 n. 数字；人物；算术；体型，风姿；轮廓；画像，塑像；图，图形 vt. 计算； 认为， 猜想'},{en:'evaluate',cn:'vt. 评价， 估…的价'},{en:'abuse',cn:'n. 虐待 v. 滥用'},{en:'volunteer',cn:'v. 自愿； 自愿提供； 志愿 n. 志愿者；志愿兵'},{en:'tempt',cn:'vt. 吸引， 引起…的兴趣； 引诱， 诱惑'},{en:'emigrate',cn:'v. 永久移居国外'},{en:'persist',cn:'vi. 坚持， 持续'},{en:'furious',cn:'adj. 生气的；激烈的'},{en:'infer',cn:'v. 推断'},{en:'deny',cn:'v. 否认'},{en:'compete',cn:'vi. 比赛， 竞争， 对抗'},{en:'deprive',cn:'vt. 剥夺， 使丧失'},{en:'arbitrary',cn:'adj. 随心所欲的； 专断的'},{en:'perspective',cn:'n. 视角， 观点； 远景， 景观； 透视画法， 透视图'},{en:'substance',cn:'n. 物质； 实质； 大意， 要旨； 根据， 理由'},{en:'variance',cn:'n. 不同'},{en:'bug',cn:'n. 虫子；小病；故障，缺陷；窃听器 vt. 烦扰， 纠缠； 在…装窃听器'},{en:'plunder',cn:'v. 掠夺，劫掠 n. 掠夺，抢劫'},{en:'cornerstone',cn:'n. 基石'},{en:'senseless',cn:'adj. 愚蠢的，无意义的'},{en:'polymer',cn:'n. 聚合物，多聚物'},{en:'fighter',cn:'n. 战斗机；斗争者'},{en:'arrogant',cn:'adj. 傲慢无礼的'},{en:'comprehension',cn:'n. 理解， 理解力， 领悟； 理解力测验'},{en:'ornament',cn:'n. 装饰品，点缀品；装饰，点缀 vt. 装饰， 点缀， 美化'},{en:'dynamic',cn:'adj. 动力的， 动力学的； 动态的； 有活力的， 有生气的'},{en:'sake',cn:'n. 缘故， 理由'},{en:'extinguish',cn:'v. 熄灭；使消亡'},{en:'consistent',cn:'adj. 坚持的， 一贯的； 一致的， 符合的'},{en:'affiliate',cn:'vt. 使隶属于 n. 附属机构， 分公司'},{en:'threaten',cn:'v. 威胁， 恐吓； 预示快要来临； 构成威胁， 可能发生'},{en:'neutral',cn:'adj. 中立的， 中性的'},{en:'magnet',cn:'n. 磁铁， 磁体； 有吸引力的人和事物'},{en:'empirical',cn:'adj. 以经验为依据的， 经验主义的， 经验的'},{en:'wreck',cn:'n. 失事，残骸；精神或身体已垮的人 vt. 破坏'},{en:'gradient',cn:'n. 斜坡'},{en:'elevate',cn:'v. 提升；举起'},{en:'interpret',cn:'v. 口译；解释'},{en:'fuss',cn:'n. 小题大做'},{en:'endure',cn:'v. 忍受， 容忍； 持久， 持续'},{en:'worldly',cn:'adj. 世间的，尘世的'},{en:'conservative',cn:'adj. 保守的'},{en:'extra',cn:'n. 附加物；额外的东西'},{en:'cuckoo',cn:'n. 杜鹃，布谷鸟'},{en:'underline',cn:'v. 着重；强调 n. 预告'},{en:'markedly',cn:'adv. 显著地'},{en:'courtesy',cn:'n. 礼貌，谦恭'},{en:'tanker',cn:'n. 油轮'},{en:'prejudice',cn:'n. 偏见，成见 vt. 使有偏见； 对…不利， 损害'},{en:'adjoin',cn:'v. 贴近，毗连；靠近'},{en:'patriotic',cn:'adj. 爱国的'},{en:'phenomenon',cn:'n. 现象'},{en:'innumerable',cn:'adj. 无数的，数不清的'},{en:'nonetheless',cn:'adv. 尽管如此， 依然， 然而'},{en:'biochemistry',cn:'n. 生物化学'},{en:'fixture',cn:'n. 固定装置； 固定在某位置的人'},{en:'isolate',cn:'vt. 使隔离， 使孤立'},{en:'heighten',cn:'v. 提高， 加强'},{en:'colleague',cn:'n. 同事， 同僚'},{en:'shutter',cn:'n. 百叶窗； 快门'},{en:'relegate',cn:'vt. 使降位， 使降级； 把…委托给'},{en:'entitle',cn:'v. 使具有资格'},{en:'bulletin',cn:'n. 简明新闻， 最新消息； 公告， 布告， 公报； 学报， 期刊'},{en:'undermine',cn:'v. 削弱'},{en:'occurrence',cn:'n. 发生的事'},{en:'discrimination',cn:'n. 歧视；辨别；识别力'},{en:'oar',cn:'n. 桨'},{en:'violation',cn:'n. 违反'},{en:'undesirable',cn:'adj. 不合需要的；讨厌的'},{en:'agreeable',cn:'adj. 惬意的；同意的'},{en:'grind',cn:'v. 磨碎，碾碎，把...磨成粉'},{en:'shipment',cn:'n. 装载的货物；装货'},{en:'proton',cn:'n. 质子，氕核'},{en:'attain',cn:'vt. 达到， 获得； 完成'},{en:'refrain',cn:'vi. 抑制，克制，戒除 n. 叠句， 副歌'},{en:'baffle',cn:'v. 使挫折 n. 迷惑'},{en:'software',cn:'n. （计算机的）软件'},{en:'box',cn:'n. （法庭的）专席'},{en:'tease',cn:'v. 逗乐，戏弄'},{en:'imminent',cn:'adj. 即将来临的'},{en:'excel',cn:'v. 胜过，杰出'},{en:'consequence',cn:'n. 结果， 后果； 重要， 重大'},{en:'vehicle',cn:'n. 车辆， 机动车； 传播媒介， 工具， 手段'},{en:'furthermore',cn:'adv. 而且， 此外'},{en:'deprive',cn:'v. 夺去；使（人）失去'},{en:'triumphant',cn:'adj. 得胜的；得意洋洋的'},{en:'plastic',cn:'adj. 塑料的；塑性的'},{en:'orthodox',cn:'adj. 传统的； 正统的， 正宗的'},{en:'remote',cn:'adj. 遥远的， 偏僻的； 关系疏远的； 脱离的； 绝少的； 微乎其微的； 孤高的， 冷淡的'},{en:'preliminary',cn:'adj. 预备的，初步的 n. 初步做法， 起始行为'},{en:'eagle',cn:'n. 鹰'},{en:'basement',cn:'n. 地下室；地窖；底层'},{en:'bewilder',cn:'vt. 使迷惑； 使难住'},{en:'fierce',cn:'adj. 激烈的'},{en:'ecosystem',cn:'n. 生态系统'},{en:'burner',cn:'n. 煤气头'},{en:'profound',cn:'adj. 见解深刻的；渊博的'},{en:'sardine',cn:'n. 沙丁鱼'},{en:'inferior',cn:'n. 下级；晚辈；次品'},{en:'elevate',cn:'vt. 提升…的职位， 提高， 改善； 使情绪高昂； 举起， 使上升'},{en:'tutor',cn:'v. 辅导'},{en:'mercury',cn:'n. 水银， 汞'},{en:'various',cn:'adj. 各种各样的， 不同的'},{en:'battery',cn:'n. 炮组，排炮'},{en:'confront',cn:'vt. 迎面遇到， 遭遇； 勇敢地面对， 正视； 使对质， 使当面对证'},{en:'stimulus',cn:'n. 刺激'},{en:'waggon',cn:'n. 敞蓬车厢'},{en:'composite',cn:'adj. 合成的 n. 合成物'},{en:'scoff',cn:'v. 嘲笑，嘲弄'},{en:'prescription',cn:'n. 药方，处方；处方药'},{en:'scrutiny',cn:'n. 详细检查， 仔细观察'},{en:'dedicate',cn:'vt. 题献词于上； 把献给， 把用于'},{en:'decay',cn:'vi. 腐烂，衰败 n. 腐烂， 衰败状态'},{en:'fake',cn:'n. 假货，膺品 adj. 假的'},{en:'harp',cn:'n. 竖琴；天琴座'},{en:'prestige',cn:'n. 名声，声望'},{en:'promotion',cn:'n. 促销'},{en:'aspiration',cn:'n. 强烈的愿望； 志向， 抱负'},{en:'bacon',cn:'n. 咸猪肉，熏猪肉'},{en:'strike',cn:'n. 罢工'},{en:'verdict',cn:'n. 裁定； 定论， 判断性意见'},{en:'irritate',cn:'vt. 使恼怒， 使烦躁； 使不适， 使疼痛'},{en:'preference',cn:'n. 喜爱， 偏爱； 优先； 偏爱的事物'},{en:'detail',cn:'n. 琐碎，小事'},{en:'latitude',cn:'n. 纬度； 纬度地区； 回旋余地， 自由'},{en:'climax',cn:'n. 高潮， 最令人兴奋的部分'},{en:'dimension',cn:'n. 尺寸， 尺度， 面积； 方面， 特点； 面积， 规模'},{en:'extreme',cn:'adj. 极端的'},{en:'texture',cn:'n. 质地'},{en:'definitely',cn:'adv. 一定地， 明确地'},{en:'conceive',cn:'v. 设想，以为；怀孕'},{en:'articulate',cn:'adj. 善于表达的， 发音清晰的； 表达得清楚有力的 vt. 明确有力地表达； 清楚地吐， 清晰地发'},{en:'invasion',cn:'n. 入侵'},{en:'wind',cn:'n. 风'},{en:'swap',cn:'n&v. 交换'},{en:'origin',cn:'n. 起源， 起因； 出身， 血统'},{en:'prune',cn:'vt. 修剪， 修整； 删除， 削减'},{en:'datum',cn:'n. 资料；数据；已知数'},{en:'concert',cn:'n. 一齐，一致，协作'},{en:'revolve',cn:'vi. 旋转'},{en:'erupt',cn:'v. 爆发；喷出'},{en:'inflict',cn:'vt. 把…强加给； 使…遭受， 使…承担'},{en:'confine',cn:'vt. 限制，使局限；使不外出，禁闭'},{en:'reflect',cn:'v. 反映， 显示； 反射， 映现； 深思， 考虑， 反省'},{en:'wrestle',cn:'n. 摔交；斗争，搏斗'},{en:'pope',cn:'n. 教皇， 罗马主教'},{en:'intrigue',cn:'vi. 耍阴谋，施诡计 vt. 激起…的好奇心，迷住 n. 阴谋， 诡计， 密谋'},{en:'hymn',cn:'n. 赞美诗，圣歌；赞歌'},{en:'hazard',cn:'v. 使遭危险 n. 危险'},{en:'ramble',cn:'v. 闲逛，漫步；漫谈，闲聊'},{en:'shabby',cn:'adj. 破旧的， 衣衫褴褛的； 卑鄙的； 不公正的'},{en:'breakdown',cn:'n. 崩溃，倒塌，失败'},{en:'brace',cn:'n. 支柱 v. 拉紧，撑牢'},{en:'fertilizer',cn:'n. 肥料'},{en:'attach',cn:'vt. 缚， 系， 贴， 附加； 使依恋， 使喜爱； 使附属； 认为有'},{en:'fund',cn:'n. 资金，基金；存款 vt. 为…提供资金'},{en:'suspicious',cn:'adj. 可疑的；猜疑的'},{en:'enroll',cn:'v. 登记，招收，参军'},{en:'cabinet',cn:'n. 橱， 柜； 内阁'},{en:'poll',cn:'n. 民意测验'},{en:'formulate',cn:'v. 规划；制定；准备'},{en:'dean',cn:'n. （大学）院长，系主任'},{en:'incapable',cn:'adj. 无能力的；无资格的'},{en:'tariff',cn:'n. 关税， 税率； 价目表， 收费表'},{en:'amend',cn:'v. 修订'},{en:'assassinate',cn:'v. 刺杀，暗杀'},{en:'substance',cn:'n. 物质'},{en:'urban',cn:'adj. 城市的，都市的'},{en:'homogeneous',cn:'adj. 同种类的， 同性质的， 有相同特征的'},{en:'hinge',cn:'vi. 以…为转移 n. 铰链 vt. 装铰链'},{en:'cosmos',cn:'n. 宇宙'},{en:'merchandise',cn:'n. 商品，货物'},{en:'monopolize',cn:'v. 垄断'},{en:'shrine',cn:'n. 神殿，神龛，圣祠'},{en:'squat',cn:'v. （使）蹲下'},{en:'generate',cn:'v. 产生'},{en:'object',cn:'vi. 反对， 不赞成 n. 实物， 物体； 目的， 目标； 对象， 客体； 宾语'},{en:'qualify',cn:'v. 使有资格'},{en:'suppress',cn:'v. 镇压，压制'},{en:'retail',cn:'n. 零售'},{en:'contact',cn:'n. 接触，联系，交往 vt. 与…接触， 与…取得联系'},{en:'overlap',cn:'v. 部分重叠； 部分相同 n. 重叠， 重叠的部分'},{en:'barely',cn:'adv. 仅仅， 只不过， 几乎不'},{en:'miracle',cn:'n. 奇迹'},{en:'versatile',cn:'adj. 多才多艺的， 有多种技能的； 有多种用途的， 多功能的， 万用的'},{en:'skull',cn:'n. 颅骨， 脑壳'},{en:'insulator',cn:'n. 隔离者；绝缘体'},{en:'offer',cn:'v. 出现'},{en:'porcelain',cn:'n. 瓷 adj. 瓷的，瓷制的'},{en:'disorder',cn:'n. 混乱， 杂乱； 骚乱'},{en:'proficient',cn:'adj. 熟练的，精通的'},{en:'robust',cn:'adj. 强健的'},{en:'diagnose',cn:'v. 诊断（疾病）'},{en:'lunar',cn:'adj. 月亮的'},{en:'continual',cn:'adj. 连续的； 频频的'},{en:'cherish',cn:'v. 珍爱；怀有（感情）'},{en:'track',cn:'v. 留下足迹'},{en:'exaggeration',cn:'n. 夸张； 夸大之词'},{en:'silicon',cn:'n. 硅（旧名矽）'},{en:'attribute',cn:'v. 归因于'},{en:'refuge',cn:'n. 庇护所， 避难处； 庇护'},{en:'equivalent',cn:'adj. 等面（体）积的'},{en:'absurd',cn:'adj. 荒谬的， 荒唐的'},{en:'agenda',cn:'n. 议程'},{en:'expertise',cn:'n. 专门知识， 专长'},{en:'tyrant',cn:'n. 暴君；专制君主'},{en:'prominent',cn:'adj. 突出的， 杰出的； 突起的； 凸出的'},{en:'further',cn:'v. 增进'},{en:'stove',cn:'n. 炉子'},{en:'dreadful',cn:'adj. 糟透了的， 极不合意的； 极端的， 极其大的； 可怕的'},{en:'stroke',cn:'n. 中风；一举，一次努力；划桨，划水；击，敲；报时的钟声；笔画，一笔；抚摸 vt. 抚摸'},{en:'worship',cn:'v. 崇拜，喜爱'},{en:'institution',cn:'n. 协会； 制度； 习俗'},{en:'tremendous',cn:'adj. 巨大的'},{en:'frequent',cn:'adj. 常见的；频繁的'},{en:'multiplication',cn:'n. 乘法；增加'},{en:'identification',cn:'n. 身份证明； 鉴定， 验明， 认出； 认同'},{en:'unemployment',cn:'n. 失业， 失业人数'},{en:'sociology',cn:'n. 社会学'},{en:'universally',cn:'adv. 普遍地，一般地'},{en:'crucial',cn:'adj. 关键的'},{en:'collide',cn:'v. 撞击，碰撞'},{en:'setback',cn:'n. 挫折， 倒退， 失败'},{en:'interpret',cn:'v. 口译；解释'},{en:'slash',cn:'vt. 砍；大幅度削减 n. 砍， 砍痕； 斜线号'},{en:'late',cn:'adj. 去世不久的'},{en:'commentary',cn:'n. 实况报道， 解说词； 评论， 评论文章'},{en:'vigour',cn:'n. 活力，精力；元气'},{en:'legislation',cn:'n. 立法'},{en:'obligation',cn:'n. 义务， 责任'},{en:'pilgrim',cn:'n. 香客，朝圣者'},{en:'net',cn:'v. 用网捕；用网覆盖'},{en:'accident',cn:'n. 意外， 事故'},{en:'occupation',cn:'n. 职业'},{en:'perfection',cn:'n. 完美， 完善'},{en:'utilization',cn:'n. 利用，效用'},{en:'uncertain',cn:'adj. 不定的；无常的'},{en:'scar',cn:'v. 留下伤痕 n. 伤疤，伤痕；创伤'},{en:'turbulent',cn:'adj. 动荡的， 混乱的； 汹涌的， 狂暴的'},{en:'edit',cn:'v. 编校；编辑；剪辑'},{en:'detach',cn:'vt. 拆卸； 使分开， 使分离'},{en:'classify',cn:'v. 分类'},{en:'ridiculous',cn:'adj. 荒谬的， 可笑的'},{en:'literally',cn:'adv. 照字义，逐字地'},{en:'owe',cn:'v. 欠钱'},{en:'underfunded',cn:'adj. 资金不足的'},{en:'crank',cn:'n. 曲柄 v. 用曲柄转动'},{en:'disclose',cn:'vt. 揭露， 泄露， 透露'},{en:'carve',cn:'vt. 切， 把…切碎； 雕刻， 刻'},{en:'warrant',cn:'n. （法院授权警方采取行动的）令状；许可证'},{en:'supervise',cn:'v. 监督，监视'},{en:'ambiguous',cn:'adj. 引起歧义的， 模棱两可的， 含糊不清的'},{en:'lodging',cn:'n. 寄宿，住宿；住所'},{en:'hum',cn:'n. 嗡嗡声 v. 哼曲子'},{en:'sway',cn:'v. 影响'},{en:'muscular',cn:'adj. 肌肉发达的， 强壮的； 肌肉的'},{en:'controversy',cn:'n. 争议'},{en:'immigrant',cn:'n. 移民'},{en:'foul',cn:'adj. 肮脏的；丑恶的'},{en:'adhere',cn:'vi. 黏附， 附着； 遵守； 坚持； 追随， 支持'},{en:'denounce',cn:'v. 谴责，声讨；告发'},{en:'equality',cn:'n. 等同； 平等； 相等'},{en:'integral',cn:'adj. 构成整体所必需的， 基本的'},{en:'geology',cn:'n. 地质学'},{en:'outcome',cn:'n. 后果，成果'},{en:'discipline',cn:'n. 训练，管教'},{en:'embody',cn:'v. 体现'},{en:'posture',cn:'vi. 摆出姿势， 装模作样 n. 姿势，姿态；看法，态度'},{en:'approach',cn:'vt. 向…靠近 n. 靠近； 途径， 方式'},{en:'shrank',cn:'v. 收缩(shrink过去式)'},{en:'irrelevant',cn:'adj. 无关的'},{en:'board',cn:'n. 董事会'},{en:'vein',cn:'n. 静脉，血管；矿脉'},{en:'illiterate',cn:'adj. 文盲的 n. 文盲'},{en:'poke',cn:'vi. 伸出，突出 vt. 戳，捅；用…戳，把…戳向；伸出，突出 n. 戳， 捅'},{en:'messenger',cn:'n. 送信人， 信使'},{en:'pollutant',cn:'n. 污染物质'},{en:'stillness',cn:'n. 寂静，无声'}],ielts:[{en:'fodder',cn:'n. 饲料, 草料'},{en:'standard',cn:'n. 标准,规格 adj. 标准的'},{en:'confusion',cn:'n. 混乱, 混淆'},{en:'functional',cn:'adj. 功能的'},{en:'primal',cn:'adj.  最初的； 主要的， 首要的'},{en:'listless',cn:'adj. 倦怠的, 冷漠的'},{en:'target',cn:'n. 目标, 对象'},{en:'pale',cn:'vi.  变得苍白， 变得暗淡 adj. 苍白的；淡色的；暗淡的，微弱的'},{en:'anytime',cn:'adv. 任何时候, 无论何时'},{en:'digest',cn:'v. 消化,融会贯通'},{en:'cobalt',cn:'n. [化]钴'},{en:'advantageous',cn:'adj. 有利的'},{en:'treasurer',cn:'n. 司库,财务主管'},{en:'radio',cn:'n. 收音机,无线电'},{en:'swell',cn:'v. (使)膨胀, 增大'},{en:'potent',cn:'adj. 强有力的,有效的'},{en:'steadfastly',cn:'adv. 踏实地, 不变地'},{en:'whim',cn:'n. 一时的兴致, 奇想'},{en:'trace',cn:'v. 追踪,探索 n. 痕迹'},{en:'vibrate',cn:'v.  颤动， 振动'},{en:'lasting',cn:'adj.  持久的， 永久的'},{en:'toolmaking',cn:'n. 工具(或刀具)制造,机床维修'},{en:'whale',cn:'n. 鲸 v. 捕鲸'},{en:'zoologist',cn:'n. 动物学家'},{en:'angle',cn:'v.  把…放置成一角度； 使带上倾向性 n. 角；角度，立场，观点'},{en:'slope',cn:'n. 斜坡 v(使)顺斜'},{en:'reign',cn:'n. 君主统治 v. 统治, 支配'},{en:'please',cn:'adv. 请 v使高兴'},{en:'relaxation',cn:'n. 松弛, 放宽'},{en:'intelligence',cn:'n.  智力， 智慧； 情报'},{en:'romancer',cn:'n. 传奇小说作家, 讲虚构故事的人'},{en:'artisan',cn:'n.  工匠， 手艺人'},{en:'surplus',cn:'n. 剩余,过剩'},{en:'regain',cn:'v. 收回；恢复'},{en:'colonial',cn:'adj.  殖民的； 殖民国家的'},{en:'bother',cn:'v&n. 烦扰, 打扰 v'},{en:'windswept',cn:'adj. 风刮的, 被风吹扫的'},{en:'pollinator',cn:'n. 授花粉器'},{en:'disadvantage',cn:'n.  缺点， 障碍， 不利之处'},{en:'varnish',cn:'vt. 上清漆 n.  清漆'},{en:'leach',cn:'v. 过滤；溶解 n.  过滤器； 过滤剂'},{en:'dissent',cn:'vi. 不同意，持异议 n.  不同意见， 异议'},{en:'supportive',cn:'adj. 支持的'},{en:'landmark',cn:'n. (航海)陆标, 地界标'},{en:'emancipate',cn:'vt.  解放， 解除'},{en:'betray',cn:'vt.  出卖， 泄露； 辜负， 对…不忠； 流露情感'},{en:'birth',cn:'n. 出生'},{en:'reabsorb',cn:'v. 再吸附,重吸收'},{en:'ambience',cn:'n. 周围环境, 气氛'},{en:'exploration',cn:'n. 探险, 探测'},{en:'conveniently',cn:'adv. 方便地；合宜地'},{en:'overgraze',cn:'vt. 使过度放牧'},{en:'mentally',cn:'adv. 精神上, 智力上'},{en:'relevant',cn:'adj.  相关的， 有关的； 中肯的， 贴切的； 有价值的， 有意义的'},{en:'infinite',cn:'adj. 无限的，无穷的'},{en:'seaweed',cn:'n. 海草, 海藻'},{en:'distance',cn:'n. 距离,路程'},{en:'beng',cn:'n. 大麻'},{en:'lira',cn:'n. 里拉（意大利货币单位）'},{en:'shipwright',cn:'n. 造船者'},{en:'insulation',cn:'n. 绝缘'},{en:'cohere',cn:'vi.  连贯， 一致； 黏合； 齐心协力， 团结一致'},{en:'poisonous',cn:'adj.  有毒的， 有害的； 恶毒的'},{en:'prohibitive',cn:'adj.  禁止的， 抑制的； 高得令人难以承受的'},{en:'restful',cn:'adj. 宁静的'},{en:'fatigue',cn:'n. 疲劳，劳累 v(使)疲劳'},{en:'thousand',cn:'n. 一千(个),许许多多,成千上万'},{en:'aware',cn:'adj.  知道的； 意识到的'},{en:'loose',cn:'n. 解放,放任 v. 弄松, 释放'},{en:'importance',cn:'n. 重要(性)'},{en:'profession',cn:'n. 职业,专业'},{en:'raise',cn:'n. 上升,增高 v. 升起,举起,提出'},{en:'Indiana',cn:'n. 印地安那州'},{en:'mast',cn:'n.  船桅； 旗杆； 天线塔'},{en:'Lowa',cn:'n. 爱荷华州(美国中西部的一州)'},{en:'treason',cn:'n. 叛逆, 通敌, 背信'},{en:'cape',cn:'n.  海角， 岬； 斗篷， 披肩'},{en:'mobile',cn:'adj.  可移动的； 多变的 n. 动的雕塑'},{en:'disrupt',cn:'vt.  使中断； 扰乱； 使分裂， 使瓦解'},{en:'coherence',cn:'n. 一致'},{en:'listen',cn:'v. 听'},{en:'sage',cn:'adj. 贤明的；审慎的 n.  智者， 圣人'},{en:'fly',cn:'v. 乘,飞(行) n. 苍蝇'},{en:'driveway',cn:'n. 车道'},{en:'correspondence',cn:'n. 通信, 信件, 相符'},{en:'Ute',cn:'n. 犹特人(美洲印第安人的一种), 犹特语'},{en:'balance',cn:'vt. 使平衡，使均衡 n.  天平， 秤； 平衡； 差额； 余款'},{en:'investor',cn:'n. 投资者'},{en:'barter',cn:'n&v.  实物交易， 以物易物'},{en:'feud',cn:'n. 不和,争执 v. 长期争斗'},{en:'tall',cn:'adj. 高的,长的'},{en:'opportunist',cn:'n. 机会主义者,投机取巧者'},{en:'deck',cn:'n. 甲板, 舰板'},{en:'relieve',cn:'vt.  缓解， 减轻； 使轻松， 使宽慰； 调剂； 接替， 换班'},{en:'eat',cn:'v. 吃'},{en:'circumference',cn:'n. 圆周, 周围'},{en:'blade',cn:'n. 刀刃, 刀片'},{en:'reaction',cn:'n. 反应,反作用'},{en:'lust',cn:'v.  对…有强烈的欲望 n. 性欲；强烈的欲望'},{en:'invitation',cn:'n.  邀请； 请柬； 吸引， 诱惑'},{en:'core',cn:'n. 地核；果心，核心；要点，精髓 vt.  去掉…的中心部分'},{en:'gradual',cn:'adj. 逐渐的,逐步的'},{en:'inner',cn:'adj. 内部的,里面的,内心的'},{en:'colonizer',cn:'n. 殖民者,殖民地开拓者, 移民'},{en:'resilience',cn:'n. 弹性，弹力'},{en:'apprentice',cn:'n. 学徒 v. 当学徒'},{en:'connote',cn:'v.  意味着； 暗示'},{en:'shortwave',cn:'n. 短波'},{en:'foolish',cn:'adj. 愚蠢的，荒谬的'},{en:'withdraw',cn:'v. 收回,撤消'},{en:'meteor',cn:'n. 流星, 大气现象'},{en:'slick',cn:'adj. 圆滑的；精巧的'},{en:'suspect',cn:'v. 推测,怀疑'},{en:'rim',cn:'n. 边，轮缘；边界 vt.  给…镶边'},{en:'writhe',cn:'v. 翻滚，扭动'},{en:'tributary',cn:'n. 支流；'},{en:'alongside',cn:'prep&ad. 在旁边'},{en:'epitome',cn:'n.  摘要， 梗概； 典型， 典范'},{en:'snout',cn:'n. 猪嘴,鼻子'},{en:'philosophy',cn:'n. 哲学'},{en:'artistry',cn:'n. 艺术之性质'},{en:'housewares',cn:'n. 家用器皿'},{en:'amenable',cn:'adj.  顺从的， 服从劝导的； 有服从义务的'},{en:'diverse',cn:'adj. 不同的,变化多的'},{en:'meeting',cn:'n. 会议'},{en:'lush',cn:'adj. 茂盛的, 丰富的'},{en:'tug',cn:'n&v. 用力拉, 拖船'},{en:'ventilation',cn:'n. 通风, 流通空气'},{en:'harmonious',cn:'adj.  和谐的， 协调的； 和睦的， 融洽的'},{en:'midocean',cn:'n. 海洋中央'},{en:'inquire',cn:'v. 询问,  查究'},{en:'exponential',cn:'n. 指数 adj. 指数的, 幂数的'},{en:'modest',cn:'adj.  谦虚的； 适度的'},{en:'bluff',cn:'n. 断崖,诈骗 adj. 绝壁的 v. 诈骗'},{en:'creditor',cn:'n. 债权人'},{en:'workplace',cn:'n. 工作场所'},{en:'instantaneous',cn:'adj.  瞬间的， 即刻的， 立即的'},{en:'legume',cn:'n. 豆类, 豆荚'},{en:'livestock',cn:'n. 家畜'},{en:'consequence',cn:'n. 结果'},{en:'handful',cn:'n. 一把, 少数'},{en:'pack',cn:'v. 收拾，打包；捆扎；塞满 n.  包， 包裹'},{en:'primacy',cn:'n. 首位'},{en:'reenter',cn:'n. 重进入, 再加入 v. 重返'},{en:'soloist',cn:'n.  独奏者， 独唱者， 单独表演者'},{en:'lope',cn:'vi. 轻松地大步跑 n.  轻快的步伐'},{en:'ravage',cn:'n&v. 毁坏'},{en:'skeletal',cn:'adj. 骨骼的, 梗概的'},{en:'announce',cn:'v. 宣布,宣告'},{en:'rescue',cn:'vt&n.  营救， 搭救'},{en:'theme',cn:'n. 主题'},{en:'astronomy',cn:'n. 天文学'},{en:'theatrical',cn:'adj. 戏剧性的'},{en:'squander',cn:'vt.  浪费， 挥霍'},{en:'report',cn:'n. 报告 v. 报导,汇报'},{en:'realization',cn:'n.  实现； 意识'},{en:'rural',cn:'adj. 农村的'},{en:'rumor',cn:'n.  传闻， 谣言'},{en:'feel',cn:'v. 感觉,触摸 v. 有知觉'},{en:'cumulative',cn:'adj. 累积的'},{en:'dishonest',cn:'adj. 不诚实的'},{en:'button',cn:'n. 钮扣 v. 扣住,扣紧'},{en:'crystallize',cn:'v.  结晶； 明确'},{en:'certitude',cn:'n.  确定， 确信； 必然性'},{en:'motor',cn:'n. 发动机'},{en:'quasar',cn:'n.  类星体'},{en:'anomaly',cn:'n.  反常， 异常； 异常的人'},{en:'straightforward',cn:'adj. 正直的,简单的 adv. 坦率地'},{en:'rhetorical',cn:'adj. 带修辞色彩的'},{en:'underestimate',cn:'vt& n. 估计不足，低估'},{en:'ill',cn:'adj. 有病的,坏的'},{en:'texture',cn:'n.  质地； 纹理； 结构'},{en:'enclosure',cn:'n. 围住, 围栏'},{en:'debtor',cn:'n. 债务人'},{en:'tepee',cn:'n. 美国印第安人的圆锥形帐篷'},{en:'champion',cn:'n. 拥护者vt 拥护, 支持'},{en:'antonym',cn:'n.  反义词'},{en:'hat',cn:'n. 帽子 vt戴帽子'},{en:'interfere',cn:'v. 干涉,妨碍'},{en:'hominid',cn:'adj.  灵长目的 n. 原始人类；人科动物'},{en:'steep',cn:'adj. 陡峭的,急剧的'},{en:'tectonic',cn:'adj.  地壳构造的'},{en:'trend',cn:'n&v. 倾向,趋势'},{en:'ridge',cn:'n.  脊； 山脊， 山脉； 高压脊； 隆起物'},{en:'destroy',cn:'v. 破坏,毁灭,消灭'},{en:'aggression',cn:'n. 进攻,侵略'},{en:'quartz',cn:'n.  石英'},{en:'swarm',cn:'vi. 云集 v.  密集， 云集； 成群地飞行 n. 群，一大群'},{en:'glossy',cn:'adj. 平滑的, 有光泽的'},{en:'courteous',cn:'adj.  谦恭的， 有礼貌的'},{en:'decorative',cn:'adj. 装饰的'},{en:'station',cn:'n. 所；站；台；岗位；身份，地位 vt.  安置； 派驻， 驻扎'},{en:'thermal',cn:'adj. 热的，热量的；保暖的，防寒的 n.  上升的热气流'},{en:'freighter',cn:'n. 货船,承运人'},{en:'requisition',cn:'n. 正式请求；征用'},{en:'habitual',cn:'adj. 习惯的, 惯常的'},{en:'illusory',cn:'adj. 虚幻的'},{en:'farmhand',cn:'n. 农业工人，农场工人'},{en:'scale',cn:'n. 规模,等级,比例'},{en:'ragtime',cn:'n. 拉格泰姆音乐 adj. 使人发笑的'},{en:'alarm',cn:'n. 警报 vt恐吓, 警告'},{en:'arch',cn:'n. 拱门v(使)弯成弓形'},{en:'attribute',cn:'n. 属性,品质,特征'},{en:'Henderson',cn:'n. 亨德森（姓氏）'},{en:'guarantor',cn:'n. [律]保证人'},{en:'flamboyant',cn:'adj.  艳丽的， 绚丽夺目的； 炫耀的'},{en:'continent',cn:'n.  大陆， 陆地； 洲'},{en:'breed',cn:'v. 〔动物〕交配繁殖 n. 〔宠物或牲畜的〕品种'},{en:'excess',cn:'adj.  过量的； 额外的 n.  过度， 超过'},{en:'aide',cn:'n. 助手, 副官'},{en:'massif',cn:'n. 山丘'},{en:'subversive',cn:'adj. 颠覆性的，破坏性的 n.  颠覆分子'},{en:'accordion',cn:'n.  手风琴'},{en:'wagon',cn:'n. 四轮马车,货车'},{en:'balance',cn:'n. 平衡 v. 使平衡'},{en:'virtue',cn:'n.  美德； 优点'},{en:'penalty',cn:'n.  处罚， 惩罚； 罚金； 犯规的处罚'},{en:'purple',cn:'adj. 紫色的'},{en:'geographer',cn:'n. 地理学者'},{en:'wick',cn:'n. 蜡烛心, 灯芯'},{en:'faculty',cn:'n.  学院； 全体教职员工； 能力'},{en:'pertain',cn:'vi.  存在； 适用'},{en:'everywhere',cn:'adv. 到处, 无论何处'},{en:'autobiography',cn:'n. 自传'},{en:'skeletal',cn:'adj.  骨骼的， 骸骨的； 梗概的； 轮廓的'},{en:'herbivore',cn:'n.  食草动物'},{en:'punctual',cn:'adj.  守时的'},{en:'collision',cn:'n.  碰撞； 冲突， 抵触'},{en:'functionalism',cn:'n. 功能主义, 机能心理学'},{en:'successful',cn:'adj. 成功的,圆满的'},{en:'reservation',cn:'n.  预约， 预订； 保留意见， 疑惑； 居留地'},{en:'happily',cn:'adv. 幸福地, 愉快地'},{en:'insurmountable',cn:'adj. 不能克服的,不能超越的'},{en:'crayfish',cn:'n. 小龙虾'},{en:'affection',cn:'n. 喜爱，钟爱；'},{en:'comprehensive',cn:'adj.  全面的； 综合的'},{en:'foul',cn:'adj. 邪恶的,下流的 n犯规 v弄脏'},{en:'Afghanistan',cn:'n. 阿富汗(西南亚国家)'},{en:'server',cn:'n. 服务器'},{en:'immunity',cn:'n. 免疫性'},{en:'attraction',cn:'n. 吸引(力)；具有吸引力的事物(或人)'},{en:'versatile',cn:'adj. 多才多艺的,万能的'},{en:'clench',cn:'v. 捏紧；紧紧握住'},{en:'shipwright',cn:'n.  造船者， 造船工人； 修船工'},{en:'inconspicuously',cn:'adv. 难以觉察地, 不显著地'},{en:'tentacle',cn:'n.  触角， 触须， 触手'},{en:'storytelling',cn:'n. 说书, 讲故事'},{en:'sulfuric',cn:'adj. [化] 硫磺的,含硫的'},{en:'yarn',cn:'n.  纱， 纱线； 故事'},{en:'hiss',cn:'v. 嘶嘶作声, 用嘘声表示'},{en:'acceptance',cn:'n. 接受,接纳'},{en:'referee',cn:'n. 裁判员 v裁判, 仲裁'},{en:'painstaking',cn:'n. 辛苦 adj. 辛苦的, 辛勤的'},{en:'mighty',cn:'adj.  强有力的； 巨大的'},{en:'occupation',cn:'n. 职业, 占有'},{en:'unsuitable',cn:'adj. 不适宜的, 不合适的'},{en:'immense',cn:'adj.  巨大的， 极大的'},{en:'applicable',cn:'adj. 合适的, 适用的,'},{en:'equilateral',cn:'adj. 等边的 n等边形'},{en:'subsistence',cn:'n.  生存， 生计'},{en:'march',cn:'n&v. 行军'},{en:'eclecticism',cn:'n.  折中主义'},{en:'overkill',cn:'n. 过度的杀伤威力 v. 超量杀伤'},{en:'uproot',cn:'v. 连根拔起, 根除'},{en:'fumigate',cn:'v. 熏制, 以烟熏消毒'},{en:'condole',cn:'vi.  向…吊唁； 慰问'},{en:'staggered',cn:'adj.  交错的， 错开的； 震惊的'},{en:'peach',cn:'n. 桃(树)'},{en:'generically',cn:'adv. 属类地, 属类上'},{en:'consecutive',cn:'adj. 连贯的,连续不断的'},{en:'deter',cn:'v.  威慑， 阻止'},{en:'aviation',cn:'n.  航空， 航空学； 飞行'},{en:'creeper',cn:'n. 爬行者'},{en:'compromise',cn:'n&v.  妥协， 折中'},{en:'corrupt',cn:'adj. 堕落的，腐化的；腐败的，'},{en:'replenish',cn:'v. 补充'},{en:'erect',cn:'v. 建造,竖立,使直立'},{en:'undergraduate',cn:'n.  大学肄业生； 大学本科生'},{en:'minus',cn:'adj. 减的，负的 prep.  减 n. 负数；减号；不足'},{en:'mortal',cn:'n. 凡人,人类 adj. 必死的,致命的'},{en:'ending',cn:'n. 结尾, 结局'},{en:'leaf',cn:'n. 叶子'},{en:'spectrum',cn:'n.  谱， 光谱， 频谱； 范围， 幅度'},{en:'hale',cn:'adj. 强壮的 v. 硬拖'},{en:'flexible',cn:'adj.  易弯曲的； 柔韧的； 灵活的， 可变通的'},{en:'naturalistic',cn:'adj. 自然的, 自然主义的'},{en:'inactivate',cn:'vt.  使不活动， 使不活跃'},{en:'approximation',cn:'n.  接近； 近似值'},{en:'spur',cn:'n. 踢马剌 v. 鞭策, 刺激'},{en:'sentimental',cn:'adj.  情感的； 伤感的， 多愁善感的'},{en:'auditorium',cn:'n. 听众席,观众席,'},{en:'wife',cn:'n. 妻子'},{en:'excursion',cn:'n.  远足， 短途旅游'},{en:'libelous',cn:'adj. 诽谤的,损害名誉的'},{en:'bless',cn:'v. 祝福, 保佑'},{en:'military',cn:'adj. 军事的 n. 军队'},{en:'sensual',cn:'adj.  感觉的， 感官的； 肉欲的； 耽于感官享受的'},{en:'inhabit',cn:'vt.  居住于， 栖居于'},{en:'chew',cn:'v.  咀嚼； 思量， 熟思'},{en:'pony',cn:'n. 矮种马，小马'},{en:'unknowing',cn:'adj. 没查觉的, 无知的'},{en:'clinical',cn:'adj. 临床的,诊所的'},{en:'credentialism',cn:'n.  文凭主义'},{en:'peepshow',cn:'n. 西洋镜'},{en:'ink',cn:'n. 墨水'},{en:'prisoner',cn:'adj. 囚犯的 n. 战俘'},{en:'unhappy',cn:'adj. 不幸的, 不快乐的'},{en:'solve',cn:'v. 解决,解答'},{en:'contrary',cn:'adj. 相反的，逆的 n.  相反， 反面'},{en:'sage',cn:'adj. 智慧的  n智者'},{en:'pronounced',cn:'adj.  显著的； 明确的'},{en:'tornado',cn:'n.  飓风， 龙卷风'},{en:'exploitation',cn:'n. 开发, 开采'},{en:'publication',cn:'n. 出版(物), 发行'},{en:'collarless',cn:'adj. 无领的,无马轭(或颈圈)的'},{en:'sandy',cn:'adj. 沙的, 沙质'},{en:'inferior',cn:'adj. 劣等的，较差的；次要的；级别低的 n.  下级， 下属， 晚辈'},{en:'embrace',cn:'v. 拥抱；包含；欣然接受 n.  拥抱'},{en:'cushion',cn:'n. 垫子'},{en:'ware',cn:'n. 陶器,器皿'},{en:'luxurious',cn:'adj. 奢侈的, 豪华的'},{en:'cult',cn:'n. 祭仪, 礼拜式'},{en:'register',cn:'v&n.  登记， 注册'},{en:'inadequately',cn:'adv. 不够地,  不够好'},{en:'prowl',cn:'v. 巡游'},{en:'wavelength',cn:'n. 波长'},{en:'whereby',cn:'ad&conj.  借以， 凭'},{en:'cate',cn:'n. 佳肴, 美食'},{en:'slope',cn:'v.  倾斜 n. 斜坡，斜面；斜度'},{en:'hormonal',cn:'adj. 荷尔蒙的,激素的'},{en:'woodpecker',cn:'n. [鸟]啄木鸟'},{en:'arboreal',cn:'adj.  树栖的； 树木的'},{en:'complacence',cn:'n.  自满， 满足'},{en:'enhancement',cn:'n. 增进, 增加'},{en:'foremost',cn:'adj. 最重要的,最初的'},{en:'glial',cn:'adj. 神经胶质的'},{en:'commissioner',cn:'n. 委员, 专员'},{en:'uncommon',cn:'adj. 不凡的, 难得的'},{en:'sideline',cn:'n. 副业, 边界线'},{en:'Indus',cn:'n. 印度河（印度西北部的河流）'},{en:'cosmos',cn:'n. 宇宙'},{en:'openly',cn:'adv. 不隐瞒地, 公然地'},{en:'mad',cn:'adj. 疯狂的,狂热的'},{en:'nitrogen',cn:'n.  氮'},{en:'king',cn:'n. 国王'},{en:'drape',cn:'n. 窗帘 v. 使褶皱'},{en:'sticky',cn:'adj.  黏的， 黏性的； 闷热的； 棘手的'},{en:'rebate',cn:'n.  回扣， 折扣； 退还款'},{en:'humble',cn:'adj. 卑下的, 微贱的 v. 使卑下, 挫'},{en:'seafloor',cn:'n. 海底'},{en:'brag',cn:'v.  吹嘘， 自夸， 自吹自擂'},{en:'sour',cn:'v. 变酸；变馊；变坏，恶化 adj.  酸的； 馊的； 乖戾的， 尖酸刻薄的； 酸痛的'},{en:'datebase',cn:'n. 数据库, 资料库'},{en:'chip',cn:'v. 削下 n.  碎片； 芯片'},{en:'conservation',cn:'n.  守恒； 保存； 保护'},{en:'bent',cn:'n. 倾向, 爱好'},{en:'photographer',cn:'n. 摄影师'},{en:'oblivious',cn:'adj.  遗忘的； 未注意的， 不知不觉的'},{en:'recurring',cn:'adj.  往复的， 反复的， 再次发生的'},{en:'inter',cn:'v. 埋葬'},{en:'comfortably',cn:'adv. 舒适地'},{en:'choreograph',cn:'v.  设计舞蹈动作， 编舞'},{en:'plate',cn:'n. 盘子,碟'},{en:'adequacy',cn:'n. 适当, 足够'},{en:'inner',cn:'adj. 内部的；内心的 n.  内部； 内心'},{en:'swear',cn:'v. 宣誓, 发誓'},{en:'aristocratic',cn:'adj.  贵族的， 有贵族气派的'},{en:'manure',cn:'n. 肥料'},{en:'prior',cn:'adj. 优先的,在前的'},{en:'micronesian',cn:'n&a. 密克罗尼西亚人(的)'},{en:'homespun',cn:'n. 手织物'},{en:'seepage',cn:'n. 渗流, 渗出的量'},{en:'frisky',cn:'adj. 活泼的, 欢闹的'},{en:'tarnish',cn:'v. 失去光泽；玷污，败坏 n.  污点； 瑕疵'},{en:'fortunate',cn:'adj. 幸运的, 侥幸的'},{en:'visible',cn:'adj. 看得见的,显而易见的'},{en:'migration',cn:'n. 移居,迁移'},{en:'layout',cn:'n. 布局，安排'},{en:'neutral',cn:'adj. 中立的, 中性的'},{en:'puppet',cn:'n.  木偶； 玩偶； 傀儡， 受人操纵的人'},{en:'neurilemmal',cn:'adj. 神经膜的, 神经鞘的'},{en:'defense',cn:'n. 国防部,防卫'},{en:'quaker',cn:'n. 教友派信徒, 贵格会会员'},{en:'gin',cn:'n. 杜松子酒；弹棉机，'},{en:'mental',cn:'adj. 精神的,智力的'},{en:'pinch',cn:'v. 捏，掐；夹痛；偷窃；逮捕 n.  捏， 掐； 一撮， 微量'},{en:'pentagon',cn:'n. 五角形, 五边形'},{en:'magnification',cn:'n. 扩大, 放大倍率'},{en:'go',cn:'v. 去,离开,进行'},{en:'sustenance',cn:'n.  食物； 生计； 维持'},{en:'ceremonial',cn:'n. 仪式 adj. 正式的'},{en:'Galilean',cn:'adj. 伽利略的, 加利利的（位于巴基斯坦北部）'},{en:'monarch',cn:'n.  君主， 帝王'},{en:'welland',cn:'n. 韦兰（加拿大东南部港口城市）'},{en:'walk',cn:'v. 行,走 n. 步行'},{en:'never',cn:'adv. 决不,从未'},{en:'scar',cn:'n. 伤痕,疤痕 v. 结疤,使留下伤痕'},{en:'perimeter',cn:'n. [树数] 周长, 周界'},{en:'political',cn:'adj. 政治的,政党的'},{en:'somewhat',cn:'adv.  稍微， 有点'}]};
+const BANKS = {};
+const BANK_INFO = {
+    gaokao:{n:'高考词汇',ic:'🎓',desc:'高考英语必备',file:'gaokao_words.js'},
+    cet4:{n:'四级词汇',ic:'📗',desc:'大学英语四级',file:'cet4_words.js'},
+    cet6:{n:'六级词汇',ic:'📘',desc:'大学英语六级',file:'cet6_words.js'},
+    ielts:{n:'雅思词汇',ic:'📕',desc:'雅思考试核心',file:'ielts_words.js'}
+};
 let CUSTOM_WORDS=[];
 
 // ═══════════════════════════════════════════════════════════════
 //  AUDIO
 // ═══════════════════════════════════════════════════════════════
-let AC=null,AE=false,BGM_NODES=null,BGM_GAIN=null,BGM_PLAYING=false;
+let AC=null,AE=false,BGM_P=null;
 function initAudio(){
     if(AC)return;
     try{AC=new(window.AudioContext||window.webkitAudioContext)();AE=true;document.querySelector('.audio-btn').textContent='🔊';startBGM()}catch(e){}
 }
 function toggleAudio(){
-    if(!AC){initAudio();return}
-    AE=!AE;
+    if(!AC){initAudio();return}AE=!AE;
     document.querySelector('.audio-btn').textContent=AE?'🔊':'🔇';
-    if(AE&&!BGM_PLAYING)startBGM();else if(!AE&&BGM_GAIN){BGM_GAIN.gain.linearRampToValueAtTime(0,AC.currentTime+.5);BGM_PLAYING=false}
+    if(AE)startBGM(); else if(BGM_P){BGM_P.gain.linearRampToValueAtTime(0,AC.currentTime+.5);setTimeout(()=>{BGM_P=null},500)}
 }
 function startBGM(){
-    if(!AC||!AE)return;BGM_PLAYING=true;
-    try{BGM_NODES&&BGM_NODES.forEach(o=>{try{o.stop()}catch(e){}})}catch(e){}
-    BGM_NODES=[];BGM_GAIN=AC.createGain();BGM_GAIN.gain.value=.03;BGM_GAIN.connect(AC.destination);
-    // Ambient pad with soft chords
+    if(!AC||!AE||BGM_P)return;
+    BGM_P=AC.createGain();BGM_P.gain.value=.025;BGM_P.connect(AC.destination);
     const chords=[[130.81,164.81,196],[164.81,196,220],[146.83,185,220],[174.61,220,261.63]];
     let ci=0;
-    function playChord(){
-        if(!AE||!BGM_PLAYING)return;
-        const c=chords[ci%chords.length];ci++;
-        const notes=c.map(f=>{
-            const o=AC.createOscillator();o.type='sine';o.frequency.value=f;
-            const g=AC.createGain();g.gain.setValueAtTime(.025,AC.currentTime);g.gain.exponentialRampToValueAtTime(.001,AC.currentTime+3.5);
-            o.connect(g);g.connect(BGM_GAIN);o.start();o.stop(AC.currentTime+3.6);
-            return o;
-        });
-        BGM_NODES=BGM_NODES.concat(notes);
-        setTimeout(playChord,3500);
+    function pc(){
+        if(!AE||!BGM_P)return;const c=chords[ci%chords.length];ci++;
+        c.forEach(f=>{const o=AC.createOscillator();o.type='sine';o.frequency.value=f;const g=AC.createGain();g.gain.setValueAtTime(.02,AC.currentTime);g.gain.exponentialRampToValueAtTime(.001,AC.currentTime+3.5);o.connect(g);g.connect(BGM_P);o.start();o.stop(AC.currentTime+3.6)});
+        setTimeout(pc,3500);
     }
-    // Add soft drone
-    const drone=AC.createOscillator();drone.type='sine';drone.frequency.value=65.41;
-    const dg=AC.createGain();dg.gain.value=.015;
-    drone.connect(dg);dg.connect(BGM_GAIN);drone.start();
-    BGM_NODES.push(drone);
-    playChord();
+    const d=AC.createOscillator();d.type='sine';d.frequency.value=65.41;const dg=AC.createGain();dg.gain.value=.012;d.connect(dg);dg.connect(BGM_P);d.start();
+    pc();
 }
 function sfx(t){
     if(!AC||!AE)return;const c=AC.currentTime;
@@ -424,63 +297,146 @@ function sfx(t){
     else if(t==='wrong'){const o=AC.createOscillator();o.type='sawtooth';o.frequency.setValueAtTime(250,c);o.frequency.exponentialRampToValueAtTime(60,c+.25);const g=AC.createGain();g.gain.setValueAtTime(.06,c);g.gain.exponentialRampToValueAtTime(.001,c+.25);o.connect(g);g.connect(AC.destination);o.start(c);o.stop(c+.25)}
     else if(t==='click'){const o=AC.createOscillator();o.type='sine';o.frequency.value=880;const g=AC.createGain();g.gain.setValueAtTime(.04,c);g.gain.exponentialRampToValueAtTime(.001,c+.05);o.connect(g);g.connect(AC.destination);o.start(c);o.stop(c+.05)}
     else if(t==='lvl'){[523,659,784,1047,1319].forEach((f,i)=>{const o=AC.createOscillator();o.type='triangle';o.frequency.value=f;const g=AC.createGain();g.gain.setValueAtTime(.08,c+i*.08);g.gain.exponentialRampToValueAtTime(.001,c+i*.08+.25);o.connect(g);g.connect(AC.destination);o.start(c+i*.08);o.stop(c+i*.08+.25)})}
-    else if(t==='fill'){const o=AC.createOscillator();o.type='sine';o.frequency.value=660;const g=AC.createGain();g.gain.setValueAtTime(.05,c);g.gain.exponentialRampToValueAtTime(.001,c+.06);o.connect(g);g.connect(AC.destination);o.start(c);o.stop(c+.06)}
     else if(t==='buy'){[440,550,660].forEach((f,i)=>{const o=AC.createOscillator();o.type='sine';o.frequency.value=f;const g=AC.createGain();g.gain.setValueAtTime(.06,c+i*.05);g.gain.exponentialRampToValueAtTime(.001,c+i*.05+.08);o.connect(g);g.connect(AC.destination);o.start(c+i*.05);o.stop(c+i*.05+.08)})}
 }
 
 // ═══════════════════════════════════════════════════════════════
-//  GLOBAL STATE
+//  SAVE SYSTEM — per-slot, per-word progress with Ebbinghaus
 // ═══════════════════════════════════════════════════════════════
-let U={ // user data
-    coins:3,
-    activeBank:'cet4',
-    skins:{player:'⚔️'},
-    borders:{active:'none'},
-    items:{potion:0,sand:0,shield:0,skip:0},
-    shop:{potion_b:0,sand_b:0,shield_b:0,skip_b:0},
-    unlocks:{skins:['⚔️'],borders:['none']},
-    mastery:{},
-    achievements:[],
-};
-let MODE=0; // 1=dungeon, 2=puzzle
-let TIMER=null;
-let TOAST_T=null;
+const EBBINGHAUS_INTERVALS = [0, 1, 24, 72, 168, 336, 720]; // hours: new,1h,1d,3d,7d,14d,30d
+const SLOT_COUNT = 3;
 
-function $(id){return document.getElementById(id)}
+let U = {coins:3,activeBank:'cet4',skins:{player:'⚔️'},borders:{active:'none'},items:{potion:0,sand:0,shield:0,skip:0},shop:{},unlocks:{skins:['⚔️'],borders:['none']},mastery:{},achievements:[],slot:1};
+let SAVE = {stats:{total:0,correct:0,streak:0,reviews:0,history:[]},words:{}}; // per-slot data: word progress + stats
 
-function shuffle(a){const r=[...a];for(let i=r.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[r[i],r[j]]=[r[j],r[i]]}return r}
-
-function save(){try{localStorage.setItem('vocabDungeon',JSON.stringify(U))}catch(e){}}
-
-function load(){
-    try{const d=localStorage.getItem('vocabDungeon');if(d){const p=JSON.parse(d);Object.assign(U,p);if(!U.skins)U.skins={player:'⚔️'};if(!U.borders)U.borders={active:'none'};if(!U.items)U.items={potion:0,sand:0,shield:0,skip:0};if(!U.shop)U.shop={potion_b:0,sand_b:0,shield_b:0,skip_b:0};if(!U.unlocks)U.unlocks={skins:['⚔️'],borders:['none']};if(!U.mastery)U.mastery={};if(!U.achievements)U.achievements=[]}Object.assign(U.unlocks,{skins:['⚔️','🎓','📗','📘','🌍'],borders:['none']});}catch(e){}}
-load();
-
-function getBank(){
-    if(CUSTOM_WORDS.length>0)return CUSTOM_WORDS;
-    return BANKS[U.activeBank]||BANKS.cet4;
+function getSaveKey(slot){
+    return 'vd_slot_'+slot;
+}
+function loadSlot(slot){
+    try{
+        const d=localStorage.getItem(getSaveKey(slot));
+        if(d){const p=JSON.parse(d);SAVE=p}else{SAVE={stats:{total:0,correct:0,streak:0,reviews:0,history:[]},words:{}}}
+    }catch(e){SAVE={stats:{total:0,correct:0,streak:0,reviews:0,history:[]},words:{}}}
+    if(!SAVE.words)SAVE.words={};if(!SAVE.stats)SAVE.stats={total:0,correct:0,streak:0,reviews:0,history:[]};
+}
+function saveSlot(){
+    try{localStorage.setItem(getSaveKey(U.slot),JSON.stringify(SAVE))}catch(e){}
+}
+function loadUser(){
+    try{
+        const d=localStorage.getItem('vd_user');
+        if(d){Object.assign(U,JSON.parse(d))}
+    }catch(e){}
+    if(!U.unlocks)U.unlocks={skins:['⚔️'],borders:['none']};if(!U.mastery)U.mastery={};if(!U.achievements)U.achievements=[];
+    if(!U.items)U.items={potion:0,sand:0,shield:0,skip:0};if(!U.shop)U.shop={};
+    Object.assign(U.unlocks,{skins:['⚔️','🎓','📗','📘','🌍'],borders:['none']});
+    loadSlot(U.slot);
+}
+function saveUser(){
+    try{localStorage.setItem('vd_user',JSON.stringify({coins:U.coins,activeBank:U.activeBank,skins:U.skins,borders:U.borders,items:U.items,shop:U.shop,unlocks:U.unlocks,mastery:U.mastery,achievements:U.achievements,slot:U.slot}))}catch(e){}
+    saveSlot();
 }
 
+// Word progress helpers
+function getWordKey(word,bank){return bank+'_'+word}
+function getWordProgress(word,bank){
+    const k=getWordKey(word,bank);
+    if(!SAVE.words[k])SAVE.words[k]={l:0,n:null,i:1,c:0,lr:null};
+    return SAVE.words[k];
+}
+function markCorrect(word,bank){
+    const p=getWordProgress(word,bank);p.c++;p.lr=Date.now();
+    const nextLevel=Math.min(6,p.l+1);p.l=nextLevel;
+    p.i=EBBINGHAUS_INTERVALS[p.l]||720;p.n=Date.now()+p.i*3600000;
+    SAVE.stats.correct=(SAVE.stats.correct||0)+1;
+    saveSlot();
+}
+function markWrong(word,bank){
+    const p=getWordProgress(word,bank);p.c=0;p.lr=Date.now();
+    p.l=Math.max(0,p.l-2);p.i=EBBINGHAUS_INTERVALS[p.l]||1;p.n=Date.now()+p.i*3600000;
+    saveSlot();
+}
+function getDueWords(bank){
+    const now=Date.now();const due=[];
+    const wordBank = getBank();
+    if(!wordBank)return due;
+    for(const w of wordBank){
+        const p=getWordProgress(w.e,bank);
+        if(p.l===0||(p.n&&p.n<=now))due.push(w);
+    }
+    return due;
+}
+function getMasteryCount(bank){
+    const wordBank=getBank();if(!wordBank)return 0;
+    let c=0;
+    for(const w of wordBank){const p=getWordProgress(w.e,bank);if(p.l>=4)c++}
+    return c;
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  WORD BANK LOADING
+// ═══════════════════════════════════════════════════════════════
+function getBank(){
+    if(CUSTOM_WORDS.length>0)return CUSTOM_WORDS;
+    const bankName = U.activeBank;
+    if(BANKS[bankName]&&BANKS[bankName].length>0)return BANKS[bankName];
+    // Try to load from global
+    const globalVar = 'W_'+bankName;
+    if(window[globalVar]&&window[globalVar].length>0){
+        BANKS[bankName]=window[globalVar];
+        return BANKS[bankName];
+    }
+    return null;
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  UI HELPERS
+// ═══════════════════════════════════════════════════════════════
+const $=id=>document.getElementById(id);
 function showScreen(id){
     document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
     $(id).classList.add('active');
     if(id==='s-hub')updateHub();
-    if(id==='s-shop')renderShop();
-    if(id==='s-wordbank')renderWB();
 }
-
-function backHub(){showScreen('s-hub');$('o-win').classList.remove('show');$('o-lose').classList.remove('show')}
-
+function backHub(){
+    showScreen('s-hub');
+    $('o-win').classList.remove('show');$('o-lose').classList.remove('show');$('o-pause').classList.remove('show');
+}
 function showToast(m){
     const t=$('toast');t.textContent=m;t.classList.add('show');
-    clearTimeout(TOAST_T);TOAST_T=setTimeout(()=>t.classList.remove('show'),1600);
+    clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),1800);
 }
+function shuffle(a){const r=[...a];for(let i=r.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[r[i],r[j]]=[r[j],r[i]]}return r}
 
 function updateHub(){
     $('hub-coins').textContent=U.coins;
-    const bn=BANKS[U.activeBank]?({gaokao:'高考',cet4:'四级',cet6:'六级',ielts:'雅思'})[U.activeBank]||'四级':'自定义';
-    $('hub-bank').textContent=bn;
+    const bi=BANK_INFO[U.activeBank];$('hub-bank').textContent=bi?bi.n:'自定义';
+    $('hub-skin').textContent=U.skins.player||'⚔️';
     $('hub-hero').textContent=U.skins.player||'⚔️';
+    const due=getDueWords(U.activeBank);
+    $('hub-due').textContent=due.length;
+    renderSlots();
+    saveUser();
+}
+function applyBorder(){
+    const g=$('game');g.className='';
+    if(U.borders.active&&U.borders.active!=='none')g.classList.add('border-'+U.borders.active);
+}
+
+// ===== SAVE SLOTS =====
+function renderSlots(){
+    const bar=$('slot-bar');bar.innerHTML='';
+    for(let i=1;i<=SLOT_COUNT;i++){
+        const b=document.createElement('button');b.textContent='存档'+i;b.className=i===U.slot?'act':'';
+        b.onclick=()=>switchSlot(i);
+        bar.appendChild(b);
+    }
+    const del=document.createElement('button');del.textContent='🗑️';del.className='del';
+    del.onclick=()=>{if(confirm('清空当前存档？')){SAVE={stats:{total:0,correct:0,streak:0,reviews:0,history:[]},words:{}};saveSlot();showToast('已清空');updateHub()}};
+    bar.appendChild(del);
+}
+function switchSlot(slot){
+    saveSlot();U.slot=slot;loadSlot(slot);saveUser();updateHub();
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -488,473 +444,328 @@ function updateHub(){
 // ═══════════════════════════════════════════════════════════════
 function renderWB(){
     const g=$('wb-grid');g.innerHTML='';
-    const banks=[
-        {id:'gaokao',ic:'🎓',n:'高考词汇',d:'基础高频词汇',c:BANKS.gaokao.length},
-        {id:'cet4',ic:'📗',n:'四级词汇',d:'大学英语四级',c:BANKS.cet4.length},
-        {id:'cet6',ic:'📘',n:'六级词汇',d:'大学英语六级',c:BANKS.cet6.length},
-        {id:'ielts',ic:'📕',n:'雅思词汇',d:'雅思考试核心',c:BANKS.ielts.length},
-    ];
-    if(CUSTOM_WORDS.length>0)banks.push({id:'custom',ic:'📂',n:'自定义词库',d:CUSTOM_WORDS.length+' 个词',c:CUSTOM_WORDS.length});
-    banks.forEach(b=>{
-        const d=document.createElement('div');d.className='wb-item'+(b.id===U.activeBank?' active':'');
-        d.innerHTML=`<div class="ic">${b.ic}</div><div class="if"><div class="n">${b.n}</div><div class="d">${b.d} · ${b.c}词</div></div><div class="chk">✓</div>`;
+    Object.keys(BANK_INFO).forEach(k=>{
+        const bi=BANK_INFO[k];const bank=BANKS[k]||window['W_'+k]||[];
+        const d=document.createElement('div');d.className='wb-item'+(k===U.activeBank?' active':'');
+        d.innerHTML=`<div style="font-size:28px">${bi.ic}</div><div style="flex:1"><div style="font-size:14px;font-weight:700">${bi.n}</div><div style="font-size:11px;color:#7a7a8a">${bi.d} · ${bank.length}词${BANKS[k]?' ✅':' ⏳'}</div></div><div style="font-size:18px;color:#10b981;${k===U.activeBank?'':'display:none'}">✓</div>`;
         d.onclick=()=>{
-            if(b.id==='custom')U.activeBank='custom';
-            else U.activeBank=b.id;
-            save();renderWB();showToast('📚 已切换词库');
-            sfx('click');
+            if(bank.length===0){showToast('⏳ 词库加载中，请稍后');return}
+            U.activeBank=k;renderWB();updateHub();showToast('已切换词库');sfx('click');
         };
         g.appendChild(d);
     });
-    $('wb-total').textContent=getBank().length;
-
+    if(CUSTOM_WORDS.length>0){
+        const d=document.createElement('div');d.className='wb-item'+(U.activeBank==='custom'?' active':'');
+        d.innerHTML=`<div style="font-size:28px">📂</div><div style="flex:1"><div style="font-size:14px;font-weight:700">自定义词库</div><div style="font-size:11px;color:#7a7a8a">${CUSTOM_WORDS.length}词</div></div><div style="font-size:18px;color:#10b981;${U.activeBank==='custom'?'':'display:none'}">✓</div>`;
+        d.onclick=()=>{U.activeBank='custom';renderWB();updateHub()};
+        g.appendChild(d);
+    }
+    $('wb-total').textContent=(getBank()||[]).length+'词';
     // Custom upload
     document.getElementById('custom-input').onchange=function(){
-        if(!this.files.length)return;
-        const r=new FileReader();
-        r.onload=e=>{
-            CUSTOM_WORDS=[];
-            e.target.result.split('\n').forEach(line=>{
-                const p=line.trim().split(',');
-                if(p.length>=2&&p[0].trim()&&p[1].trim())CUSTOM_WORDS.push({en:p[0].trim().toLowerCase(),cn:p.slice(1).join(',').trim()});
-            });
-            if(CUSTOM_WORDS.length>0){
-                U.activeBank='custom';save();
-                document.getElementById('custom-badge').style.display='block';
-                showToast('✅ 已加载 '+CUSTOM_WORDS.length+' 词');
-                sfx('buy');renderWB();
-            }else showToast('⚠️ 格式：每行 单词,释义');
-        };
+        const r=new FileReader();r.onload=e=>{CUSTOM_WORDS=[];e.target.result.split('\n').forEach(l=>{const p=l.trim().split(',');if(p.length>=2&&p[0].trim()&&p[1].trim())CUSTOM_WORDS.push({e:p[0].trim().toLowerCase(),c:p.slice(1).join(',').trim()})});if(CUSTOM_WORDS.length>0){U.activeBank='custom';document.getElementById('custom-badge').style.display='block';showToast('✅ '+CUSTOM_WORDS.length+'词');renderWB();updateHub()}};
         r.readAsText(this.files[0],'UTF-8');
     };
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  STATISTICS
+// ═══════════════════════════════════════════════════════════════
+function showStats(){
+    showScreen('s-stats');
+    const bank=getBank();
+    const total=bank?bank.length:0;
+    const due=getDueWords(U.activeBank).length;
+    const mastered=getMasteryCount(U.activeBank);
+    const stats=SAVE.stats||{total:0,correct:0,streak:0,reviews:0};
+    const acc=stats.total>0?Math.round(stats.correct/stats.total*100):0;
+
+    $('stats-cards').innerHTML=
+        `<div class="c"><div class="nv">${total}</div><div class="lb">词库总数</div></div>
+         <div class="c"><div class="nv">${mastered}</div><div class="lb">已掌握(L4+)</div></div>
+         <div class="c"><div class="nv">${due}</div><div class="lb">待复习</div></div>
+         <div class="c"><div class="nv">${stats.reviews||0}</div><div class="lb">已完成复习</div></div>`;
+    const pct=total>0?Math.round(mastered/total*100):0;
+    $('mastery-bar').style.width=pct+'%';
+    $('mastery-text').textContent=mastered+' / '+total;
+    $('mastery-pct').textContent=pct+'%';
+    $('due-count').textContent=due;
+    $('mastered-count').textContent=mastered;
+    $('stat-total').textContent=stats.total;
+    $('stat-acc').textContent=acc+'%';
+    $('stat-streak').textContent=stats.streak||0;
+    $('stat-reviews').textContent=stats.reviews||0;
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  REVIEW MODE (Ebbinghaus)
+// ═══════════════════════════════════════════════════════════════
+let REVIEW={words:[],idx:0,revealed:false};
+
+function startReview(){
+    const bank=getBank();
+    if(!bank||bank.length===0){showToast('⏳ 词库未加载');return}
+    const due=getDueWords(U.activeBank);
+    if(due.length===0){showToast('🎉 无待复习单词！');return}
+    REVIEW.words=shuffle(due);REVIEW.idx=0;REVIEW.revealed=false;
+    showScreen('s-review');
+    showReviewWord();
+}
+function showReviewWord(){
+    if(REVIEW.idx>=REVIEW.words.length){
+        $('review-area').innerHTML='<div class="rpr">🎉 本次复习完成！</div><button class="btn btn-p" onclick="backHub()" style="width:200px;margin-top:10px">🏠 返回</button>';
+        updateHub();return;
+    }
+    const w=REVIEW.words[REVIEW.idx];REVIEW.revealed=false;
+    const total=REVIEW.words.length;
+    $('rev-prog').textContent=(REVIEW.idx+1)+'/'+total;
+    $('rev-remaining').textContent='剩余 '+total+' 词';
+    $('review-area').innerHTML=
+        `<div class="rpr">${REVIEW.idx+1} / ${total}</div>
+         <div class="re">${w.e}</div>
+         <div class="ri">点击"显示释义"回忆词义</div>
+         <div class="rc" id="rev-answer" style="display:none">${w.c}</div>
+         <div class="rb">
+             <button class="a" onclick="reviewReveal()">👁️ 显示释义</button>
+         </div>`;
+}
+function reviewReveal(){
+    const w=REVIEW.words[REVIEW.idx];
+    $('rev-answer').style.display='block';
+    $('review-area').querySelector('.rb').innerHTML=
+        `<button class="h" onclick="reviewRate(0)">😰 忘了</button>
+         <button class="e" onclick="reviewRate(1)">💡 想起来</button>
+         <button class="g" onclick="reviewRate(2)">✅ 记住了</button>`;
+    REVIEW.revealed=true;
+}
+function reviewRate(score){
+    const w=REVIEW.words[REVIEW.idx];
+    if(score>=1){markCorrect(w.e,U.activeBank);sfx('corr')}
+    else{markWrong(w.e,U.activeBank);sfx('wrong')}
+    SAVE.stats.reviews=(SAVE.stats.reviews||0)+1;
+    SAVE.stats.total=(SAVE.stats.total||0)+1;
+    saveSlot();
+    REVIEW.idx++;
+    setTimeout(showReviewWord,300);
+}
+function exitReview(){
+    REVIEW.words=[];backHub();
 }
 
 // ═══════════════════════════════════════════════════════════════
 //  SHOP
 // ═══════════════════════════════════════════════════════════════
 const SHOP_ITEMS=[
-    {id:'potion',ic:'❤️',n:'生命药水',d:'恢复1颗心',c:3,effect:()=>{}},
-    {id:'sand',ic:'⏰',n:'沙漏',d:'限时模式+15秒',c:2,effect:()=>{}},
-    {id:'shield',ic:'🛡️',n:'护盾',d:'抵挡一次错误',c:3,effect:()=>{}},
-    {id:'skip',ic:'⚡',n:'闪电',d:'跳过当前关',c:4,effect:()=>{}},
+    {id:'potion',ic:'❤️',n:'生命药水',d:'恢复1颗心',c:3},
+    {id:'sand',ic:'⏰',n:'沙漏',d:'限时+15秒',c:2},
+    {id:'shield',ic:'🛡️',n:'护盾',d:'挡一次错误',c:3},
+    {id:'skip',ic:'⚡',n:'闪电',d:'跳过当前关',c:4},
 ];
 const SKINS=['⚔️','🗡️','🏹','🦸','🧙‍♂️','🧝‍♂️','🦹','🤺','🎓','📗','📘','🌍'];
-const BORDERS=[{id:'none',n:'无',c:0},{id:'gold',n:'黄金边框',c:80},{id:'fire',n:'烈焰边框',c:120},{id:'ice',n:'寒冰边框',c:120},{id:'dark',n:'暗影边框',c:150},{id:'rainbow',n:'彩虹边框',c:200}];
+const BORDERS=[{id:'none',n:'无边框',c:0},{id:'gold',n:'黄金边框',c:80},{id:'fire',n:'烈焰边框',c:120},{id:'ice',n:'寒冰边框',c:120},{id:'dark',n:'暗影边框',c:150},{id:'rainbow',n:'彩虹边框',c:200}];
+const SKIN_NAMES={'⚔️':'初始骑士','🗡️':'暗夜刺客','🏹':'精灵射手','🦸':'英勇战士','🧙‍♂️':'大魔法师','🧝‍♂️':'森林精灵','🦹':'暗黑领主','🤺':'剑术大师','🎓':'高考达人','📗':'四级学霸','📘':'六级大神','🌍':'雅思宗师'};
+const SKIN_PRICES={'⚔️':0,'🗡️':50,'🏹':80,'🦸':120,'🧙‍♂️':180,'🧝‍♂️':250,'🦹':350,'🤺':500,'🎓':-1,'📗':-1,'📘':-1,'🌍':-1};
+const ACHIEVEMENT_SKINS={'gaokao':'🎓','cet4':'📗','cet6':'📘','ielts':'🌍'};
 
 function renderShop(){
     $('shop-cash').textContent=U.coins;
-    // Items
-    const ig=$('shop-items');ig.innerHTML='';
-    SHOP_ITEMS.forEach((it,i)=>{
-        const d=document.createElement('div');d.className='si';
-        const b=U.shop[it.id+'_b']||0;
-        d.innerHTML=`<div class="ic">${it.ic}</div><div class="if"><div class="n">${it.n}</div><div class="d">${it.d} · 持有${U.items[it.id]||0}</div></div>
-            <button class="bu ${U.coins>=it.c&&b<3?'a':'b'}" data-i="${i}">${b>=3?'已满':U.coins>=it.c?it.c+'💰':'没钱'}</button>`;
-        const btn=d.querySelector('.bu');
-        if(U.coins>=it.c&&b<3)btn.onclick=()=>{
-            if(U.coins<it.c)return;U.coins-=it.c;
-            if(!U.shop[it.id+'_b'])U.shop[it.id+'_b']=0;U.shop[it.id+'_b']++;
-            if(!U.items[it.id])U.items[it.id]=0;U.items[it.id]++;
-            sfx('buy');save();renderShop();updateHub();
-            showToast('🎁 购买了 '+it.n);
-        };
-        ig.appendChild(d);
-    });
-    // Skins
-    const sg=$('shop-skins');sg.innerHTML='';
-    SKINS.forEach(s=>{
-        const owned=U.unlocks.skins.includes(s);
-        const eq=U.skins.player===s;
-        const d=document.createElement('div');d.className='si';
-        const cost=0; // first free, rest cost
-        const prices={'⚔️':0,'🗡️':50,'🏹':80,'🦸':120,'🧙‍♂️':180,'🧝‍♂️':250,'🦹':350,'🤺':500}; const price=prices[s]||999;
-        d.innerHTML=`<div class="ic">${s}</div><div class="if"><div class="n">${s==='⚔️'?'初始骑士':s==='🗡️'?'暗夜刺客':s==='🏹'?'精灵射手':s==='🦸'?'英勇战士':s==='🧙‍♂️'?'大魔法师':s==='🧝‍♂️'?'森林精灵':s==='🦹'?'暗黑领主':s==='🤺'?'剑术大师':s==='🎓'?'高考达人':s==='📗'?'四级学霸':s==='📘'?'六级大神':s==='🌍'?'雅思宗师':'未知皮肤'}${eq?' (使用中)':''}</div><div class="d">${['🎓','📗','📘','🌍'].includes(s)?'🏆 通关成就奖励':'玩家皮肤'}</div></div>
-            <button class="bu ${owned?(eq?'o':'a'):(U.coins>=price?'a':'b')}">${eq?'✓已装备':owned?'装备':price===0?'免费':price+'💰'}</button>`;
-        const btn=d.querySelector('.bu');
-        btn.onclick=()=>{
-            if(owned){U.skins.player=s;save();renderShop();updateHub();sfx('click')}
-            else if(U.coins>=price){U.coins-=price;U.unlocks.skins.push(s);U.skins.player=s;save();renderShop();updateHub();sfx('buy')}
+    const renderItems=(parentId,items,renderFn)=>{const c=$(parentId);c.innerHTML='';items.forEach((it,i)=>c.appendChild(renderFn(it,i)))};
+    // Shop items
+    const sg=$('shop-items');sg.innerHTML='';
+    SHOP_ITEMS.forEach(it=>{
+        const d=document.createElement('div');d.style.cssText='display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:10px 12px';
+        const b=U.shop[it.id+'_b']||0;const max=5;
+        d.innerHTML=`<div style="font-size:24px">${it.ic}</div><div style="flex:1"><div style="font-size:13px;font-weight:700">${it.n}</div><div style="font-size:10px;color:#7a7a8a">${it.d} · 持有${U.items[it.id]||0}</div></div>
+            <button style="padding:6px 14px;border-radius:6px;font-size:12px;font-weight:700;border:none;cursor:pointer;font-family:inherit;flex-shrink:0;background:${U.coins>=it.c&&b<max?'linear-gradient(135deg,#fbbf24,#f59e0b)':'rgba(255,255,255,.08)'};color:${U.coins>=it.c&&b<max?'#1a1a2e':'#7a7a8a'}">${b>=max?'已满':U.coins>=it.c?it.c+'💰':'没钱'}</button>`;
+        const btn=d.querySelector('button');
+        if(U.coins>=it.c&&b<max)btn.onclick=()=>{
+            U.coins-=it.c;if(!U.shop[it.id+'_b'])U.shop[it.id+'_b']=0;U.shop[it.id+'_b']++;
+            if(!U.items[it.id])U.items[it.id]=0;U.items[it.id]++;sfx('buy');saveUser();renderShop();updateHub();showToast('🎁 +'+it.n);
         };
         sg.appendChild(d);
     });
-    // Borders
     const bg=$('shop-borders');bg.innerHTML='';
     BORDERS.forEach(b=>{
-        const owned=U.unlocks.borders.includes(b.id);
-        const eq=U.borders.active===b.id;
-        const d=document.createElement('div');d.className='si';
-        d.innerHTML=`<div class="ic">${b.id==='none'?'⬛':b.id==='gold'?'🟨':b.id==='fire'?'🟧':b.id==='ice'?'🟦':b.id==='dark'?'🟪':'🌈'}</div><div class="if"><div class="n">${b.n}${eq?' (使用中)':''}</div><div class="d">游戏边框</div></div>
-            <button class="bu ${owned?(eq?'o':'a'):(U.coins>=b.c?'a':'b')}">${eq?'✓已装备':owned?'装备':b.c===0?'免费' :b.c+'💰'}</button>`;
-        const btn=d.querySelector('.bu');
-        btn.onclick=()=>{
-            if(owned){U.borders.active=b.id;save();renderShop();updateHub();applyBorder();sfx('click')}
-            else if(U.coins>=b.c){U.coins-=b.c;U.unlocks.borders.push(b.id);U.borders.active=b.id;save();renderShop();updateHub();applyBorder();sfx('buy')}
-        };
+        const owned=U.unlocks.borders.includes(b.id);const eq=U.borders.active===b.id;
+        const d=document.createElement('div');d.style.cssText='display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:10px 12px';
+        d.innerHTML=`<div style="font-size:20px">${b.id==='none'?'⬛':b.id==='gold'?'🟨':b.id==='fire'?'🟧':b.id==='ice'?'🟦':b.id==='dark'?'🟪':'🌈'}</div><div style="flex:1"><div style="font-size:13px;font-weight:700">${b.n}${eq?' ✓':''}</div></div>
+            <button style="padding:6px 14px;border-radius:6px;font-size:12px;font-weight:700;border:none;cursor:pointer;font-family:inherit;flex-shrink:0;background:${owned?(eq?'rgba(16,185,129,.15)':'rgba(255,255,255,.08)'):(U.coins>=b.c?'linear-gradient(135deg,#fbbf24,#f59e0b)':'rgba(255,255,255,.08)')};color:${owned?(eq?'#10b981':'#e0dcd0'):(U.coins>=b.c?'#1a1a2e':'#7a7a8a')}">${eq?'✓使用中':owned?'装备':b.c===0?'免费':b.c+'💰'}</button>`;
+        const btn=d.querySelector('button');
+        btn.onclick=()=>{if(owned){U.borders.active=b.id;applyBorder();saveUser();renderShop();updateHub();sfx('click')}else if(U.coins>=b.c){U.coins-=b.c;U.unlocks.borders.push(b.id);U.borders.active=b.id;applyBorder();saveUser();renderShop();updateHub();sfx('buy')}};
         bg.appendChild(d);
     });
 }
-
-function applyBorder(){
-    const g=$('game');
-    g.className='';
-    if(U.borders.active&&U.borders.active!=='none')g.classList.add('border-'+U.borders.active);
+function checkMastery(){
+    const key=U.activeBank;if(key==='custom')return;
+    if(!U.mastery[key]){U.mastery[key]=true;
+        const skin=ACHIEVEMENT_SKINS[key];
+        if(skin&&!U.unlocks.skins.includes(skin)){U.unlocks.skins.push(skin);showToast('🎉 解锁成就皮肤 '+skin+'！');sfx('lvl');saveUser()}
+    }
 }
 
-// ===== PAUSE / RESUME / EXIT =====
+// ═══════════════════════════════════════════════════════════════
+//  PAUSE / RESUME / EXIT
+// ═══════════════════════════════════════════════════════════════
 function pauseGame(){
     if(MODE===1){if(D.gameOver)return;if(D_TIMER)clearInterval(D_TIMER)}
     else{if(P.gameOver)return;if(P_TIMER)clearInterval(P_TIMER)}
-    document.getElementById('o-pause').classList.add('show');
+    $('o-pause').classList.add('show');
 }
 function resumeGame(){
-    document.getElementById('o-pause').classList.remove('show');
-    if(MODE===1){if(!D.gameOver&&!D_TIMER)dTimer(D.timeLeft||15)}
-    else{if(!P.gameOver&&!P_TIMER)pTimer(P.timeLeft||90)}
+    $('o-pause').classList.remove('show');
+    if(MODE===1){if(!D.gameOver)dTimer(D.timeLeft||15)}
+    else{if(!P.gameOver)pTimer(P.timeLeft||90)}
 }
 function confirmExit(){
-    document.getElementById('o-pause').classList.remove('show');
+    $('o-pause').classList.remove('show');
     if(MODE===1){if(D_TIMER)clearInterval(D_TIMER);D.gameOver=true}
     else{if(P_TIMER)clearInterval(P_TIMER);P.gameOver=true}
     backHub();
 }
 
-function checkMastery(){
-    const bank = getBank();
-    const key = U.activeBank;
-    if(!U.mastery[key]){
-        U.mastery[key]=true;
-        // Grant achievement skin
-        const skinMap={'gaokao':'🎓','cet4':'📗','cet6':'📘','ielts':'🌍'};
-        const skin = skinMap[key];
-        if(skin && !U.unlocks.skins.includes(skin)){
-            U.unlocks.skins.push(skin);
-            showToast('🎉 解锁成就皮肤 '+skin+'！');
-            sfx('lvl');
-        }
-        if(!U.achievements)U.achievements=[];
-        U.achievements.push(key+'_mastery');
-        save();
-    }
-}
-
 // ═══════════════════════════════════════════════════════════════
-//  GAME HELPERS
-// ═══════════════════════════════════════════════════════════════
-function getSkin(){return U.skins.player||'⚔️'}
-function useItem(id){
-    if(!U.items[id]||U.items[id]<=0)return 0;
-    U.items[id]--;save();return 1;
-}
-
-// ═══════════════════════════════════════════════════════════════
-//  MODE 1: DUNGEON CRAWLER
+//  MODE 1: DUNGEON (simplified, tracks word progress)
 // ═══════════════════════════════════════════════════════════════
 const ENEMIES=['👹','🐉','👾','🧟','🐺','🕷️','👻','🐍','🤖','🧛'];
-let D={}; // dungeon state
-let D_TIMER=null;
+let D={},D_TIMER=null;
 
 function startMode(m){
     MODE=m;initAudio();
-    if(m===1)startDungeon();
-    else startPuzzle();
+    if(m===1){const bank=getBank();if(!bank||bank.length===0){showToast('⏳ 词库加载中');return};startDungeon()}
+    else{const bank=getBank();if(!bank||bank.length===0){showToast('⏳ 词库加载中');return};startPuzzle()}
 }
-
 function startDungeon(){
     const bank=getBank();
-    D={lvl:0,hp:5,maxHp:5,coins:U.coins,corr:0,wrong:0,total:0,streak:0,maxStreak:0,
-       items:[],monsterHp:3,usedWords:[],bank:bank,gameOver:false,shield:0,bonusTime:0};
-    showScreen('s-dungeon');
-    enterDungeonFloor();
+    D={lvl:0,hp:5,maxHp:5,coins:U.coins,corr:0,wrong:0,total:0,streak:0,maxStreak:0,items:[],monsterHp:3,usedWords:[],bank:bank,gameOver:false,shield:0,bonusTime:0};
+    showScreen('s-dungeon');$('d-player').textContent=U.skins.player||'⚔️';enterDFloor();
 }
-function enterDungeonFloor(){
-    D.lvl++;D.monsterHp=3;D.fiftyUsed=false;
-    if(D.lvl>10){
-        if(TIMER)clearInterval(TIMER);
-        $('o-win').classList.add('show');$('o-win-sub').textContent='地牢闯关完成！';
-        $('ow-c').textContent=D.coins;$('ow-a').textContent=Math.round((D.corr/Math.max(1,D.total))*100)+'%';
-        $('ow-s').textContent='🔥'+D.maxStreak;sfx('lvl');
-        checkMastery();return;
-    }
-    const fb=$('fb');$('fb-t').textContent='第 '+D.lvl+' 层';
-    const fs=['⚔️ 前进','💀 危险','🔥 深入','🌑 黑暗','💪 坚持','🌀 深处','🕯️ 前行','⚡ 势如'];
-    $('fb-s').textContent=fs[(D.lvl-1)%fs.length];
-    fb.classList.add('show');setTimeout(()=>fb.classList.remove('show'),900);
-
-    const e=$('d-enemy');e.className='fig e';e.textContent=ENEMIES[(D.lvl-1)%ENEMIES.length];
-    $('d-player').className='fig p';$('d-player').textContent=getSkin();
-    dUpdHP();dUpdHUD();
-
-    // Pick word
-    let avail=D.bank.filter(w=>!D.usedWords.includes(w.en));
-    if(avail.length<5)D.usedWords=[];avail=D.bank.filter(w=>!D.usedWords.includes(w.en));
-    const w=avail[Math.floor(Math.random()*avail.length)];
-    D.usedWords.push(w.en);D.word=w;
-    $('d-wen').textContent=w.en;$('d-wipa').textContent=w.ipa||'';
-
-    let dist=D.bank.filter(x=>x.cn!==w.cn).sort(()=>Math.random()-.5).slice(0,3).map(x=>x.cn);
-    while(dist.length<3)dist.push('?');
-    const opts=[w.cn,...dist].sort(()=>Math.random()-.5);D.corrAns=w.cn;
-    const o=$('d-ops');o.innerHTML='';
-    opts.forEach(opt=>{
-        const b=document.createElement('button');b.className='op';b.textContent=opt;
-        b.onclick=()=>dAnswer(b,opt);o.appendChild(b);
-    });
+function enterDFloor(){
+    D.lvl++;D.monsterHp=3;
+    if(D.lvl>10){clearInterval(D_TIMER);$('o-win').classList.add('show');$('o-win-sub').textContent='地牢通关！';$('ow-c').textContent=D.coins;$('ow-a').textContent=Math.round((D.corr/Math.max(1,D.total))*100)+'%';$('ow-s').textContent='🔥'+D.maxStreak;sfx('lvl');U.coins=D.coins;checkMastery();saveUser();return}
+    const fb=$('fb');$('fb-t').textContent='第 '+D.lvl+' 层';$('fb-s').textContent=['⚔️ 前进','💀 危险','🔥 深入','🌑 黑暗','💪 坚持','🌀 深处','🕯️ 前行','⚡ 势如'][(D.lvl-1)%8];fb.classList.add('show');setTimeout(()=>fb.classList.remove('show'),900);
+    $('d-enemy').textContent=ENEMIES[(D.lvl-1)%ENEMIES.length];$('d-enemy').className='fig e';$('d-player').className='fig p';dUpd();
+    let a=D.bank.filter(w=>!D.usedWords.includes(w.e));if(a.length<5)D.usedWords=[];a=D.bank.filter(w=>!D.usedWords.includes(w.e));
+    const w=a[Math.floor(Math.random()*a.length)];D.usedWords.push(w.e);D.word=w;
+    $('d-wen').textContent=w.e;$('d-wipa').textContent='';
+    let dist=D.bank.filter(x=>x.c!==w.c).sort(()=>Math.random()-.5).slice(0,3).map(x=>x.c);while(dist.length<3)dist.push('?');
+    const opts=[w.c,...dist].sort(()=>Math.random()-.5);D.corrAns=w.c;
+    const o=$('d-ops');o.innerHTML='';opts.forEach(opt=>{const b=document.createElement('button');b.className='op';b.textContent=opt;b.onclick=()=>dAns(b,opt);o.appendChild(b)});
     dCombo();dTimer(15+(D.bonusTime||0));
 }
-function dUpdHP(){
-    const w=$('d-mhp');let h='';
-    for(let i=0;i<3;i++)h+=i<D.monsterHp?'❤️':'<span class="lost">🖤</span>';
-    w.innerHTML=h;
-}
-function dUpdHUD(){
-    let h='';for(let i=0;i<D.maxHp;i++)h+=i<D.hp?'❤️':'<span class="lost">🖤</span>';
-    $('d-hearts').innerHTML=h;$('d-floor').textContent=Math.min(D.lvl,10);
-    $('d-coins').textContent='💰'+D.coins;
-    dUpdHP();
-    // Items
-    for(let i=0;i<3;i++){
-        const s=$('di'+i);
-        if(D.items[i]){s.className='is';s.innerHTML=D.items[i].icon+(D.items[i].count>1?`<span class="bdg">${D.items[i].count}</span>`:'')+`<div class="tip">${D.items[i].name}</div>`;s.onclick=()=>dUseItem(i)}
-        else{s.className='is emp';s.innerHTML='<div class="tip"></div>';s.onclick=null}
+function dUpd(){
+    let h='';for(let i=0;i<D.maxHp;i++)h+=i<D.hp?'❤️':'<span class="lost">🖤</span>';$('d-hearts').innerHTML=h;
+    $('d-coins').textContent='💰'+D.coins;$('d-floor').textContent=Math.min(D.lvl,10);
+    let m='';for(let i=0;i<3;i++)m+=i<D.monsterHp?'❤️':'<span class="lost">🖤</span>';$('d-mhp').innerHTML=m;
+    for(let i=0;i<3;i++){const s=$('di'+i);if(D.items[i]){s.className='is';s.innerHTML=D.items[i].icon+(D.items[i].count?`<span style="position:absolute;top:-4px;right:-4px;background:#6c5ce7;color:#fff;border-radius:8px;font-size:9px;font-weight:700;padding:1px 4px">${D.items[i].count}</span>`:'')+`<div class="tip" style="display:none;position:absolute;bottom:40px;left:50%;transform:translateX(-50%);background:#12121f;border:1px solid rgba(255,255,255,.1);border-radius:5px;padding:2px 7px;font-size:10px;color:#e0dcd0">${D.items[i].name}</div>`;s.onclick=()=>dUse(i)}else{s.className='is emp';s.innerHTML='';s.onclick=null}
     }
 }
-function dCombo(){
-    const c=$('d-combo');
-    if(D.streak>=5)c.innerHTML='🔥🔥🔥 '+D.streak+'连击！';else if(D.streak>=3)c.innerHTML='🔥 '+D.streak+'连击';else c.innerHTML='';
-}
-function dTimer(sec){
-    clearInterval(D_TIMER);let t=sec;D.timeLeft=t;
-    $('d-tn').textContent=t;$('d-tf').style.width='100%';$('d-tf').className='tf safe';
-    const el=$('d-timer');el.classList.remove('danger');
-    D_TIMER=setInterval(()=>{
-        if(D.gameOver)return;t--;D.timeLeft=t;
-        $('d-tn').textContent=t;const p=Math.max(0,(t/sec)*100);
-        $('d-tf').style.width=p+'%';$('d-tf').className='tf';
-        if(t<=4)$('d-tf').classList.add('danger');else if(t<=8)$('d-tf').classList.add('warn');else $('d-tf').classList.add('safe');
-        if(t<=4)el.classList.add('danger');else el.classList.remove('danger');
-        if(t<=0){clearInterval(D_TIMER);dAnsWrong()}
-    },1000);
-}
-function dDmg(t,cls,target){
-    const d=document.createElement('div');d.className='dn '+cls;d.textContent=t;
-    const tr=target.getBoundingClientRect(),ar=$('arena').getBoundingClientRect();
-    d.style.left=(tr.left-ar.left+tr.width/2-15)+'px';d.style.top=(tr.top-ar.top+5)+'px';
-    $('arena').appendChild(d);setTimeout(()=>d.remove(),900);
-}
-function dItemDrop(ic){
-    const d=document.createElement('div');d.className='itd';d.textContent=ic;
-    d.style.left=(30+Math.random()*40)+'%';d.style.top='35%';
-    $('arena').appendChild(d);setTimeout(()=>d.remove(),1100);
-}
-function dAnswer(btn,chosen){
-    if(D.gameOver)return;
-    $('d-ops').querySelectorAll('.op').forEach(b=>b.classList.add('disabled'));
-    clearInterval(D_TIMER);
+function dCombo(){const c=$('d-combo');if(D.streak>=5)c.innerHTML='🔥🔥🔥 '+D.streak+'连击！';else if(D.streak>=3)c.innerHTML='🔥 '+D.streak+'连击';else c.innerHTML=''}
+function dTimer(sec){clearInterval(D_TIMER);let t=sec;D.timeLeft=t;$('d-tn').textContent=t;$('d-tf').style.width='100%';$('d-tf').className='tf safe';const el=$('d-timer');el.classList.remove('danger');D_TIMER=setInterval(()=>{if(D.gameOver)return;t--;D.timeLeft=t;$('d-tn').textContent=t;const p=Math.max(0,(t/sec)*100);$('d-tf').style.width=p+'%';$('d-tf').className='tf';if(t<=4)$('d-tf').classList.add('danger');else if(t<=8)$('d-tf').classList.add('warn');else $('d-tf').classList.add('safe');if(t<=4)el.classList.add('danger');else el.classList.remove('danger');if(t<=0){clearInterval(D_TIMER);dAnsWrong()}},1000)}
+function dDmg(t,c,target){const d=document.createElement('div');d.className='dn '+c;d.textContent=t;const r=target.getBoundingClientRect(),a=$('arena').getBoundingClientRect();d.style.left=(r.left-a.left+r.width/2-15)+'px';d.style.top=(r.top-a.top+5)+'px';$('arena').appendChild(d);setTimeout(()=>d.remove(),900)}
+function dAns(btn,chosen){
+    if(D.gameOver)return;$('d-ops').querySelectorAll('.op').forEach(b=>b.classList.add('disabled'));clearInterval(D_TIMER);
     if(chosen===D.corrAns){
-        btn.classList.add('correct');
-        D.streak++;D.corr++;D.total++;if(D.streak>D.maxStreak)D.maxStreak=D.streak;
-        const fast=D.timeLeft>=10;let coins=1+(fast?1:0)+(D.streak>=3?1:0);
-        D.coins+=coins;const p=$('d-player'),e=$('d-enemy');
-        if(fast){p.className='fig p crit';dDmg('⚡暴击!','crit',e);coins+=1;D.coins+=1}else p.className='fig p atk';
-        e.className='fig e hit';dDmg('-1','damage',e);dDmg('+'+coins+'💰','coin',p);
-        D.monsterHp--;dUpdHP();dUpdHUD();dCombo();
-        if(D.monsterHp<=0){
-            e.className='fig e ded';D.coins+=2;
-            if(Math.random()<.35){
-                const pool=[{ic:'❤️',id:'potion',n:'药水'},{ic:'⏰',id:'sand',n:'沙漏'},{ic:'🛡️',id:'shield',n:'护盾'},{ic:'⚡',id:'skip',n:'闪电'}];
-                const drop=pool[Math.floor(Math.random()*pool.length)];
-                dItemDrop(drop.ic);D.items.push({...drop,count:1});
-                // Also add to user inventory
-                if(!U.items[drop.id])U.items[drop.id]=0;U.items[drop.id]++;save();
-            }
-            dUpdHUD();U.coins=D.coins;save();
-            setTimeout(()=>{e.className='fig e';enterDungeonFloor()},500);
-        } else {
-            setTimeout(()=>{p.className='fig p';e.className='fig e';dNextWord()},400);
-        }
-    } else dAnsWrong(btn);
+        btn.classList.add('correct');D.streak++;D.corr++;D.total++;if(D.streak>D.maxStreak)D.maxStreak=D.streak;
+        markCorrect(D.word.e,U.activeBank);
+        const fast=D.timeLeft>=10;let coins=1+(fast?1:0);D.coins+=coins;const p=$('d-player'),e=$('d-enemy');
+        p.className='fig p atk';e.className='fig e hit';dDmg('-1','damage',e);dDmg('+'+coins+'💰','coin',p);
+        D.monsterHp--;dUpd();dCombo();
+        if(D.monsterHp<=0){e.className='fig e ded';D.coins+=2;
+            if(Math.random()<.3){const pool=[{ic:'❤️',id:'potion',n:'药水'},{ic:'⏰',id:'sand',n:'沙漏'}];const drop=pool[Math.floor(Math.random()*pool.length)];D.items.push({...drop,count:1})}
+            U.coins=D.coins;dUpd();saveUser();
+            setTimeout(()=>{e.className='fig e';enterDFloor()},500)
+        }else{setTimeout(()=>{p.className='fig p';e.className='fig e';dNext()},400)}
+    }else dAnsWrong(btn);
 }
 function dAnsWrong(btn){
     clearInterval(D_TIMER);D.gameOver=true;
     if(btn){btn.classList.add('wrong');$('d-ops').querySelectorAll('.op').forEach(b=>{if(b.textContent===D.corrAns)b.classList.add('correct')})}
-    // Shield
-    if(D.shield>0){D.shield--;showToast('🛡️ 护盾挡住！');D.gameOver=false;setTimeout(()=>{$('d-ops').querySelectorAll('.op').forEach(b=>b.classList.remove('disabled','wrong','correct'));dNextWord()},500);return}
-    D.streak=0;D.total++;D.wrong++;D.hp--;
-    const p=$('d-player'),e=$('d-enemy');
-    e.className='fig e atk';p.className='fig p hit';dDmg('-1 ❤️','damage',p);
-    $('arena').classList.remove('shk');void $('arena').offsetWidth;$('arena').classList.add('shk');
-    setTimeout(()=>$('arena').classList.remove('shk'),300);
-    dUpdHUD();dCombo();
-    if(D.hp<=0){
-        D.gameOver=true;$('o-lose').classList.add('show');
-        $('o-lose-sub').textContent='地牢第 '+D.lvl+' 层 · 答对 '+D.corr+' 题';
-        $('ol-c').textContent=D.coins;$('ol-a').textContent=Math.round((D.corr/Math.max(1,D.total))*100)+'%';
-        $('ol-s').textContent='🔥'+D.maxStreak;$('ol-retry').onclick=()=>{$('o-lose').classList.remove('show');startDungeon()};
-        U.coins=D.coins;save();sfx('wrong');return;
-    }
-    D.gameOver=false;
-    setTimeout(()=>{p.className='fig p';e.className='fig e';dNextWord()},600);
+    if(D.shield>0){D.shield--;showToast('🛡️');D.gameOver=false;setTimeout(()=>{$('d-ops').querySelectorAll('.op').forEach(b=>b.classList.remove('disabled','wrong','correct'));dNext()},500);return}
+    markWrong(D.word.e,U.activeBank);D.streak=0;D.total++;D.wrong++;D.hp--;
+    const p=$('d-player'),e=$('d-enemy');e.className='fig e atk';p.className='fig p hit';dDmg('-1❤️','damage',p);
+    $('arena').classList.remove('shk');void $('arena').offsetWidth;$('arena').classList.add('shk');setTimeout(()=>$('arena').classList.remove('shk'),300);
+    dUpd();dCombo();
+    if(D.hp<=0){D.gameOver=true;$('o-lose').classList.add('show');$('o-lose-sub').textContent='地牢第'+D.lvl+'层';$('ol-c').textContent=D.coins;$('ol-a').textContent=Math.round((D.corr/Math.max(1,D.total))*100)+'%';$('ol-s').textContent='🔥'+D.maxStreak;$('ol-retry').onclick=()=>{$('o-lose').classList.remove('show');startDungeon()};U.coins=D.coins;saveUser();sfx('wrong');return}
+    D.gameOver=false;setTimeout(()=>{p.className='fig p';e.className='fig e';dNext()},600);
 }
-function dNextWord(){
-    let avail=D.bank.filter(w=>!D.usedWords.includes(w.en));
-    if(avail.length<5)D.usedWords=[];avail=D.bank.filter(w=>!D.usedWords.includes(w.en));
-    const w=avail[Math.floor(Math.random()*avail.length)];
-    D.usedWords.push(w.en);D.word=w;
-    $('d-wen').textContent=w.en;$('d-wipa').textContent=w.ipa||'';
-    let dist=D.bank.filter(x=>x.cn!==w.cn).sort(()=>Math.random()-.5).slice(0,3).map(x=>x.cn);
-    while(dist.length<3)dist.push('?');
-    const opts=[w.cn,...dist].sort(()=>Math.random()-.5);D.corrAns=w.cn;
-    const o=$('d-ops');o.innerHTML='';
-    opts.forEach(opt=>{
-        const b=document.createElement('button');b.className='op';b.textContent=opt;
-        b.onclick=()=>dAnswer(b,opt);o.appendChild(b);
-    });
+function dNext(){
+    let a=D.bank.filter(w=>!D.usedWords.includes(w.e));if(a.length<5)D.usedWords=[];a=D.bank.filter(w=>!D.usedWords.includes(w.e));
+    const w=a[Math.floor(Math.random()*a.length)];D.usedWords.push(w.e);D.word=w;
+    $('d-wen').textContent=w.e;$('d-wipa').textContent='';
+    let dist=D.bank.filter(x=>x.c!==w.c).sort(()=>Math.random()-.5).slice(0,3).map(x=>x.c);while(dist.length<3)dist.push('?');
+    const opts=[w.c,...dist].sort(()=>Math.random()-.5);D.corrAns=w.c;
+    const o=$('d-ops');o.innerHTML='';opts.forEach(opt=>{const b=document.createElement('button');b.className='op';b.textContent=opt;b.onclick=()=>dAns(b,opt);o.appendChild(b)});
     dCombo();dTimer(15+(D.bonusTime||0));
 }
-function dUseItem(idx){
-    if(!D.items[idx])return;const it=D.items[idx];
-    if(it.id==='potion'){if(D.hp<D.maxHp){D.hp++;dDmg('+1❤️','heal',$('d-player'));dUpdHUD()}else{showToast('❤️ 已满');return}}
-    else if(it.id==='sand'){D.timeLeft=Math.min(D.timeLeft+8,25);$('d-tn').textContent=D.timeLeft}
-    else if(it.id==='skip'){clearInterval(D_TIMER);showToast('⚡ 跳过');$('d-enemy').className='fig e ded';setTimeout(()=>{if(!D.gameOver){$('d-enemy').className='fig e';enterDungeonFloor()}},400)}
-    else if(it.id==='shield'){D.shield++;showToast('🛡️ +1 护盾')}
-    it.count=(it.count||1)-1;if(it.count<=0)D.items.splice(idx,1);dUpdHUD();
-}
+function dUse(idx){if(!D.items[idx])return;const it=D.items[idx];if(it.id==='potion'){if(D.hp<D.maxHp){D.hp++;dUpd()}else return}else if(it.id==='sand'){D.timeLeft=Math.min(D.timeLeft+8,25);$('d-tn').textContent=D.timeLeft}it.count--;if(it.count<=0)D.items.splice(idx,1);dUpd()}
 
 // ═══════════════════════════════════════════════════════════════
-//  MODE 2: FILL PUZZLE
+//  MODE 2: FILL PUZZLE (simplified, tracks word progress)
 // ═══════════════════════════════════════════════════════════════
-let P={}; // puzzle state
-let P_TIMER=null;
-
+let P={},P_TIMER=null;
 function startPuzzle(){
     const bank=getBank();
-    P={lvl:0,hp:5,maxHp:5,coins:U.coins,corr:0,wrong:0,total:0,streak:0,maxStreak:0,
-       usedWords:[],bank:bank,gameOver:false,shield:0,bonusTime:0};
-    showScreen('s-puzzle');
-    enterPuzzleLvl();
+    P={lvl:0,hp:5,maxHp:5,coins:U.coins,corr:0,wrong:0,total:0,streak:0,maxStreak:0,usedWords:[],bank:bank,gameOver:false,shield:0,bonusTime:0};
+    showScreen('s-puzzle');enterPLvl();
 }
-function enterPuzzleLvl(){
-    P.lvl++;P.lvlWords=[];
-    if(P.lvl>8){
-        if(P_TIMER)clearInterval(P_TIMER);
-        $('o-win').classList.add('show');$('o-win-sub').textContent='填词拼图完成！';
-        $('ow-c').textContent=P.coins;$('ow-a').textContent=Math.round((P.corr/Math.max(1,P.total))*100)+'%';
-        $('ow-s').textContent='🔥'+P.maxStreak;sfx('lvl');
-        checkMastery();return;
-    }
-    let avail=P.bank.filter(w=>!P.usedWords.includes(w.en));
-    if(avail.length<5)P.usedWords=[];avail=P.bank.filter(w=>!P.usedWords.includes(w.en));
-    const picked=shuffle(avail).slice(0,5);
-    P.usedWords=(P.usedWords||[]).concat(picked.map(w=>w.en));
-    P.lvlWords=picked;P.lvlIdx=0;P.autoReveal=false;
-    $('p-lvl').textContent=P.lvl;pUpdHUD();pBuildProg();pRenderWord();
-    pTimer(90+(P.bonusTime||0));
+function enterPLvl(){
+    P.lvl++;if(P.lvl>8){clearInterval(P_TIMER);$('o-win').classList.add('show');$('o-win-sub').textContent='填词完成！';$('ow-c').textContent=P.coins;$('ow-a').textContent=Math.round((P.corr/Math.max(1,P.total))*100)+'%';$('ow-s').textContent='🔥'+P.maxStreak;sfx('lvl');U.coins=P.coins;checkMastery();saveUser();return}
+    let a=P.bank.filter(w=>!P.usedWords.includes(w.e));if(a.length<5)P.usedWords=[];a=P.bank.filter(w=>!P.usedWords.includes(w.e));
+    const picked=shuffle(a).slice(0,5);P.usedWords=P.usedWords.concat(picked.map(w=>w.e));P.lvlWords=picked;P.lvlIdx=0;
+    $('p-lvl').textContent=P.lvl;pUpd();pBuild();pWord();pTimer(90+(P.bonusTime||0));
 }
-function pUpdHUD(){
-    let h='';for(let i=0;i<P.maxHp;i++)h+=i<P.hp?'❤️':'<span class="lost">🖤</span>';
-    $('p-hearts').innerHTML=h;$('p-coins').textContent=P.coins;
-}
-function pBuildProg(){
-    const w=$('p-pw');w.innerHTML='';
-    for(let i=0;i<5;i++){const d=document.createElement('div');d.className='pd';d.id='pp-'+i;w.appendChild(d)}
-}
-function pRenderWord(){
-    if(P.lvlIdx>=5){clearInterval(P_TIMER);sfx('lvl');enterPuzzleLvl();return}
-    if(P.hp<=0){pGameOver();return}
-    const word=P.lvlWords[P.lvlIdx];const len=word.en.length;
-    P.word=word;const ratio=Math.min(.3+P.lvl*0.04,.65);const blankCnt=Math.max(1,Math.floor(len*ratio));
-    let positions=[...Array(len).keys()].slice(1);const blanks=shuffle(positions).slice(0,blankCnt);
-    P.blanks=blanks;P.filled={};
-    const gw=$('p-gw');gw.innerHTML='';
-    const row=document.createElement('div');row.className='gr';
-    const clue=document.createElement('div');clue.className='cl';
-    clue.textContent=word.cn;
-    const fl=document.createElement('div');fl.className='fl';fl.textContent=word.en;clue.appendChild(fl);
-    row.appendChild(clue);
-    const cs=document.createElement('div');cs.className='cls';
-    P.cells={};
-    word.en.split('').forEach((l,i)=>{
-        const c=document.createElement('div');c.className='cl';
-        if(blanks.includes(i)){c.classList.add('empty');c.textContent='_';c.onclick=()=>{document.querySelectorAll('.cl.active').forEach(x=>x.classList.remove('active'));c.classList.add('active');sfx('click')}}
-        else{c.classList.add('given');c.textContent=l}
-        c.dataset.idx=i;cs.appendChild(c);P.cells[i]=c;
-    });
-    row.appendChild(cs);gw.appendChild(row);
-    $('p-inp').value='';$('p-inp').focus();$('p-sb').disabled=false;
-    $('p-os').innerHTML='';P.osShown=false;
+function pUpd(){let h='';for(let i=0;i<P.maxHp;i++)h+=i<P.hp?'❤️':'<span class="lost">🖤</span>';$('p-hearts').innerHTML=h;$('p-coins').textContent=P.coins}
+function pBuild(){const w=$('p-pw');w.innerHTML='';for(let i=0;i<5;i++){const d=document.createElement('div');d.className='pd';d.id='pp-'+i;w.appendChild(d)}}
+function pWord(){
+    if(P.lvlIdx>=5){clearInterval(P_TIMER);enterPLvl();return}if(P.hp<=0){pOver();return}
+    const w=P.lvlWords[P.lvlIdx];const len=w.e.length;P.word=w;const r=Math.min(.3+P.lvl*0.04,.65);const bc=Math.max(1,Math.floor(len*r));
+    let pos=[...Array(len).keys()].slice(1);const blanks=shuffle(pos).slice(0,bc);P.blanks=blanks;P.filled={};
+    const gw=$('p-gw');gw.innerHTML='';const row=document.createElement('div');row.className='gr';
+    const clue=document.createElement('div');clue.className='cl';clue.textContent=w.c;const fl=document.createElement('div');fl.className='fl';fl.textContent=w.e;clue.appendChild(fl);row.appendChild(clue);
+    const cs=document.createElement('div');cs.className='cls';P.cells={};
+    w.e.split('').forEach((l,i)=>{const c=document.createElement('div');c.className='cl';if(blanks.includes(i)){c.classList.add('empty');c.textContent='_'}else{c.classList.add('given');c.textContent=l}c.dataset.idx=i;cs.appendChild(c);P.cells[i]=c});
+    row.appendChild(cs);gw.appendChild(row);$('p-inp').value='';$('p-inp').focus();$('p-sb').disabled=false;$('p-os').innerHTML='';P.os=false;
     for(let i=0;i<5;i++){const d=$('pp-'+i);if(d)d.className=i<P.lvlIdx?'pd done':'pd'}
 }
-function pTimer(sec){
-    clearInterval(P_TIMER);let t=sec;P.timeLeft=t;$('p-tn').textContent=t;
-    const el=$('p-timer');el.classList.remove('danger');
-    P_TIMER=setInterval(()=>{t--;P.timeLeft=t;$('p-tn').textContent=t;if(t<=10)el.classList.add('danger');else el.classList.remove('danger');if(t<=0){clearInterval(P_TIMER);const r=5-P.lvlIdx;P.hp-=Math.max(1,r-1);if(P.hp<=0)P.hp=0;pUpdHUD();sfx('wrong');if(P.hp<=0)pGameOver();else showToast('⏰ 时间到')}},1000);
-}
-$('p-inp').addEventListener('keydown',e=>{if(e.key==='Enter')pSubmit()});
-$('p-sb').onclick=pSubmit;
+function pTimer(sec){clearInterval(P_TIMER);let t=sec;P.timeLeft=t;$('p-tn').textContent=t;const el=$('p-timer');el.classList.remove('danger');P_TIMER=setInterval(()=>{t--;P.timeLeft=t;$('p-tn').textContent=t;if(t<=10)el.classList.add('danger');else el.classList.remove('danger');if(t<=0){clearInterval(P_TIMER);const r=5-P.lvlIdx;P.hp-=Math.max(1,r-1);if(P.hp<=0)P.hp=0;pUpd();if(P.hp<=0)pOver()} },1000)}
+$('p-inp').addEventListener('keydown',e=>{if(e.key==='Enter')pSubmit()});$('p-sb').onclick=pSubmit;
 function pSubmit(){
-    if(!P.word)return;const val=$('p-inp').value.trim().toLowerCase();
-    if(!val){showToast('输入单词');return}
-    if(val===P.word.en.toLowerCase()){
-        P.total++;P.corr++;P.streak++;if(P.streak>P.maxStreak)P.maxStreak=P.streak;
-        const bonus=Math.min(2,Math.floor((P.timeLeft||0)/30));const coins=2+bonus;
-        P.coins+=coins;sfx('corr');
-        P.blanks.forEach(i=>{const c=P.cells[i];if(c){c.textContent=P.word.en[i];c.className='cl filled'}});
-        const pd=$('pp-'+P.lvlIdx);if(pd)pd.className='pd done';
-        showToast('✅ +'+coins+'💰');pUpdHUD();U.coins=P.coins;save();
-        P.lvlIdx++;setTimeout(pRenderWord,500);
-    } else {
+    if(!P.word)return;const v=$('p-inp').value.trim().toLowerCase();if(!v){showToast('输入单词');return}
+    if(v===P.word.e.toLowerCase()){
+        P.total++;P.corr++;P.streak++;if(P.streak>P.maxStreak)P.maxStreak=P.streak;const c=2;P.coins+=c;sfx('corr');
+        markCorrect(P.word.e,U.activeBank);
+        P.blanks.forEach(i=>{const c=P.cells[i];if(c){c.textContent=P.word.e[i];c.className='cl filled'}});const pd=$('pp-'+P.lvlIdx);if(pd)pd.className='pd done';
+        P.lvlIdx++;U.coins=P.coins;pUpd();saveUser();setTimeout(pWord,500);
+    }else{
         P.total++;P.wrong++;P.streak=0;
-        if(P.shield>0){P.shield--;showToast('🛡️ 护盾挡住');$('p-inp').value='';return}
-        P.hp--;sfx('wrong');$('p-inp').value='';$('p-inp').style.borderColor='#ef4444';
-        setTimeout(()=>$('p-inp').style.borderColor='',400);
-        pUpdHUD();
-        if(P.hp<=0){pGameOver();return}
-        showToast('❌ 再想想');
-        setTimeout(pShowOpts,300);
+        if(P.shield>0){P.shield--;showToast('🛡️');$('p-inp').value='';return}
+        markWrong(P.word.e,U.activeBank);P.hp--;sfx('wrong');$('p-inp').value='';$('p-inp').style.borderColor='#ef4444';setTimeout(()=>$('p-inp').style.borderColor='',400);pUpd();if(P.hp<=0){pOver();return}showToast('❌');
     }
 }
-function pGiveHint(){
-    if(P.coins<2){showToast('💰 金币不足');return}
-    P.coins-=2;U.coins=P.coins;save();pUpdHUD();sfx('buy');
-    for(const i of P.blanks){const c=P.cells[i];if(c&&c.classList.contains('empty')){c.textContent=P.word.en[i];c.className='cl filled';P.blanks=P.blanks.filter(b=>b!==i);sfx('fill');showToast('💡 '+P.word.en[i]);return}}
-    showToast('💡 已全填');
-}
-function pSkip(){
-    if(P.coins<3){showToast('💰 不足');return}
-    P.coins-=3;U.coins=P.coins;save();pUpdHUD();sfx('buy');
-    P.total++;P.wrong++;const pd=$('pp-'+P.lvlIdx);if(pd)pd.className='pd fail';
-    P.lvlIdx++;setTimeout(pRenderWord,300);
-}
+function pGiveHint(){showToast('💡 提示功能');}
+function pSkip(){if(P.coins<3){showToast('💰不足');return}P.coins-=3;P.total++;P.wrong++;const pd=$('pp-'+P.lvlIdx);if(pd)pd.className='pd fail';P.lvlIdx++;setTimeout(pWord,300);U.coins=P.coins;pUpd();saveUser()}
 function pShowOpts(){
-    if(!P.word||P.osShown)return;P.osShown=true;
-    const word=P.word.en.toLowerCase();const blanks=P.blanks||[];
-    const needed=[...new Set(blanks.map(i=>word[i]))];
-    const pool='abcdefghijklmnopqrstuvwxyz'.split('').filter(l=>!needed.includes(l));
-    const randoms=shuffle(pool).slice(0,Math.max(2,4-needed.length));
-    const all=shuffle([...needed,...randoms]);
-    const s=$('p-os');s.innerHTML='';
-    all.forEach(l=>{
-        const b=document.createElement('div');b.className='ol';b.textContent=l;
-        b.onclick=()=>{
-            for(const i of P.blanks){const c=P.cells[i];if(c&&c.classList.contains('empty')){if(l===word[i]){c.textContent=l;c.className='cl filled';P.blanks=P.blanks.filter(b=>b!==i);sfx('fill');if(P.blanks.length===0){$('p-inp').value=word;setTimeout(pSubmit,200)}}else{sfx('wrong');showToast('❌ 不是这个')}return}}
-        };
-        s.appendChild(b);
-    });
-    if(needed.length>0)sfx('click');
+    if(!P.word||P.os)return;P.os=true;const w=P.word.e.toLowerCase(),blanks=P.blanks||[];
+    const n=[...new Set(blanks.map(i=>w[i]))];const p='abcdefghijklmnopqrstuvwxyz'.split('').filter(l=>!n.includes(l));const r=shuffle(p).slice(0,Math.max(2,4-n.length));const all=shuffle([...n,...r]);
+    const s=$('p-os');s.innerHTML='';all.forEach(l=>{const b=document.createElement('div');b.className='ol';b.textContent=l;b.onclick=()=>{for(const i of P.blanks){const c=P.cells[i];if(c&&c.classList.contains('empty')){if(l===w[i]){c.textContent=l;c.className='cl filled';P.blanks=P.blanks.filter(b=>b!==i);sfx('click');if(P.blanks.length===0){$('p-inp').value=w;setTimeout(pSubmit,200)}}else{sfx('wrong')}return}}};s.appendChild(b)})
 }
-function pGameOver(){
-    clearInterval(P_TIMER);
-    $('o-lose').classList.add('show');$('o-lose-sub').textContent='第 '+P.lvl+' 关 · 答对 '+P.corr+' 题';
-    $('ol-c').textContent=P.coins;$('ol-a').textContent=Math.round((P.corr/Math.max(1,P.total))*100)+'%';
-    $('ol-s').textContent='🔥'+P.maxStreak;
-    $('ol-retry').onclick=()=>{$('o-lose').classList.remove('show');startPuzzle()};
-    U.coins=P.coins;save();sfx('wrong');
-}
+function pOver(){clearInterval(P_TIMER);$('o-lose').classList.add('show');$('o-lose-sub').textContent='第'+P.lvl+'关';$('ol-c').textContent=P.coins;$('ol-a').textContent=Math.round((P.corr/Math.max(1,P.total))*100)+'%';$('ol-s').textContent='🔥'+P.maxStreak;$('ol-retry').onclick=()=>{$('o-lose').classList.remove('show');startPuzzle()};U.coins=P.coins;saveUser();sfx('wrong')}
 
 // ═══════════════════════════════════════════════════════════════
 //  INIT
 // ═══════════════════════════════════════════════════════════════
-applyBorder();updateHub();renderWB();
+function initGame(){
+    loadUser();applyBorder();updateHub();renderWB();
+    // Load word banks asynchronously
+    ['gaokao','cet4','cet6','ielts'].forEach(k=>{
+        const f=BANK_INFO[k].file;
+        const s=document.createElement('script');
+        s.src=f;s.onload=()=>{BANKS[k]=window['W_'+k];if(k===U.activeBank)updateHub();if(k===U.activeBank)showToast('📚 '+BANK_INFO[k].n+' 加载完成');renderWB()};
+        s.onerror=()=>{showToast('⚠️ '+f+' 加载失败')};
+        document.body.appendChild(s);
+    });
+}
+initGame();
 </script>
 </body>
 </html>
