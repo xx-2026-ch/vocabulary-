@@ -15,7 +15,7 @@ body{background:#07070e;color:#e0dcd0;font-family:'Segoe UI',system-ui,-apple-sy
 .btn-p{background:linear-gradient(135deg,#6c5ce7,#a29bfe);color:#fff}
 .btn-p:hover{opacity:.9}
 .btn-s{background:rgba(255,255,255,.06);color:#e0dcd0;border:1px solid rgba(255,255,255,.1)}
-.btn-s:hover{background:rgba(255,255,255,.1)}
+.btn-s2{padding:8px 0;font-size:12px;max-width:100px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.06);color:#e0dcd0;border-radius:11px;cursor:pointer;font-weight:700;font-family:inherit;width:100%;text-align:center;text-decoration:none}.btn-s2:hover{background:rgba(255,255,255,.1)}.btn-s2:active{transform:scale(.95)}.btn-s:hover{background:rgba(255,255,255,.1)}
 .hub{align-items:center;justify-content:center;padding:20px;text-align:center;background:radial-gradient(ellipse at 50% 0%,rgba(108,92,231,.1),transparent 70%)}
 .hub .hero{font-size:72px;margin-bottom:6px;filter:drop-shadow(0 8px 32px rgba(108,92,231,.3));animation:float 3s ease-in-out infinite}
 @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
@@ -180,15 +180,15 @@ body{background:#07070e;color:#e0dcd0;font-family:'Segoe UI',system-ui,-apple-sy
         </button>
     </div>
     <div class="btm">
-        <button class="btn btn-s" onclick="showScreen('s-shop')">🏪</button>
-        <button class="btn btn-s" onclick="showScreen('s-wb')">📚</button>
+        <button class="btn btn-s2" onclick="showScreen('s-shop')">🏪</button>
+        <button class="btn btn-s2" onclick="showScreen('s-wb')">📚</button>
         <button class="btn btn-s" onclick="showStats()">📊</button>
     </div>
     <button class="audio-btn" onclick="toggleAudio()">🔇</button>
 </div>
 
 <!-- ===== SHOP ===== (placeholder - reuse logic) -->
-<div class="screen sp" id="s-shop" style="display:none;padding:16px;overflow-y:auto">
+<div class="screen sp" id="s-shop" style="padding:16px;overflow-y:auto">
     <div class="sh"><button onclick="showScreen('s-hub')">← 返回</button><span style="font-size:14px;color:#fbbf24">💰 <span id="shop-cash">0</span></span></div>
     <h3 style="font-size:16px;font-weight:800;margin-bottom:10px">🏪 商店</h3>
     <div id="shop-items"></div>
@@ -199,15 +199,15 @@ body{background:#07070e;color:#e0dcd0;font-family:'Segoe UI',system-ui,-apple-sy
 </div>
 
 <!-- ===== WORD BANK ===== -->
-<div class="screen wb" id="s-wb" style="display:none;padding:16px;overflow-y:auto">
+<div class="screen wb" id="s-wb" style="padding:16px;overflow-y:auto">
     <div class="sh"><button onclick="showScreen('s-hub')">←</button><span style="font-size:13px" id="wb-total">0词</span></div>
     <h3 style="font-size:16px;font-weight:800;margin-bottom:10px">📚 词库</h3>
     <div id="wb-grid"></div>
-    <div style="margin-top:10px;text-align:center"><label style="padding:8px 20px;border:1px dashed rgba(255,255,255,.1);border-radius:8px;cursor:pointer;font-size:13px;color:#7a7a8a;display:inline-block">📄 上传词库</label><input type="file" id="custom-input" accept=".csv,.txt" style="display:none"><div id="custom-badge" style="font-size:11px;color:#6c5ce7;margin-top:4px;display:none">✅ 已加载</div></div>
+    <div style="margin-top:10px;text-align:center"><label style="padding:8px 20px;border:1px dashed rgba(255,255,255,.1);border-radius:8px;cursor:pointer;font-size:13px;color:#7a7a8a;display:inline-block">📄 上传词库</label><input type="file" id="custom-input" accept=".csv,.txt" ><div id="custom-badge" style="font-size:11px;color:#6c5ce7;margin-top:4px;display:none">✅ 已加载</div></div>
 </div>
 
 <!-- ===== STATS ===== -->
-<div class="screen stats-screen" id="s-stats" style="display:none">
+<div class="screen stats-screen" id="s-stats" >
     <div class="sh"><button onclick="showScreen('s-hub')">← 返回</button><span style="font-weight:700">📊 学习统计</span></div>
     <div class="sc" id="stats-cards"></div>
     <div class="sb"><h3>📈 掌握进度</h3><div class="pb"><div class="pf" id="mastery-bar" style="width:0%"></div></div><div class="pl"><span id="mastery-text">0 / 0</span><span id="mastery-pct">0%</span></div></div>
@@ -216,7 +216,7 @@ body{background:#07070e;color:#e0dcd0;font-family:'Segoe UI',system-ui,-apple-sy
 </div>
 
 <!-- ===== REVIEW ===== -->
-<div class="screen" id="s-review" style="display:none">
+<div class="screen" id="s-review" >
     <div class="hud"><div class="hud-l">📝 艾宾浩斯复习</div><div class="hud-c" id="rev-prog">0/0</div><button style="background:none;border:none;color:#7a7a8a;font-size:18px;cursor:pointer" onclick="exitReview()">✕</button></div>
     <div class="rv" id="review-area">
         <div class="rpr" id="rev-remaining">无待复习单词</div>
@@ -224,7 +224,7 @@ body{background:#07070e;color:#e0dcd0;font-family:'Segoe UI',system-ui,-apple-sy
 </div>
 
 <!-- ===== DUNGEON ===== -->
-<div class="screen" id="s-dungeon" style="display:none">
+<div class="screen" id="s-dungeon" >
     <div class="hud"><div class="hud-l">🏰 <span id="d-floor">1</span>/10</div><div class="hud-h" id="d-hearts"></div><div class="hud-c">💰 <span id="d-coins">0</span></div><div class="hud-t" id="d-timer">⏱<span id="d-tn">15</span></div><button style="background:none;border:none;color:#7a7a8a;font-size:16px;cursor:pointer;padding:2px 6px" onclick="pauseGame()">⏸️</button></div>
     <div class="arena" id="arena"><div class="bz"><div class="fig p" id="d-player">⚔️</div><div class="fig e" id="d-enemy">👹</div></div>
     <div class="mhp" id="d-mhp">❤️❤️❤️</div><div class="tw"><div class="tf safe" id="d-tf" style="width:100%"></div></div>
@@ -234,7 +234,7 @@ body{background:#07070e;color:#e0dcd0;font-family:'Segoe UI',system-ui,-apple-sy
 </div>
 
 <!-- ===== PUZZLE ===== -->
-<div class="screen" id="s-puzzle" style="display:none">
+<div class="screen" id="s-puzzle" >
     <div class="hud"><div class="hud-l">🧩 <span id="p-lvl">1</span>/8</div><div class="hud-h" id="p-hearts"></div><div class="hud-c">💰 <span id="p-coins">0</span></div><div class="hud-t" id="p-timer">⏱<span id="p-tn">90</span></div><button style="background:none;border:none;color:#7a7a8a;font-size:16px;cursor:pointer;padding:2px 6px" onclick="pauseGame()">⏸️</button></div>
     <div class="ga" id="p-ga"><div class="pw" id="p-pw"></div><div class="gw" id="p-gw"></div><div class="ia"><input type="text" id="p-inp" placeholder="输入完整单词…" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"><button class="sb" id="p-sb">↵</button></div><div class="ha"><button class="hb" onclick="pGiveHint()">💡提示</button><button class="hb" onclick="pSkip()">⚡跳过</button><button class="hb" onclick="pShowOpts()">📋备选</button></div><div class="os" id="p-os"></div></div>
 </div>
@@ -551,7 +551,7 @@ function showReviewWord(){
         `<div class="rpr">${REVIEW.idx+1} / ${total}</div>
          <div class="re">${w.e}</div>
          <div class="ri">点击"显示释义"回忆词义</div>
-         <div class="rc" id="rev-answer" style="display:none">${w.c}</div>
+         <div class="rc" id="rev-answer" >${w.c}</div>
          <div class="rb">
              <button class="a" onclick="reviewReveal()">👁️ 显示释义</button>
          </div>`;
