@@ -144,6 +144,8 @@ body{font-family:'Noto Sans SC','Segoe UI',sans-serif;background:#07070e;color:#
         <span class="y">🎵 沉浸式白噪音</span>
     </div>
     <div class="scroll-hint">↓ 向下滚动</div>
+<!-- Audio toggle -->
+<button id="audio-btn" style="position:fixed;bottom:24px;right:24px;z-index:100;width:48px;height:48px;border-radius:50%;border:1px solid rgba(255,255,255,.12);background:rgba(18,18,31,.8);color:#e0dcd0;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);transition:all .3s" onclick="toggleBGM()">🔇</button>
 </section>
 
 <!-- ===== SLIDE 1 ===== -->
@@ -259,9 +261,20 @@ body{font-family:'Noto Sans SC','Segoe UI',sans-serif;background:#07070e;color:#
 
 <script>
 // BGM — cinematic adventure theme via Web Audio
-let AC=null,AE=false;
-function initBGM(){if(AC)return;try{AC=new(window.AudioContext||window.webkitAudioContext)();AE=true;playBGM()}catch(e){}}
+let AC=null,AE=false,ABTN=null;
+function initBGM(){
+    if(AC)return;
+    try{AC=new(window.AudioContext||window.webkitAudioContext)();AE=true;if(!ABTN)ABTN=document.getElementById('audio-btn');if(ABTN)ABTN.textContent='🔊';playBGM()}catch(e){}
+}
+function toggleBGM(){
+    if(!AC){initBGM();return}
+    AE=!AE;
+    if(!ABTN)ABTN=document.getElementById('audio-btn');
+    if(ABTN)ABTN.textContent=AE?'🔊':'🔇';
+    if(AE)playBGM();
+}
 function playBGM(){
+    if(!AC||!AE)return;
     if(!AC||!AE)return;
     const mG=AC.createGain();mG.gain.value=0.04;mG.connect(AC.destination);
     // Epic drone
@@ -290,12 +303,8 @@ function playBGM(){
     }
     setTimeout(pulse,1200);
 }
-// User interaction starts audio
-document.addEventListener('click',initBGM,{once:true});
-document.addEventListener('touchstart',initBGM,{once:true});
-// Also scroll starts audio
-let scrolled=false;
-document.addEventListener('scroll',()=>{if(!scrolled){scrolled=true;initBGM()}},{once:true});
+// Try to auto-start (works if user has interacted with page before)
+setTimeout(()=>{try{if(!AC){AC=new(window.AudioContext||window.webkitAudioContext)();AE=true;const b=document.getElementById('audio-btn');if(b)b.textContent='🔊';playBGM()}}catch(e){}},500);
 
 // Navigation dots
 const slides=document.querySelectorAll('.slide');
