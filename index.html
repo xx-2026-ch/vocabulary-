@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>背单词小游戏 — 沉浸式单词闯关</title>
+    <meta name="description" content="免费的背单词小游戏，四选一单词挑战，内置四级/六级词库，支持自定词表导入。">
+    <meta name="keywords" content="背单词, 单词游戏, 英语, 四六级, 单词闯关">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📖</text></svg>">
+    <style>
+        :root {
+            --bg: #f0f4f8; --card: #fff; --text: #1a202c; --text2: #4a5568;
+            --border: #e2e8f0; --primary: #6c5ce7; --primary-hover: #5a4bd1;
+            --primary-light: #f0eeff; --success: #10b981; --wrong: #ef4444;
+            --shadow: 0 4px 24px rgba(0,0,0,.06); --radius: 16px; --radius-sm: 10px;
+        }
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #0f172a; --card: #1e293b; --text: #f1f5f9; --text2: #94a3b8;
+                --border: #334155; --primary-light: #1e1b4b;
+                --shadow: 0 4px 24px rgba(0,0,0,.3);
+            }
+        }
+        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+        body {
+            font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,'Noto Sans SC',sans-serif;
+            background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;
+            transition:background .3s,color .3s;
+        }
+
+        header {
+            background:var(--card);border-bottom:1px solid var(--border);padding:16px 24px;
+            display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;
+        }
+        .logo{display:flex;align-items:center;gap:10px;font-size:20px;font-weight:700;color:inherit;text-decoration:none}
+        .logo-icon{width:36px;height:36px;background:linear-gradient(135deg,#6c5ce7,#a29bfe);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px}
+        .logo span{background:linear-gradient(135deg,#6c5ce7,#a29bfe);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+        header nav{display:flex;gap:8px}
+        header nav a{color:var(--text2);text-decoration:none;padding:6px 14px;border-radius:8px;font-size:14px;transition:background .2s,color .2s}
+        header nav a:hover{background:var(--primary-light);color:var(--primary)}
+
+        .container{max-width:640px;margin:0 auto;padding:40px 20px;flex:1;width:100%}
+
+        /* ===== Start Screen ===== */
+        .screen{display:none}
+        .screen.active{display:block}
+
+        .start-card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:40px 32px;text-align:center}
+        .start-card .big-icon{font-size:64px;margin-bottom:12px}
+        .start-card h1{font-size:28px;font-weight:800;margin-bottom:6px}
+        .start-card h1 span{background:linear-gradient(135deg,#6c5ce7,#a29bfe);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+        .start-card p{color:var(--text2);font-size:15px;margin-bottom:24px;line-height:1.6}
+        .start-card .sub{font-size:13px;color:var(--text2);margin-bottom:20px}
+
+        .word-count-select{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:20px}
+        .word-count-select button{
+            padding:8px 20px;border:2px solid var(--border);background:transparent;color:var(--text2);
+            border-radius:8px;cursor:pointer;font-size:14px;transition:all .2s
+        }
+        .word-count-select button:hover{border-color:var(--primary);color:var(--primary)}
+        .word-count-select button.active{border-color:var(--primary);background:var(--primary);color:#fff}
+
+        .difficulty-select{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:24px}
+        .difficulty-select button{
+            padding:8px 20px;border:2px solid var(--border);background:transparent;color:var(--text2);
+            border-radius:8px;cursor:pointer;font-size:14px;transition:all .2s
+        }
+        .difficulty-select button:hover{border-color:var(--primary);color:var(--primary)}
+        .difficulty-select button.active{border-color:var(--primary);background:var(--primary);color:#fff}
+
+        .start-btn{
+            padding:14px 48px;background:linear-gradient(135deg,#6c5ce7,#a29bfe);color:#fff;
+            border:none;border-radius:var(--radius-sm);font-size:18px;font-weight:600;cursor:pointer;transition:opacity .2s,transform .1s
+        }
+        .start-btn:hover{opacity:.9}
+        .start-btn:active{transform:scale(.98)}
+
+        .custom-section{margin-top:20px;padding-top:20px;border-top:1px solid var(--border)}
+        .custom-section .hint{font-size:13px;color:var(--text2);margin-bottom:8px}
+        .custom-upload-btn{
+            padding:6px 16px;border:1px solid var(--border);border-radius:6px;background:var(--card);
+            color:var(--text2);font-size:13px;cursor:pointer;display:inline-block;transition:all .2s
+        }
+        .custom-upload-btn:hover{border-color:var(--primary);color:var(--primary)}
+        .custom-badge{display:none;padding:4px 12px;background:var(--primary-light);border-radius:20px;font-size:12px;color:var(--primary);margin-left:8px}
+        .custom-badge.visible{display:inline-block}
+        #custom-input{display:none}
+
+        /* ===== Game Screen ===== */
+        .game-header{
+            display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;gap:12px
+        }
+        .game-header .stat{font-size:14px;font-weight:600}
+        .game-header .stat span{color:var(--primary)}
+        .progress-wrap{width:100%;height:6px;background:var(--border);border-radius:3px;margin-bottom:24px}
+        .progress-fill{height:100%;background:linear-gradient(90deg,#6c5ce7,#a29bfe);border-radius:3px;transition:width .3s}
+
+        .word-card{
+            background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);
+            padding:48px 32px;text-align:center;margin-bottom:24px
+        }
+        .word-card .en{font-size:36px;font-weight:800;margin-bottom:8px;letter-spacing:-.5px}
+        .word-card .ipa{font-size:15px;color:var(--text2);font-style:italic;margin-bottom:4px}
+        .word-card .streak{font-size:14px;color:var(--primary);font-weight:600}
+        .word-card .streak .fire{font-size:18px}
+
+        .options{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+        @media(max-width:480px){.options{grid-template-columns:1fr}}
+
+        .option-btn{
+            padding:16px 20px;border:2px solid var(--border);background:var(--card);color:var(--text);
+            border-radius:var(--radius-sm);font-size:16px;cursor:pointer;transition:all .15s;
+            text-align:center;font-weight:500
+        }
+        .option-btn:hover{border-color:var(--primary);background:var(--primary-light);transform:translateY(-1px)}
+        .option-btn:active{transform:scale(.97)}
+        .option-btn.correct{background:var(--success);border-color:var(--success);color:#fff;animation:pulse .3s}
+        .option-btn.wrong{background:var(--wrong);border-color:var(--wrong);color:#fff;animation:shake .3s}
+        .option-btn.disabled{pointer-events:none;opacity:.7}
+
+        @keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.03)}100%{transform:scale(1)}}
+        @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+        @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+        .result-card{animation:fadeIn .3s}
+
+        /* ===== Result Screen ===== */
+        .result-card{
+            background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);
+            padding:40px 32px;text-align:center
+        }
+        .result-card .big{font-size:56px;margin-bottom:8px}
+        .result-card h2{font-size:24px;margin-bottom:4px}
+        .result-card .score{font-size:48px;font-weight:800;color:var(--primary);margin:12px 0}
+        .result-card .detail{color:var(--text2);font-size:15px;margin-bottom:4px;line-height:1.8}
+        .result-card .detail strong{color:var(--text)}
+
+        .wrong-list{margin-top:24px;text-align:left}
+        .wrong-list h3{font-size:16px;margin-bottom:12px;color:var(--wrong)}
+        .wrong-item{
+            display:flex;justify-content:space-between;align-items:center;
+            padding:10px 14px;background:var(--bg);border-radius:8px;margin-bottom:6px;
+            font-size:14px;gap:10px
+        }
+        .wrong-item .en{font-weight:600}
+        .wrong-item .cn{color:var(--text2)}
+
+        .result-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:24px}
+        .result-actions button{
+            padding:12px 28px;border-radius:var(--radius-sm);font-size:15px;font-weight:600;cursor:pointer;transition:opacity .2s
+        }
+        .btn-primary{background:linear-gradient(135deg,#6c5ce7,#a29bfe);color:#fff;border:none}
+        .btn-primary:hover{opacity:.9}
+        .btn-secondary{background:transparent;color:var(--primary);border:2px solid var(--primary)}
+        .btn-secondary:hover{background:var(--primary-light)}
+
+        footer{
+            text-align:center;padding:20px;color:var(--text2);font-size:13px;
+            border-top:1px solid var(--border);background:var(--card);margin-top:20px
+        }
+
+        .toast{
+            position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);
+            background:var(--text);color:var(--bg);padding:12px 24px;border-radius:var(--radius-sm);
+            font-size:14px;opacity:0;transition:all .3s;pointer-events:none;z-index:999
+        }
+        .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="logo"><div class="logo-icon">📖</div><span>单词闯关</span></div>
+    <nav>
+        <a href="#howto" id="howto-link">玩法</a>
+    </nav>
+</header>
+
+<div class="container">
+    <!-- ===== Start Screen ===== -->
+    <div class="screen active" id="start-screen">
+        <div class="start-card">
+            <div class="big-icon">📖</div>
+            <h1>单词 <span>闯关</span></h1>
+            <p>看英文选中文，四选一挑战你的词汇量</p>
+            <div class="sub">📚 内置四级/六级/考研词汇</div>
+
+            <div style="font-size:14px;font-weight:600;color:var(--text2);margin-bottom:8px">题数</div>
+            <div class="word-count-select" id="word-count">
+                <button data-count="10">10</button>
+                <button data-count="20" class="active">20</button>
+                <button data-count="30">30</button>
+                <button data-count="50">50</button>
+            </div>
+
+            <div style="font-size:14px;font-weight:600;color:var(--text2);margin-bottom:8px">难度</div>
+            <div class="difficulty-select" id="difficulty">
+                <button data-level="easy">🌱 简单</button>
+                <button data-level="medium" class="active">🔥 中等</button>
+                <button data-level="hard">💀 困难</button>
+            </div>
+
+            <button class="start-btn" id="start-btn">🚀 开始挑战</button>
+
+            <div class="custom-section">
+                <div class="hint">📂 有自己的词表？上传 CSV/TXT（每行：单词,释义）</div>
+                <label class="custom-upload-btn" id="custom-label">📄 上传词表</label>
+                <span class="custom-badge" id="custom-badge">✅ 已加载</span>
+                <input type="file" id="custom-input" accept=".csv,.txt">
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== Game Screen ===== -->
+    <div class="screen" id="game-screen">
+        <div class="game-header">
+            <div class="stat"><span id="current-num">1</span>/<span id="total-num">20</span></div>
+            <div class="stat">✅ <span id="correct-num">0</span> · ❌ <span id="wrong-num">0</span></div>
+            <div class="stat">🔥 <span id="streak-num">0</span></div>
+        </div>
+        <div class="progress-wrap"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+
+        <div class="word-card">
+            <div class="en" id="word-en">abandon</div>
+            <div class="ipa" id="word-ipa">/əˈbændən/</div>
+            <div class="streak" id="streak-display"></div>
+        </div>
+
+        <div class="options" id="options"></div>
+    </div>
+
+    <!-- ===== Result Screen ===== -->
+    <div class="screen" id="result-screen">
+        <div class="result-card">
+            <div class="big" id="result-emoji">🎉</div>
+            <h2 id="result-title">挑战完成！</h2>
+            <div class="score" id="result-score">18/20</div>
+            <div class="detail">正确率：<strong id="result-rate">90%</strong></div>
+            <div class="detail">最长连击：<strong id="result-streak">🔥 5</strong></div>
+            <div class="detail" id="result-grade" style="margin-top:8px;font-size:18px"></div>
+
+            <div class="wrong-list" id="wrong-list" style="display:none">
+                <h3>📝 需要复习的单词</h3>
+                <div id="wrong-items"></div>
+            </div>
+
+            <div class="result-actions">
+                <button class="btn-primary" id="retry-btn">🔄 再来一次</button>
+                <button class="btn-secondary" id="home-btn">🏠 返回首页</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer>
+    <p>📖 单词闯关 · 免费背单词小游戏 · 纯本地运行</p>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+    'use strict';
+
+    // ============================================================
+    //  WORD BANK — CET-4 / CET-6 / 考研 核心词汇
+    // ============================================================
+    const WORD_BANK = [
+        // ---- easy ----
+        {en:"abandon",ipa:"/əˈbændən/",cn:"放弃"}, {en:"ability",ipa:"/əˈbɪləti/",cn:"能力"},
+        {en:"absent",ipa:"/ˈæbsənt/",cn:"缺席的"}, {en:"absorb",ipa:"/əbˈzɔːrb/",cn:"吸收"},
+        {en:"accept",ipa:"/əkˈsept/",cn:"接受"}, {en:"achieve",ipa:"/əˈtʃiːv/",cn:"实现；达到"},
+        {en:"acquire",ipa:"/əˈkwaɪər/",cn:"获得"}, {en:"adapt",ipa:"/əˈdæpt/",cn:"适应"},
+        {en:"admit",ipa:"/ədˈmɪt/",cn:"承认"}, {en:"adopt",ipa:"/əˈdɒpt/",cn:"采纳；收养"},
+        {en:"advance",ipa:"/ədˈvæns/",cn:"前进；提前"}, {en:"advantage",ipa:"/ədˈvæntɪdʒ/",cn:"优势"},
+        {en:"advise",ipa:"/ədˈvaɪz/",cn:"建议"}, {en:"afford",ipa:"/əˈfɔːrd/",cn:"负担得起"},
+        {en:"agree",ipa:"/əˈɡriː/",cn:"同意"}, {en:"allow",ipa:"/əˈlaʊ/",cn:"允许"},
+        {en:"amaze",ipa:"/əˈmeɪz/",cn:"使惊奇"}, {en:"amount",ipa:"/əˈmaʊnt/",cn:"数量；总计"},
+        {en:"annual",ipa:"/ˈænjuəl/",cn:"每年的"}, {en:"anxious",ipa:"/ˈæŋkʃəs/",cn:"焦虑的"},
+        {en:"appear",ipa:"/əˈpɪr/",cn:"出现；似乎"}, {en:"apply",ipa:"/əˈplaɪ/",cn:"申请；应用"},
+        {en:"approach",ipa:"/əˈproʊtʃ/",cn:"接近；方法"}, {en:"argue",ipa:"/ˈɑːrɡjuː/",cn:"争论"},
+        {en:"arrange",ipa:"/əˈreɪndʒ/",cn:"安排"}, {en:"arrive",ipa:"/əˈraɪv/",cn:"到达"},
+        {en:"attempt",ipa:"/əˈtempt/",cn:"尝试"}, {en:"attend",ipa:"/əˈtend/",cn:"参加；照顾"},
+        {en:"attract",ipa:"/əˈtrækt/",cn:"吸引"}, {en:"avoid",ipa:"/əˈvɔɪd/",cn:"避免"},
+        {en:"balance",ipa:"/ˈbæləns/",cn:"平衡"}, {en:"bargain",ipa:"/ˈbɑːrɡɪn/",cn:"讨价还价；便宜货"},
+        {en:"beneath",ipa:"/bɪˈniːθ/",cn:"在…之下"}, {en:"benefit",ipa:"/ˈbenɪfɪt/",cn:"利益；受益"},
+        {en:"blame",ipa:"/bleɪm/",cn:"责备"}, {en:"border",ipa:"/ˈbɔːrdər/",cn:"边界"},
+        {en:"bother",ipa:"/ˈbɒðər/",cn:"打扰"}, {en:"bound",ipa:"/baʊnd/",cn:"界限；必然的"},
+        {en:"brief",ipa:"/briːf/",cn:"简要的"}, {en:"broad",ipa:"/brɔːd/",cn:"宽阔的"},
+        {en:"burden",ipa:"/ˈbɜːrdn/",cn:"负担"}, {en:"calm",ipa:"/kɑːm/",cn:"平静的；使平静"},
+        {en:"capable",ipa:"/ˈkeɪpəbl/",cn:"有能力的"}, {en:"capture",ipa:"/ˈkæptʃər/",cn:"捕获；夺取"},
+        {en:"career",ipa:"/kəˈrɪr/",cn:"职业"}, {en:"caution",ipa:"/ˈkɔːʃn/",cn:"小心；警告"},
+        {en:"celebrate",ipa:"/ˈselɪbreɪt/",cn:"庆祝"}, {en:"challenge",ipa:"/ˈtʃælɪndʒ/",cn:"挑战"},
+        {en:"charm",ipa:"/tʃɑːrm/",cn:"魅力；吸引"}, {en:"claim",ipa:"/kleɪm/",cn:"声称；要求"},
+        {en:"clarify",ipa:"/ˈklærəfaɪ/",cn:"澄清"}, {en:"classic",ipa:"/ˈklæsɪk/",cn:"经典的"},
+        {en:"climate",ipa:"/ˈklaɪmət/",cn:"气候"}, {en:"collapse",ipa:"/kəˈlæps/",cn:"崩溃；倒塌"},
+        {en:"command",ipa:"/kəˈmænd/",cn:"命令；掌握"}, {en:"commit",ipa:"/kəˈmɪt/",cn:"犯（罪）；承诺"},
+        {en:"compare",ipa:"/kəmˈper/",cn:"比较"}, {en:"compete",ipa:"/kəmˈpiːt/",cn:"竞争；比赛"},
+        {en:"complex",ipa:"/kəmˈpleks/",cn:"复杂的"}, {en:"concentrate",ipa:"/ˈkɒnsəntreɪt/",cn:"集中；专注"},
+        {en:"confess",ipa:"/kənˈfes/",cn:"承认；忏悔"}, {en:"confident",ipa:"/ˈkɒnfɪdənt/",cn:"自信的"},
+        {en:"confirm",ipa:"/kənˈfɜːrm/",cn:"确认"}, {en:"confuse",ipa:"/kənˈfjuːz/",cn:"使困惑"},
+        {en:"connect",ipa:"/kəˈnekt/",cn:"连接"}, {en:"consist",ipa:"/kənˈsɪst/",cn:"由…组成"},
+        {en:"contribute",ipa:"/kənˈtrɪbjuːt/",cn:"贡献；捐赠"}, {en:"convince",ipa:"/kənˈvɪns/",cn:"说服"},
+        {en:"courage",ipa:"/ˈkɜːrɪdʒ/",cn:"勇气"}, {en:"create",ipa:"/kriˈeɪt/",cn:"创造"},
+        {en:"custom",ipa:"/ˈkʌstəm/",cn:"习惯；风俗"}, {en:"damage",ipa:"/ˈdæmɪdʒ/",cn:"损害"},
+        {en:"debate",ipa:"/dɪˈbeɪt/",cn:"辩论"}, {en:"declare",ipa:"/dɪˈkler/",cn:"宣布；声明"},
+
+        // ---- medium ----
+        {en:"decorate",ipa:"/ˈdekəreɪt/",cn:"装饰"}, {en:"defeat",ipa:"/dɪˈfiːt/",cn:"击败"},
+        {en:"defend",ipa:"/dɪˈfend/",cn:"防御；辩护"}, {en:"define",ipa:"/dɪˈfaɪn/",cn:"定义"},
+        {en:"delight",ipa:"/dɪˈlaɪt/",cn:"快乐；使高兴"}, {en:"demand",ipa:"/dɪˈmænd/",cn:"需求；要求"},
+        {en:"deserve",ipa:"/dɪˈzɜːrv/",cn:"值得"}, {en:"desire",ipa:"/dɪˈzaɪər/",cn:"渴望"},
+        {en:"destroy",ipa:"/dɪˈstrɔɪ/",cn:"破坏"}, {en:"determine",ipa:"/dɪˈtɜːrmɪn/",cn:"决定"},
+        {en:"develop",ipa:"/dɪˈveləp/",cn:"发展"}, {en:"devote",ipa:"/dɪˈvoʊt/",cn:"奉献"},
+        {en:"discover",ipa:"/dɪˈskʌvər/",cn:"发现"}, {en:"display",ipa:"/dɪˈspleɪ/",cn:"展示；陈列"},
+        {en:"distinct",ipa:"/dɪˈstɪŋkt/",cn:"不同的；清楚的"}, {en:"distribute",ipa:"/dɪˈstrɪbjuːt/",cn:"分配；分发"},
+        {en:"domestic",ipa:"/dəˈmestɪk/",cn:"国内的；家庭的"}, {en:"dramatic",ipa:"/drəˈmætɪk/",cn:"戏剧性的；巨大的"},
+        {en:"elegant",ipa:"/ˈelɪɡənt/",cn:"优雅的"}, {en:"eliminate",ipa:"/ɪˈlɪmɪneɪt/",cn:"消除；淘汰"},
+        {en:"embrace",ipa:"/ɪmˈbreɪs/",cn:"拥抱；包含"}, {en:"emerge",ipa:"/ɪˈmɜːrdʒ/",cn:"出现；浮现"},
+        {en:"emotion",ipa:"/ɪˈmoʊʃn/",cn:"情感"}, {en:"employ",ipa:"/ɪmˈplɔɪ/",cn:"雇用；使用"},
+        {en:"enable",ipa:"/ɪˈneɪbl/",cn:"使能够"}, {en:"encounter",ipa:"/ɪnˈkaʊntər/",cn:"遭遇；邂逅"},
+        {en:"endure",ipa:"/ɪnˈdʊr/",cn:"忍受；持久"}, {en:"engage",ipa:"/ɪnˈɡeɪdʒ/",cn:"从事；吸引"},
+        {en:"enormous",ipa:"/ɪˈnɔːrməs/",cn:"巨大的"}, {en:"entire",ipa:"/ɪnˈtaɪər/",cn:"全部的"},
+        {en:"essential",ipa:"/ɪˈsenʃl/",cn:"必要的；本质的"}, {en:"establish",ipa:"/ɪˈstæblɪʃ/",cn:"建立；确立"},
+        {en:"evaluate",ipa:"/ɪˈvæljueɪt/",cn:"评估"}, {en:"evident",ipa:"/ˈevɪdənt/",cn:"明显的"},
+        {en:"evolve",ipa:"/ɪˈvɒlv/",cn:"进化；发展"}, {en:"examine",ipa:"/ɪɡˈzæmɪn/",cn:"检查；考试"},
+        {en:"excellent",ipa:"/ˈeksələnt/",cn:"优秀的"}, {en:"exchange",ipa:"/ɪksˈtʃeɪndʒ/",cn:"交换；兑换"},
+        {en:"exclude",ipa:"/ɪkˈskluːd/",cn:"排除"}, {en:"execute",ipa:"/ˈeksɪkjuːt/",cn:"执行；处决"},
+        {en:"exhaust",ipa:"/ɪɡˈzɔːst/",cn:"耗尽；使筋疲力尽"}, {en:"exhibit",ipa:"/ɪɡˈzɪbɪt/",cn:"展览；展示"},
+        {en:"expand",ipa:"/ɪkˈspænd/",cn:"扩大；膨胀"}, {en:"explore",ipa:"/ɪkˈsplɔːr/",cn:"探索；探险"},
+        {en:"expose",ipa:"/ɪkˈspoʊz/",cn:"暴露；揭露"}, {en:"extend",ipa:"/ɪkˈstend/",cn:"扩展；延长"},
+        {en:"extreme",ipa:"/ɪkˈstriːm/",cn:"极端的"}, {en:"fabric",ipa:"/ˈfæbrɪk/",cn:"织物；结构"},
+        {en:"faculty",ipa:"/ˈfæklti/",cn:"才能；全体教员"}, {en:"fashion",ipa:"/ˈfæʃn/",cn:"时尚；方式"},
+        {en:"fierce",ipa:"/fɪrs/",cn:"凶猛的；激烈的"}, {en:"flexible",ipa:"/ˈfleksəbl/",cn:"灵活的"},
+        {en:"forecast",ipa:"/ˈfɔːrkæst/",cn:"预测；预报"}, {en:"forgive",ipa:"/fərˈɡɪv/",cn:"原谅"},
+        {en:"formula",ipa:"/ˈfɔːrmjələ/",cn:"公式；方案"}, {en:"fortune",ipa:"/ˈfɔːrtʃən/",cn:"财富；运气"},
+        {en:"frequent",ipa:"/ˈfriːkwənt/",cn:"频繁的"}, {en:"frustrate",ipa:"/ˈfrʌstreɪt/",cn:"使沮丧；阻挠"},
+        {en:"generate",ipa:"/ˈdʒenəreɪt/",cn:"产生；生成"}, {en:"generous",ipa:"/ˈdʒenərəs/",cn:"慷慨的"},
+        {en:"genuine",ipa:"/ˈdʒenjuɪn/",cn:"真正的；真诚的"}, {en:"glimpse",ipa:"/ɡlɪmps/",cn:"一瞥；瞥见"},
+        {en:"gradual",ipa:"/ˈɡrædʒuəl/",cn:"逐渐的"}, {en:"grasp",ipa:"/ɡræsp/",cn:"抓住；理解"},
+        {en:"guarantee",ipa:"/ˌɡærənˈtiː/",cn:"保证"}, {en:"hesitate",ipa:"/ˈhezɪteɪt/",cn:"犹豫"},
+        {en:"horizon",ipa:"/həˈraɪzn/",cn:"地平线；眼界"}, {en:"humble",ipa:"/ˈhʌmbl/",cn:"谦虚的；卑微的"},
+        {en:"identity",ipa:"/aɪˈdentəti/",cn:"身份；一致"}, {en:"ignore",ipa:"/ɪɡˈnɔːr/",cn:"忽视；不理会"},
+        {en:"illustrate",ipa:"/ˈɪləstreɪt/",cn:"说明；阐明"}, {en:"imagine",ipa:"/ɪˈmædʒɪn/",cn:"想象"},
+        {en:"imitate",ipa:"/ˈɪmɪteɪt/",cn:"模仿"}, {en:"immense",ipa:"/ɪˈmens/",cn:"巨大的；无边的"},
+        {en:"imply",ipa:"/ɪmˈplaɪ/",cn:"暗示"}, {en:"impose",ipa:"/ɪmˈpoʊz/",cn:"强加；征税"},
+        {en:"impress",ipa:"/ɪmˈpres/",cn:"给…深刻印象"}, {en:"incline",ipa:"/ɪnˈklaɪn/",cn:"倾斜；倾向于"},
+        {en:"indicate",ipa:"/ˈɪndɪkeɪt/",cn:"表明；指示"}, {en:"individual",ipa:"/ˌɪndɪˈvɪdʒuəl/",cn:"个人；个人的"},
+        {en:"influence",ipa:"/ˈɪnfluəns/",cn:"影响"}, {en:"inform",ipa:"/ɪnˈfɔːrm/",cn:"通知；告知"},
+        {en:"injury",ipa:"/ˈɪndʒəri/",cn:"伤害；损伤"}, {en:"innocent",ipa:"/ˈɪnəsnt/",cn:"无辜的；天真的"},
+        {en:"inspire",ipa:"/ɪnˈspaɪər/",cn:"激发；鼓舞"}, {en:"instant",ipa:"/ˈɪnstənt/",cn:"立即的；瞬间"},
+
+        // ---- hard ----
+        {en:"sufficient",ipa:"/səˈfɪʃnt/",cn:"充足的；足够的"}, {en:"splendid",ipa:"/ˈsplendɪd/",cn:"壮丽的；极好的"},
+        {en:"substitute",ipa:"/ˈsʌbstɪtuːt/",cn:"替代品；代替"}, {en:"superior",ipa:"/suːˈpɪriər/",cn:"上级的；优越的"},
+        {en:"surplus",ipa:"/ˈsɜːrpləs/",cn:"剩余；过剩的"}, {en:"surrender",ipa:"/səˈrendər/",cn:"投降；放弃"},
+        {en:"survive",ipa:"/sərˈvaɪv/",cn:"幸存"}, {en:"suspect",ipa:"/səˈspekt/",cn:"怀疑；嫌疑人"},
+        {en:"suspend",ipa:"/səˈspend/",cn:"暂停；悬挂"}, {en:"sustain",ipa:"/səˈsteɪn/",cn:"维持；支撑"},
+        {en:"symbol",ipa:"/ˈsɪmbl/",cn:"象征；符号"}, {en:"sympathy",ipa:"/ˈsɪmpəθi/",cn:"同情；赞同"},
+        {en:"tendency",ipa:"/ˈtendənsi/",cn:"趋势；倾向"}, {en:"terminal",ipa:"/ˈtɜːrmɪnl/",cn:"终端的；终点站"},
+        {en:"territory",ipa:"/ˈterɪtɔːri/",cn:"领土；领域"}, {en:"torture",ipa:"/ˈtɔːrtʃər/",cn:"折磨；拷问"},
+        {en:"tragedy",ipa:"/ˈtrædʒədi/",cn:"悲剧"}, {en:"transfer",ipa:"/trænsˈfɜːr/",cn:"转移；调动"},
+        {en:"transform",ipa:"/trænsˈfɔːrm/",cn:"转变；改造"}, {en:"tremble",ipa:"/ˈtrembl/",cn:"颤抖；发抖"},
+        {en:"tremendous",ipa:"/trəˈmendəs/",cn:"巨大的；惊人的"}, {en:"triumph",ipa:"/ˈtraɪəmf/",cn:"胜利；凯旋"},
+        {en:"universal",ipa:"/ˌjuːnɪˈvɜːrsl/",cn:"普遍的；全体的"}, {en:"urban",ipa:"/ˈɜːrbən/",cn:"城市的"},
+        {en:"urge",ipa:"/ɜːrdʒ/",cn:"催促；强烈欲望"}, {en:"utilize",ipa:"/ˈjuːtəlaɪz/",cn:"利用；使用"},
+        {en:"vanish",ipa:"/ˈvænɪʃ/",cn:"消失；消散"}, {en:"venture",ipa:"/ˈventʃər/",cn:"冒险；投机"},
+        {en:"verify",ipa:"/ˈverɪfaɪ/",cn:"验证；核实"}, {en:"version",ipa:"/ˈvɜːrʒn/",cn:"版本；说法"},
+        {en:"veteran",ipa:"/ˈvetərən/",cn:"老兵；老手"}, {en:"victim",ipa:"/ˈvɪktɪm/",cn:"受害者"},
+        {en:"vigorous",ipa:"/ˈvɪɡərəs/",cn:"充满活力的"}, {en:"violate",ipa:"/ˈvaɪəleɪt/",cn:"违反；侵犯"},
+        {en:"virtue",ipa:"/ˈvɜːrtʃuː/",cn:"美德；优点"}, {en:"visible",ipa:"/ˈvɪzəbl/",cn:"可见的"},
+        {en:"vision",ipa:"/ˈvɪʒn/",cn:"视力；愿景"}, {en:"vital",ipa:"/ˈvaɪtl/",cn:"至关重要的"},
+        {en:"vivid",ipa:"/ˈvɪvɪd/",cn:"生动的；鲜明的"}, {en:"vulnerable",ipa:"/ˈvʌlnərəbl/",cn:"脆弱的；易受伤的"},
+        {en:"welfare",ipa:"/ˈwelfer/",cn:"福利；幸福"}, {en:"widespread",ipa:"/ˈwaɪdspred/",cn:"广泛的；普遍的"},
+        {en:"withdraw",ipa:"/wɪðˈdrɔː/",cn:"撤回；退出"}, {en:"witness",ipa:"/ˈwɪtnəs/",cn:"目击者；证人"},
+        {en:"worthwhile",ipa:"/ˌwɜːrθˈwaɪl/",cn:"值得的"}, {en:"yield",ipa:"/jiːld/",cn:"产出；屈服"},
+        {en:"accelerate",ipa:"/əkˈseləreɪt/",cn:"加速；促进"}, {en:"accommodate",ipa:"/əˈkɒmədeɪt/",cn:"容纳；适应"},
+        {en:"accumulate",ipa:"/əˈkjuːmjəleɪt/",cn:"积累；积聚"}, {en:"acknowledge",ipa:"/əkˈnɒlɪdʒ/",cn:"承认；感谢"},
+        {en:"acquaint",ipa:"/əˈkweɪnt/",cn:"使熟悉；告知"}, {en:"anticipate",ipa:"/ænˈtɪsɪpeɪt/",cn:"预期；期望"},
+        {en:"appreciate",ipa:"/əˈpriːʃieɪt/",cn:"欣赏；感激"}, {en:"artificial",ipa:"/ˌɑːrtɪˈfɪʃl/",cn:"人工的；造作的"},
+        {en:"authentic",ipa:"/ɔːˈθentɪk/",cn:"真正的；可靠的"}, {en:"bureaucracy",ipa:"/bjʊˈrɒkrəsi/",cn:"官僚机构；官僚主义"},
+        {en:"catastrophe",ipa:"/kəˈtæstrəfi/",cn:"灾难；大祸"}, {en:"compromise",ipa:"/ˈkɒmprəmaɪz/",cn:"妥协；折中"},
+        {en:"conscience",ipa:"/ˈkɒnʃəns/",cn:"良心；良知"}, {en:"controversy",ipa:"/kənˈtrɒvəːsi/",cn:"争议；争论"},
+        {en:"correspond",ipa:"/ˌkɒrɪˈspɒnd/",cn:"对应；通信"}, {en:"depression",ipa:"/dɪˈpreʃn/",cn:"抑郁；萧条"},
+        {en:"deteriorate",ipa:"/dɪˈtɪriəreɪt/",cn:"恶化；退化"}, {en:"discrimination",ipa:"/dɪˌskrɪmɪˈneɪʃn/",cn:"歧视；辨别"},
+        {en:"dismiss",ipa:"/dɪsˈmɪs/",cn:"解雇；驳回"}, {en:"distinguish",ipa:"/dɪˈstɪŋɡwɪʃ/",cn:"区分；辨别"},
+        {en:"dominate",ipa:"/ˈdɒmɪneɪt/",cn:"主导；支配"}, {en:"elaborate",ipa:"/ɪˈlæbərət/",cn:"详尽的；精心制作"},
+        {en:"encourage",ipa:"/ɪnˈkɜːrɪdʒ/",cn:"鼓励"}, {en:"enterprise",ipa:"/ˈentərpraɪz/",cn:"企业；事业"},
+        {en:"enthusiasm",ipa:"/ɪnˈθuːziæzəm/",cn:"热情；热忱"}, {en:"equivalent",ipa:"/ɪˈkwɪvələnt/",cn:"等价的；相当的"},
+        {en:"exaggerate",ipa:"/ɪɡˈzædʒəreɪt/",cn:"夸张；夸大"}, {en:"extraordinary",ipa:"/ɪkˈstrɔːrdɪneri/",cn:"非凡的；卓越的"},
+        {en:"fascinate",ipa:"/ˈfæsɪneɪt/",cn:"使着迷"}, {en:"fundamental",ipa:"/ˌfʌndəˈmentl/",cn:"基本的；根本的"},
+        {en:"guarantee",ipa:"/ˌɡærənˈtiː/",cn:"保证；担保"}, {en:"harmony",ipa:"/ˈhɑːrməni/",cn:"和谐；融洽"},
+        {en:"hierarchy",ipa:"/ˈhaɪərɑːrki/",cn:"等级制度；层级"}, {en:"hypothesis",ipa:"/haɪˈpɒθəsɪs/",cn:"假设；假说"},
+        {en:"implement",ipa:"/ˈɪmplɪment/",cn:"实施；执行"}, {en:"implication",ipa:"/ˌɪmplɪˈkeɪʃn/",cn:"含义；暗示"},
+        {en:"inevitable",ipa:"/ɪnˈevɪtəbl/",cn:"不可避免的"}, {en:"interpret",ipa:"/ɪnˈtɜːrprɪt/",cn:"解释；口译"},
+        {en:"investigate",ipa:"/ɪnˈvestɪɡeɪt/",cn:"调查；研究"}, {en:"legislation",ipa:"/ˌledʒɪsˈleɪʃn/",cn:"立法；法规"},
+        {en:"legitimate",ipa:"/lɪˈdʒɪtɪmət/",cn:"合法的；正当的"}, {en:"maintain",ipa:"/meɪnˈteɪn/",cn:"维持；保养"},
+        {en:"manipulate",ipa:"/məˈnɪpjuleɪt/",cn:"操纵；控制"}, {en:"mechanism",ipa:"/ˈmekənɪzəm/",cn:"机制；机理"},
+        {en:"negotiate",ipa:"/nɪˈɡoʊʃieɪt/",cn:"谈判；协商"}, {en:"nevertheless",ipa:"/ˌnevərðəˈles/",cn:"然而；不过"},
+        {en:"phenomenon",ipa:"/fəˈnɒmɪnən/",cn:"现象"}, {en:"philosophy",ipa:"/fəˈlɒsəfi/",cn:"哲学；人生观"},
+        {en:"possession",ipa:"/pəˈzeʃn/",cn:"财产；拥有"}, {en:"poverty",ipa:"/ˈpɒvərti/",cn:"贫困；贫穷"},
+        {en:"privilege",ipa:"/ˈprɪvəlɪdʒ/",cn:"特权；优待"}, {en:"profession",ipa:"/prəˈfeʃn/",cn:"职业；专业"},
+        {en:"promote",ipa:"/prəˈmoʊt/",cn:"促进；提升"}, {en:"proportion",ipa:"/prəˈpɔːrʃn/",cn:"比例；部分"},
+        {en:"prosperity",ipa:"/prɒˈsperəti/",cn:"繁荣；兴旺"}, {en:"psychological",ipa:"/ˌsaɪkəˈlɒdʒɪkl/",cn:"心理的；心理学的"},
+        {en:"recommend",ipa:"/ˌrekəˈmend/",cn:"推荐；建议"}, {en:"recover",ipa:"/rɪˈkʌvər/",cn:"恢复；康复"},
+        {en:"relevant",ipa:"/ˈreləvənt/",cn:"相关的；切题的"}, {en:"religious",ipa:"/rɪˈlɪdʒəs/",cn:"宗教的；虔诚的"},
+        {en:"represent",ipa:"/ˌreprɪˈzent/",cn:"代表；表示"}, {en:"reputation",ipa:"/ˌrepjuˈteɪʃn/",cn:"名声；声誉"},
+        {en:"resolve",ipa:"/rɪˈzɒlv/",cn:"解决；决心"}, {en:"restrict",ipa:"/rɪˈstrɪkt/",cn:"限制；约束"},
+        {en:"reveal",ipa:"/rɪˈviːl/",cn:"揭示；透露"}, {en:"revenue",ipa:"/ˈrevənuː/",cn:"收入；税收"},
+        {en:"revolution",ipa:"/ˌrevəˈluːʃn/",cn:"革命；变革"}, {en:"sacrifice",ipa:"/ˈsækrɪfaɪs/",cn:"牺牲；献祭"},
+        {en:"scatter",ipa:"/ˈskætər/",cn:"分散；散开"}, {en:"schedule",ipa:"/ˈskedʒuːl/",cn:"时间表；安排"},
+        {en:"scrutiny",ipa:"/ˈskruːtəni/",cn:"仔细审查；监督"}, {en:"segment",ipa:"/ˈseɡmənt/",cn:"部分；片段"},
+        {en:"severe",ipa:"/sɪˈvɪr/",cn:"严重的；严厉的"}, {en:"significant",ipa:"/sɪɡˈnɪfɪkənt/",cn:"重要的；显著的"},
+        {en:"simulate",ipa:"/ˈsɪmjuleɪt/",cn:"模拟；模仿"}, {en:"simultaneous",ipa:"/ˌsaɪmlˈteɪniəs/",cn:"同时的"},
+        {en:"sophisticated",ipa:"/səˈfɪstɪkeɪtɪd/",cn:"复杂的；精密的；老练的"},
+        {en:"spontaneous",ipa:"/spɒnˈteɪniəs/",cn:"自发的；自然的"},
+        {en:"stability",ipa:"/stəˈbɪləti/",cn:"稳定；稳定性"}, {en:"stimulate",ipa:"/ˈstɪmjuleɪt/",cn:"刺激；激发"},
+        {en:"strategy",ipa:"/ˈstrætədʒi/",cn:"策略；战略"}, {en:"subsequent",ipa:"/ˈsʌbsɪkwənt/",cn:"随后的；后来的"},
+    ];
+
+    // ============================================================
+    //  GAME LOGIC
+    // ============================================================
+    const startScreen = document.getElementById('start-screen');
+    const gameScreen = document.getElementById('game-screen');
+    const resultScreen = document.getElementById('result-screen');
+    const wordCountBtns = document.querySelectorAll('#word-count button');
+    const difficultyBtns = document.querySelectorAll('#difficulty button');
+    const startBtn = document.getElementById('start-btn');
+    const retryBtn = document.getElementById('retry-btn');
+    const homeBtn = document.getElementById('home-btn');
+    const toast = document.getElementById('toast');
+
+    const wordEn = document.getElementById('word-en');
+    const wordIpa = document.getElementById('word-ipa');
+    const optionsContainer = document.getElementById('options');
+    const currentNum = document.getElementById('current-num');
+    const totalNum = document.getElementById('total-num');
+    const correctNum = document.getElementById('correct-num');
+    const wrongNum = document.getElementById('wrong-num');
+    const streakNum = document.getElementById('streak-num');
+    const streakDisplay = document.getElementById('streak-display');
+    const progressFill = document.getElementById('progress-fill');
+
+    let selectedCount = 20;
+    let selectedLevel = 'medium';
+    let customWords = [];
+
+    // Word count select
+    wordCountBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            wordCountBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            selectedCount = parseInt(btn.dataset.count);
+        });
+    });
+
+    // Difficulty select
+    difficultyBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            difficultyBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            selectedLevel = btn.dataset.level;
+        });
+    });
+
+    // Custom word list upload
+    const customInput = document.getElementById('custom-input');
+    const customBadge = document.getElementById('custom-badge');
+    document.getElementById('custom-label').addEventListener('click', () => customInput.click());
+    customInput.addEventListener('change', () => {
+        if (!customInput.files.length) return;
+        const file = customInput.files[0];
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const text = e.target.result;
+            const lines = text.trim().split('\n');
+            customWords = [];
+            for (const line of lines) {
+                const parts = line.trim().split(',');
+                if (parts.length >= 2) {
+                    const en = parts[0].trim();
+                    const cn = parts.slice(1).join(',').trim();
+                    if (en && cn) customWords.push({ en, ipa: '', cn });
+                }
+            }
+            if (customWords.length > 0) {
+                customBadge.classList.add('visible');
+                showToast('✅ 已加载 ' + customWords.length + ' 个自定义单词');
+            } else {
+                showToast('⚠️ 格式有误，请使用：单词,释义');
+            }
+        };
+        reader.readAsText(file, 'UTF-8');
+    });
+
+    // ===== Start Game =====
+    startBtn.addEventListener('click', startGame);
+
+    function getWordBank() {
+        if (customWords.length > 0) return customWords;
+        const levelMap = { easy: 0, medium: 1, hard: 2 };
+        const idx = levelMap[selectedLevel] || 1;
+        // Divide the word bank into 3 tiers
+        const total = WORD_BANK.length;
+        const tierSize = Math.floor(total / 3);
+        if (idx === 0) return WORD_BANK.slice(0, tierSize);
+        if (idx === 1) return WORD_BANK.slice(tierSize, tierSize * 2);
+        return WORD_BANK.slice(tierSize * 2);
+    }
+
+    function shuffle(arr) {
+        const a = [...arr];
+        for (let i = a.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
+    }
+
+    function startGame() {
+        const bank = getWordBank();
+        const count = Math.min(selectedCount, bank.length);
+        const selected = shuffle(bank).slice(0, count);
+        window.gameState = { words: selected, current: 0, correct: 0, wrong: 0, streak: 0, maxStreak: 0, wrongs: [] };
+
+        startScreen.classList.remove('active');
+        resultScreen.classList.remove('active');
+        gameScreen.classList.add('active');
+        totalNum.textContent = selected.length;
+        showWord();
+    }
+
+    function showWord() {
+        const state = window.gameState;
+        if (state.current >= state.words.length) { showResult(); return; }
+
+        const word = state.words[state.current];
+        wordEn.textContent = word.en;
+        wordIpa.textContent = word.ipa;
+
+        currentNum.textContent = state.current + 1;
+        correctNum.textContent = state.correct;
+        wrongNum.textContent = state.wrong;
+        streakNum.textContent = state.streak;
+        progressFill.style.width = ((state.current / state.words.length) * 100) + '%';
+
+        if (state.streak >= 3) {
+            const fire = state.streak >= 5 ? '🔥🔥' : state.streak >= 10 ? '🔥🔥🔥' : '🔥';
+            streakDisplay.innerHTML = `${fire} 连击 x${state.streak}`;
+        } else {
+            streakDisplay.innerHTML = '';
+        }
+
+        // Generate options
+        const bank = getWordBank();
+        const correctCn = word.cn;
+        let distractors = shuffle(bank.filter(w => w.en !== word.en)).map(w => w.cn).slice(0, 3);
+        while (distractors.length < 3) {
+            distractors.push('未知');
+        }
+        const options = shuffle([correctCn, ...distractors]);
+
+        optionsContainer.innerHTML = '';
+        options.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.textContent = opt;
+            btn.addEventListener('click', () => selectAnswer(btn, opt, correctCn));
+            optionsContainer.appendChild(btn);
+        });
+    }
+
+    function selectAnswer(btn, selected, correct) {
+        const btns = optionsContainer.querySelectorAll('.option-btn');
+        btns.forEach(b => b.classList.add('disabled'));
+        const state = window.gameState;
+
+        if (selected === correct) {
+            btn.classList.add('correct');
+            state.correct++;
+            state.streak++;
+            if (state.streak > state.maxStreak) state.maxStreak = state.streak;
+        } else {
+            btn.classList.add('wrong');
+            state.wrong++;
+            state.streak = 0;
+            // Highlight correct
+            btns.forEach(b => { if (b.textContent === correct) b.classList.add('correct'); });
+            state.wrongs.push({ en: state.words[state.current].en, cn: correct });
+        }
+
+        correctNum.textContent = state.correct;
+        wrongNum.textContent = state.wrong;
+        streakNum.textContent = state.streak;
+
+        setTimeout(() => {
+            state.current++;
+            showWord();
+        }, 800);
+    }
+
+    function showResult() {
+        gameScreen.classList.remove('active');
+        resultScreen.classList.add('active');
+
+        const state = window.gameState;
+        const total = state.words.length;
+        const rate = Math.round((state.correct / total) * 100);
+
+        // Emoji & title
+        let emoji, title, grade;
+        if (rate === 100) { emoji = '🏆'; title = '满分大神！'; grade = '🌟 完美通关！词汇大师！'; }
+        else if (rate >= 90) { emoji = '🎉'; title = '太棒了！'; grade = '👏 非常优秀，再接再厉！'; }
+        else if (rate >= 70) { emoji = '👍'; title = '不错！'; grade = '💪 继续努力，还能更好！'; }
+        else if (rate >= 50) { emoji = '🤔'; title = '还需要加油'; grade = '📚 多复习几次吧！'; }
+        else { emoji = '😅'; title = '要多多练习哦'; grade = '📖 试试降低难度或使用自定义词表'; }
+
+        document.getElementById('result-emoji').textContent = emoji;
+        document.getElementById('result-title').textContent = title;
+        document.getElementById('result-score').textContent = `${state.correct}/${total}`;
+        document.getElementById('result-rate').textContent = rate + '%';
+        document.getElementById('result-streak').textContent = '🔥 ' + state.maxStreak;
+        document.getElementById('result-grade').textContent = grade;
+
+        // Wrong words
+        const wrongList = document.getElementById('wrong-list');
+        const wrongItems = document.getElementById('wrong-items');
+        wrongItems.innerHTML = '';
+        if (state.wrongs.length > 0) {
+            wrongList.style.display = 'block';
+            state.wrongs.forEach(w => {
+                const div = document.createElement('div');
+                div.className = 'wrong-item';
+                div.innerHTML = `<span class="en">${w.en}</span><span class="cn">${w.cn}</span>`;
+                wrongItems.appendChild(div);
+            });
+        } else {
+            wrongList.style.display = 'none';
+        }
+    }
+
+    retryBtn.addEventListener('click', () => {
+        resultScreen.classList.remove('active');
+        startGame();
+    });
+
+    homeBtn.addEventListener('click', () => {
+        resultScreen.classList.remove('active');
+        startScreen.classList.add('active');
+    });
+
+    function showToast(msg) {
+        toast.textContent = msg;
+        toast.classList.add('show');
+        clearTimeout(toast._timer);
+        toast._timer = setTimeout(() => toast.classList.remove('show'), 2500);
+    }
+})();
+</script>
+</body>
+</html>
