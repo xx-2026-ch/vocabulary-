@@ -625,6 +625,9 @@ function renderShop(){
     });
     // Skins
     const sg2=$('shop-skins');sg2.innerHTML='';
+    // Add a visible label
+    const label=document.createElement('div');label.style.cssText='font-size:11px;color:#7a7a8a;margin-bottom:8px';
+    label.textContent='点击皮肤可装备';sg2.appendChild(label);
     SKINS.forEach(s=>{
         const owned=U.unlocks.skins.includes(s);const eq=U.skins.player===s;const price=SKIN_PRICES[s];
         const isAchievement=price===-1;const n=SKIN_NAMES[s]||'未知';
