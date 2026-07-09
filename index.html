@@ -760,9 +760,12 @@ function pOver(){clearInterval(P_TIMER);$('o-lose').classList.add('show');$('o-l
 // ═══════════════════════════════════════════════════════════════
 function initGame(){
     loadUser();applyBorder();updateHub();renderWB();
-    ['gaokao','cet4','cet6','ielts'].forEach(k=>{
-        if(window['W_'+k]){BANKS[k]=window['W_'+k];}
-    });
+    try{
+        if(typeof W_gaokao!=='undefined')BANKS.gaokao=W_gaokao;
+        if(typeof W_cet4!=='undefined')BANKS.cet4=W_cet4;
+        if(typeof W_cet6!=='undefined')BANKS.cet6=W_cet6;
+        if(typeof W_ielts!=='undefined')BANKS.ielts=W_ielts;
+    }catch(e){}
     updateHub();renderWB();
 }
 initGame();
