@@ -263,8 +263,16 @@ body{font-family:'Noto Sans SC','Segoe UI',sans-serif;background:#07070e;color:#
 // BGM — cinematic adventure theme via Web Audio
 let AC=null,AE=false,ABTN=null;
 function initBGM(){
-    if(AC)return;
-    try{AC=new(window.AudioContext||window.webkitAudioContext)();AE=true;if(!ABTN)ABTN=document.getElementById('audio-btn');if(ABTN)ABTN.textContent='🔊';playBGM()}catch(e){}
+    if(AC)try{if(AC.state==='suspended')AC.resume()}catch(e){}// some browsers need resume
+    if(AC&&(AC.state==='running'||!AC.state)){AE=true;if(ABTN)ABTN.textContent='🔊';return}
+    try{
+        AC=new(window.AudioContext||window.webkitAudioContext)();
+        if(AC.state==='suspended')AC.resume();
+        AE=true;if(!ABTN)ABTN=document.getElementById('audio-btn');if(ABTN)ABTN.textContent='🔊';
+        // Test beep first
+        try{const o=AC.createOscillator();o.type='sine';o.frequency.value=440;const g=AC.createGain();g.gain.setValueAtTime(.05,AC.currentTime);g.gain.exponentialRampToValueAtTime(.001,AC.currentTime+.15);o.connect(g);g.connect(AC.destination);o.start();o.stop(AC.currentTime+.15)}catch(e){}
+        setTimeout(playBGM,200);
+    }catch(e){console.error('Audio init failed:',e)}
 }
 function toggleBGM(){
     if(!AC){initBGM();return}
@@ -303,8 +311,8 @@ function playBGM(){
     }
     setTimeout(pulse,1200);
 }
-// Try to auto-start (works if user has interacted with page before)
-setTimeout(()=>{try{if(!AC){AC=new(window.AudioContext||window.webkitAudioContext)();AE=true;const b=document.getElementById('audio-btn');if(b)b.textContent='🔊';playBGM()}}catch(e){}},500);
+// Click on page or button starts audio
+document.addEventListener('click',initBGM,{once:true});
 
 // Navigation dots
 const slides=document.querySelectorAll('.slide');
